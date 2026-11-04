@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions
 
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType
+import java.time.LocalDate
 
 @JsonTypeName(ConditionTypes.ELECTRONIC_MONITORING)
 @Schema(
@@ -36,5 +39,17 @@ data class ElectronicMonitoringAdditionalConditionWithRestriction(
     example = "['ALCOHOL']",
     implementation = ElectronicMonitoringType::class,
   ) val restrictions: List<ElectronicMonitoringType>,
+
+  @field:Schema(
+    description = "The electronic monitoring end date. May be null or omitted when not entered, including licences using policies before v4 which did not collect this date.",
+    example = "2028-01-16",
+    type = "string",
+    format = "date",
+    nullable = true,
+    requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+  )
+  @field:JsonFormat(pattern = "yyyy-MM-dd")
+  @field:JsonInclude(JsonInclude.Include.NON_NULL)
+  val endDate: LocalDate? = null,
 
 ) : AdditionalCondition

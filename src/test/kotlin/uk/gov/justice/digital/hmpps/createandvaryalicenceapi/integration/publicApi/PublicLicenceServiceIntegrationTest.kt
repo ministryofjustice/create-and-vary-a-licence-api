@@ -107,6 +107,25 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
   inner class `Get CRD licence by id` {
 
     @Test
+    @Sql(
+      "classpath:test_data/seed-crd-licence-id-1-with-conditions.sql",
+      "classpath:test_data/add-electronic-monitoring-conditions-to-licence-id-1.sql",
+    )
+    fun `electronic monitoring conditions serialize ISO end dates and omit unavailable dates`() {
+      // Given
+      val request = buildGetRequest(uri = "/public/licences/id/1")
+
+      // When
+      val response = request.exchange()
+
+      // Then
+      response.expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody().json(serializedContent("crd-licence-with-electronic-monitoring"), JsonCompareMode.STRICT)
+        .returnResult()
+    }
+
+    @Test
     @Sql("classpath:test_data/seed-crd-licence-id-1-with-conditions.sql")
     fun `CRD licence response can be deserialized as a regular licence`() {
       // Given

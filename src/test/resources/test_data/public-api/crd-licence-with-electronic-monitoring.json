@@ -1,0 +1,84 @@
+{
+  "id": 1,
+  "kind": "CRD",
+  "licenceType": "AP_PSS",
+  "policyVersion": "V4_0",
+  "version": "1.0",
+  "statusCode": "IN_PROGRESS",
+  "prisonNumber": "A1234AA",
+  "bookingId": 123,
+  "crn": "CRN1",
+  "approvedByUsername": null,
+  "approvedDateTime": null,
+  "createdByUsername": "test-client",
+  "createdDateTime": "2020-01-01T00:00:00",
+  "updatedByUsername": null,
+  "updatedDateTime": "2020-01-01T00:00:00",
+  "licenceStartDate": "2022-02-25",
+  "isInPssPeriod": false,
+  "conditions": {
+    "AP": {
+      "standard": [
+        { "code": "goodBehaviour", "text": "Be of generally good behaviour" },
+        { "code": "notBreakLaw", "text": "Do not break the law" }
+      ],
+      "additional": [
+        {
+          "id": 1,
+          "type": "ELECTRONIC_MONITORING",
+          "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+          "category": "Electronic monitoring",
+          "text": "Electronic monitoring until Sunday 16 January 2028",
+          "restrictions": ["CURFEW"],
+          "endDate": "2028-01-16"
+        },
+        {
+          "id": 2,
+          "type": "STANDARD",
+          "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          "category": "Electronic monitoring",
+          "text": "Location monitoring until Sunday 16 January 2028",
+          "endDate": "2028-01-16"
+        },
+        {
+          "id": 3,
+          "type": "STANDARD",
+          "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
+          "category": "Electronic monitoring",
+          "text": "Alcohol monitoring until Sunday 16 January 2028",
+          "endDate": "2028-01-16"
+        }
+      ],
+      "bespoke": []
+    },
+    "PSS": {
+      "standard": [
+        { "code": "attendMeetings", "text": "Attend meetings" }
+      ],
+      "additional": [
+        {
+          "id": 4,
+          "type": "ELECTRONIC_MONITORING",
+          "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+          "category": "Electronic monitoring",
+          "text": "Electronic monitoring without an end date",
+          "restrictions": ["CURFEW"]
+        },
+        {
+          "id": 5,
+          "type": "STANDARD",
+          "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          "category": "Electronic monitoring",
+          "text": "Location monitoring without an end date"
+        },
+        {
+          "id": 6,
+          "type": "STANDARD",
+          "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
+          "category": "Electronic monitoring",
+          "text": "Alcohol monitoring without an end date"
+        }
+      ]
+    }
+  }
+}

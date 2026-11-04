@@ -2,6 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.NullAndEmptySource
+import org.junit.jupiter.params.provider.ValueSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
@@ -14,6 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someModelAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14B
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14E
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType
@@ -21,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MU
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.createTestMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
@@ -101,6 +109,53 @@ class LicenceDetailTransformerTest {
     // Check that expanded has been selected:
     assertThat(privateAdditionalCondition.text).isEqualTo(publicModelCondition.expandedText)
   }
+
+  @ParameterizedTest
+  @ValueSource(strings = [ELECTRONIC_TAG_COND_CODE_14A, ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E])
+  fun `EM conditions expose ISO end dates`(code: String) {
+    // Given
+    val condition = monitoringCondition(code, listOf(AdditionalConditionData(field = "endDate", value = "Sunday 16 January 2028")))
+    val licence = modelLicence.copy(
+      additionalLicenceConditions = listOf(condition),
+      additionalPssConditions = listOf(condition),
+    )
+    val mapper = createTestMapper()
+
+    // When
+    val json = mapper.readTree(mapper.writeValueAsString(licence.transformToPublicLicence()))
+
+    // Then
+    for (period in listOf("AP", "PSS")) {
+      val actual = json["conditions"][period]["additional"][0]
+      assertThat(actual["endDate"].asText()).isEqualTo("2028-01-16")
+    }
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = [" "])
+  fun `EM dates are omitted when the input value is unavailable`(value: String?) {
+    val mapper = createTestMapper()
+    for (code in listOf(ELECTRONIC_TAG_COND_CODE_14A, ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E)) {
+      // Given
+      val condition = monitoringCondition(code, listOf(AdditionalConditionData(field = "endDate", value = value)))
+
+      // When
+      val actual = listOf(condition).transformToResourceAdditional().single()
+
+      // Then
+      val json = mapper.readTree(mapper.writeValueAsString(actual))
+      assertThat(json.has("endDate")).isFalse()
+    }
+  }
+
+  private fun monitoringCondition(code: String, dates: List<AdditionalConditionData> = emptyList()) = AdditionalCondition(
+    id = 123,
+    code = code,
+    category = "Electronic monitoring",
+    expandedText = "Electronic monitoring condition",
+    data = dates + AdditionalConditionData(field = "electronicMonitoringTypes", value = "curfew"),
+  )
 
   @Test
   fun `upload conditions show upload description`() {

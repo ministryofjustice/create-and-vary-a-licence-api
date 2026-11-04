@@ -14,11 +14,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.SingleUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14B
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14E
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.MULTIPLE_UPLOAD_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.AdditionalCondition as ModelAdditionalCondition
@@ -29,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
+private val electronicMonitoringEndDateFormatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ENGLISH)
 
 fun ModelLicence.transformToPublicLicence(): Licence {
   val licenceConditions = Conditions(
@@ -83,12 +89,20 @@ fun transform(condition: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.m
 // Transform a list of model additional conditions to resource additional conditions
 fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditionalCondition> = map {
   when (it.code) {
-    ELECTRONIC_TAG_COND_CODE_14A -> transformElectronicMonitoring(it)
+    ELECTRONIC_TAG_COND_CODE_14A, ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E ->
+      transformElectronicTagCondition(it)
     EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(it)
     MULTIPLE_UPLOAD_COND_CODE -> transformMultipleUploadsCondition(it)
     EVENT_EXCLUSION_COND_CODE -> transformSingleExclusionZoneCondition(it)
     else -> standardAdditionalCondition(it)
   }
+}
+
+fun transformElectronicTagCondition(model: AdditionalCondition): ModelAdditionalCondition = when (model.code) {
+  ELECTRONIC_TAG_COND_CODE_14A -> transformElectronicMonitoring(model)
+  ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E ->
+    standardAdditionalCondition(model).copy(endDate = electronicMonitoringEndDate(model))
+  else -> error("Electronic monitoring condition code '${model.code}' isn't supported.")
 }
 
 fun transformElectronicMonitoring(model: AdditionalCondition) = ElectronicMonitoringAdditionalConditionWithRestriction(
@@ -101,7 +115,18 @@ fun transformElectronicMonitoring(model: AdditionalCondition) = ElectronicMonito
     ElectronicMonitoringType.find(data.value.orEmpty())
       ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
   },
+  endDate = electronicMonitoringEndDate(model),
 )
+
+private fun electronicMonitoringEndDate(model: AdditionalCondition): LocalDate? = when (model.code) {
+  ELECTRONIC_TAG_COND_CODE_14A, ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E ->
+    model.data
+      .find { it.field == "endDate" }
+      ?.value
+      ?.takeIf { it.isNotBlank() }
+      ?.let { LocalDate.parse(it, electronicMonitoringEndDateFormatter) }
+  else -> null
+}
 
 fun transformMultipleExclusionZonesCondition(model: AdditionalCondition) = MultipleExclusionZoneAdditionalCondition(
   category = model.category.orEmpty(),
@@ -139,9 +164,7 @@ private fun transformUploadDescription(model: AdditionalCondition): String? = mo
   .takeIf { it.isNotEmpty() }
   ?.joinToString(", ")
 
-typealias PublicStandardAdditionalCondition = ModelStandardAdditionalCondition
-
-fun standardAdditionalCondition(model: AdditionalCondition) = PublicStandardAdditionalCondition(
+fun standardAdditionalCondition(model: AdditionalCondition) = ModelStandardAdditionalCondition(
   category = model.category.orEmpty(),
   type = ConditionTypes.STANDARD,
   id = model.id ?: 0,
