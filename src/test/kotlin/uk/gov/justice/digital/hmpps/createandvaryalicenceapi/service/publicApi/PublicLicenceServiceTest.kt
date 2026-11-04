@@ -257,6 +257,20 @@ class PublicLicenceServiceTest {
   inner class `Get licence by id` {
 
     @Test
+    fun `service returns a licence by id`() {
+
+      // Given
+      val licenceId: Long = 12345
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
+
+      // When
+      val actualLicence = service.getLicenceById(licenceId)
+
+      // Then
+      assertThat(actualLicence).usingRecursiveComparison().isEqualTo(publicLicence)
+    }
+
+    @Test
     fun `service returns a hdc licence with out hdc detail when publicApiHdcDetailsEnabled is false`() {
       // Given
       val service = PublicLicenceService(
