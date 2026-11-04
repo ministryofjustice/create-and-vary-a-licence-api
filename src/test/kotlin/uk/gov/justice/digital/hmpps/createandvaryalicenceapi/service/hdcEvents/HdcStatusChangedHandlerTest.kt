@@ -99,7 +99,7 @@ class HdcStatusChangedHandlerTest {
   fun `handleAddressWithdrawn processes event without changing the licence`() {
     handler.handleAddressWithdrawn(eventJson)
 
-    verifyNoInteractions(hdcService)
+    verifyNoInteractions(hdcLifecycleService)
   }
 
   @Test
