@@ -227,6 +227,32 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
   }
 
+  @Test
+  @Sql("classpath:test_data/seed-licence-id-1.sql")
+  fun `An HDC opt in event copies the electronic monitoring provider into it's own entity`() {
+    // Given
+    val crdLicence =  testRepository.findLicence(1L) as CrdLicence
+    val originalProvider = requireNotNull(crdLicence.electronicMonitoringProvider)
+    val event = createHdcStatusChangedEvent(
+      bookingId = 123L,
+      nomsNumber = "A1234AA",
+      reason = "Offender opted in",
+    )
+
+    // When
+    sendConversionEvent(event, HdcCvlEventType.OPT_IN)
+
+    // Then
+    val hdcLicence = testRepository.findAllLicence().single { it.kind == LicenceKind.HDC } as HdcLicence
+    val copiedProvider = requireNotNull(hdcLicence.electronicMonitoringProvider)
+
+    assertThat(copiedProvider.id).isPositive().isNotEqualTo(originalProvider.id)
+    assertThat(copiedProvider.licence.id).isEqualTo(hdcLicence.id)
+    assertThat(copiedProvider.licence.id).isNotEqualTo(crdLicence.id)
+    assertThat(copiedProvider.isToBeTaggedForProgramme).isEqualTo(originalProvider.isToBeTaggedForProgramme)
+    assertThat(copiedProvider.programmeName).isEqualTo(originalProvider.programmeName)
+  }
+
   @SqlGroup(
     Sql("classpath:test_data/seed-completed-hdc-licence-1.sql"),
     Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
