@@ -359,6 +359,8 @@ class SubjectAccessRequestResponseBuilderTest {
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
       conditionPolicyData = emptyMap(),
       isHdcMigration = false,
+      isReplacementForOptedInLicence = false,
+      hdcRiskChecksComplete = false,
     )
   }
 }

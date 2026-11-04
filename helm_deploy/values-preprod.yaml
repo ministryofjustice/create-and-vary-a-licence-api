@@ -27,6 +27,8 @@ generic-service:
     HMPPS_COREPERSONRECORD_API_URL: "https://hmpps-person-record-preprod.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"
+    HMPPS_REMAND_API_ENABLED: false
+    HMPPS_REMANDANDSENTENCING_API_URL: "https://remand-and-sentencing-api-preprod.hmpps.service.justice.gov.uk"
 
   namespace_secrets:
     sqs-domain-events-queue-secret:

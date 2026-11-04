@@ -11,6 +11,7 @@
     <ID>LongMethod:HardStopLicence.kt:HardStopLicence$override fun toString: String</ID>
     <ID>LongMethod:HdcLicence.kt:HdcLicence$fun copy: HdcLicence</ID>
     <ID>LongMethod:HdcLicence.kt:HdcLicence$override fun toString: String</ID>
+    <ID>LongMethod:HdcLicenceFactory.kt:HdcLicenceFactory$fun createFromCrd</ID>
     <ID>LongMethod:HdcVariationLicence.kt:HdcVariationLicence$fun copy: HdcVariationLicence</ID>
     <ID>LongMethod:HdcVariationLicence.kt:HdcVariationLicence$override fun toString: String</ID>
     <ID>LongMethod:LicenceCreationService.kt:LicenceCreationService$@Transactional fun createHardStopLicence: CreateLicenceResponse</ID>
@@ -59,6 +60,7 @@
     <ID>TooManyFunctions:ControllerAdvice.kt:ControllerAdvice</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt:DeliusApiClient</ID>
     <ID>TooManyFunctions:EligibilityService.kt:EligibilityService</ID>
+    <ID>TooManyFunctions:HdcLifecycleService.kt:HdcLifecycleService</ID>
     <ID>TooManyFunctions:HdcService.kt:HdcService</ID>
     <ID>TooManyFunctions:JPASpecificationDSL.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
     <ID>TooManyFunctions:Licence.kt:Licence : AbstractIdEntitySentenceDateHolder</ID>

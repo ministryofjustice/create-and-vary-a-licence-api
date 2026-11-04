@@ -7,12 +7,12 @@ import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
 import java.time.LocalDateTime
 
 class HdcStatusChangedHandlerTest {
   private val mapper = ObjectMapper()
-  private val hdcService = mock<HdcService>()
+  private val hdcLifecycleService = mock<HdcLifecycleService>()
 
   private lateinit var handler: HdcStatusChangedHandler
 
@@ -31,7 +31,7 @@ class HdcStatusChangedHandlerTest {
   fun setUp() {
     handler = HdcStatusChangedHandler(
       mapper = mapper,
-      hdcService = hdcService,
+      hdcLifecycleService = hdcLifecycleService,
     )
   }
 
@@ -39,59 +39,59 @@ class HdcStatusChangedHandlerTest {
   fun `handleOptout processes event when enabled`() {
     handler.handleOptOut(eventJson)
 
-    verify(hdcService).convertToCrdLicence("A1234BC", HdcCvlEventType.OPT_OUT)
+    verify(hdcLifecycleService).convertToCrdLicence("A1234BC", HdcCvlEventType.OPT_OUT)
   }
 
   @Test
   fun `handlePostpone processes event when enabled`() {
     handler.handlePostpone(eventJson)
 
-    verify(hdcService).postponeLicence("A1234BC")
+    verify(hdcLifecycleService).postponeLicence("A1234BC")
   }
 
   @Test
   fun `handleOptout calls service before logging`() {
     handler.handleOptOut(eventJson)
 
-    val inOrderVerifier = inOrder(hdcService)
-    inOrderVerifier.verify(hdcService).convertToCrdLicence("A1234BC", HdcCvlEventType.OPT_OUT)
+    val inOrderVerifier = inOrder(hdcLifecycleService)
+    inOrderVerifier.verify(hdcLifecycleService).convertToCrdLicence("A1234BC", HdcCvlEventType.OPT_OUT)
   }
 
   @Test
   fun `handleOptIn processes event`() {
     handler.handleOptIn(eventJson)
 
-    verify(hdcService).convertToHdcLicence("A1234BC")
+    verify(hdcLifecycleService).convertToHdcLicence("A1234BC")
   }
 
   @Test
   fun `handleOptIn calls service before logging`() {
     handler.handleOptIn(eventJson)
 
-    val inOrderVerifier = inOrder(hdcService)
-    inOrderVerifier.verify(hdcService).convertToHdcLicence("A1234BC")
+    val inOrderVerifier = inOrder(hdcLifecycleService)
+    inOrderVerifier.verify(hdcLifecycleService).convertToHdcLicence("A1234BC")
   }
 
   @Test
   fun `handleRefused processes event`() {
     handler.handleRefuse(eventJson)
 
-    verify(hdcService).convertToCrdLicence("A1234BC", HdcCvlEventType.REFUSE)
+    verify(hdcLifecycleService).convertToCrdLicence("A1234BC", HdcCvlEventType.REFUSE)
   }
 
   @Test
   fun `handlePostpone calls service before logging`() {
     handler.handlePostpone(eventJson)
 
-    val inOrderVerifier = inOrder(hdcService)
-    inOrderVerifier.verify(hdcService).postponeLicence("A1234BC")
+    val inOrderVerifier = inOrder(hdcLifecycleService)
+    inOrderVerifier.verify(hdcLifecycleService).postponeLicence("A1234BC")
   }
 
   @Test
   fun `handleResume processes event`() {
     handler.handleResume(eventJson)
 
-    verify(hdcService).resumeHdcPostponement("A1234BC")
+    verify(hdcLifecycleService).resumeHdcPostponement("A1234BC")
   }
 
   @Test

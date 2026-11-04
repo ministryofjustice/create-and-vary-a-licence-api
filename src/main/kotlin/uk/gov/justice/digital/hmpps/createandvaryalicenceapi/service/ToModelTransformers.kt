@@ -577,8 +577,12 @@ fun toHdc(
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionPolicyData: Map<String, ConditionPolicyData>,
   isHdcMigration: Boolean,
+  isReplacementForOptedInLicence: Boolean,
+  hdcRiskChecksComplete: Boolean,
 ) = ModelHdcLicence(
   id = licence.id,
+  isReplacementForOptedInLicence = isReplacementForOptedInLicence,
+  hdcRiskChecksComplete = hdcRiskChecksComplete,
   typeCode = licence.typeCode,
   version = licence.version,
   statusCode = licence.statusCode,
