@@ -47,9 +47,6 @@ class PublicLicenceService(
       townOrCity = it.townOrCity,
       county = it.county,
       postcode = it.postcode,
-      accommodationType = it.accommodationType,
-      postReleaseResidentialChecksCompleted = it.postReleaseResidentialChecksCompleted,
-      postReleaseResidentialChecksNotCompletedReason = it.postReleaseResidentialChecksNotCompletedReason,
     )
   }
 

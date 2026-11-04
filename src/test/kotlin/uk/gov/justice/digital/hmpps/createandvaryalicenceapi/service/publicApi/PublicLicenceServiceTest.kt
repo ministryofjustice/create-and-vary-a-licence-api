@@ -343,9 +343,6 @@ class PublicLicenceServiceTest {
           townOrCity = "Test Town",
           county = "Test County",
           postcode = "AB1 2CD",
-          accommodationType = AccommodationType.RESIDENTIAL,
-          postReleaseResidentialChecksCompleted = false,
-          postReleaseResidentialChecksNotCompletedReason = "Old reason",
         ),
       )
       assertThat(actualLicence.firstNightCurfewTimes).usingRecursiveComparison().isEqualTo(

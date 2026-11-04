@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence
 
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import java.time.DayOfWeek
 import java.time.LocalTime
 
@@ -57,19 +56,6 @@ data class PublicHdcCurfewAddress(
 
   @field:Schema(description = "The postcode for the curfew address", example = "SO30 2UH")
   val postcode: String,
-
-  @field:Schema(
-    description = "The accommodation type of the curfew address",
-    example = "RESIDENTIAL",
-    implementation = AccommodationType::class,
-  )
-  val accommodationType: AccommodationType?,
-
-  @field:Schema(description = "Whether post release residential checks have been completed", example = "true")
-  val postReleaseResidentialChecksCompleted: Boolean?,
-
-  @field:Schema(description = "The reason for not completing post release residential checks", example = "Offender refused to provide information")
-  val postReleaseResidentialChecksNotCompletedReason: String?,
 )
 
 @Schema(description = "Curfew time")

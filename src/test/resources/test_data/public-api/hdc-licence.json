@@ -5,10 +5,7 @@
     "secondLine": "Off Some Road",
     "townOrCity": "Some Town",
     "county": "Some County",
-    "postcode": "AB1 2CD",
-    "accommodationType": "RESIDENTIAL",
-    "postReleaseResidentialChecksCompleted": true,
-    "postReleaseResidentialChecksNotCompletedReason": null
+    "postcode": "AB1 2CD"
   },
   "firstNightCurfewTimes": {
     "fromDay": null,

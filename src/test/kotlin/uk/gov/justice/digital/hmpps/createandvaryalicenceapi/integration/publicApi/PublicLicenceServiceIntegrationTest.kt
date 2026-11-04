@@ -95,8 +95,6 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .jsonPath("$.curfewAddress.firstLine").isEqualTo("1 Some Address")
         .jsonPath("$.curfewAddress.townOrCity").isEqualTo("Some Town")
         .jsonPath("$.curfewAddress.postcode").isEqualTo("AB1 2CD")
-        .jsonPath("$.curfewAddress.accommodationType").isEqualTo("RESIDENTIAL")
-        .jsonPath("$.curfewAddress.postReleaseResidentialChecksCompleted").isEqualTo(true)
         .jsonPath("$.firstNightCurfewTimes.fromTime").isEqualTo("18:00:00")
         .jsonPath("$.firstNightCurfewTimes.untilTime").isEqualTo("08:00:00")
         .jsonPath("$.curfewTimes[0].fromDay").isEqualTo("MONDAY")
