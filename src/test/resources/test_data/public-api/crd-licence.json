@@ -1,0 +1,35 @@
+{
+  "id": 1,
+  "kind": "CRD",
+  "licenceType": "AP",
+  "policyVersion": "V1_0",
+  "version": "1.0",
+  "statusCode": "IN_PROGRESS",
+  "prisonNumber": "A1234AA",
+  "bookingId": 123,
+  "crn": "CRN1",
+  "approvedByUsername": null,
+  "approvedDateTime": null,
+  "createdByUsername": "test-client",
+  "createdDateTime": "2020-01-01T00:00:00",
+  "updatedByUsername": null,
+  "updatedDateTime": "2020-01-01T00:00:00",
+  "licenceStartDate": "2022-02-25",
+  "isInPssPeriod": false,
+  "conditions": {
+    "AP": {
+      "standard": [
+        { "code": "goodBehaviour", "text": "Be of generally good behaviour" },
+        { "code": "notBreakLaw", "text": "Do not break the law" }
+      ],
+      "additional": [],
+      "bespoke": []
+    },
+    "PSS": {
+      "standard": [
+        { "code": "attendMeetings", "text": "Attend meetings" }
+      ],
+      "additional": []
+    }
+  }
+}

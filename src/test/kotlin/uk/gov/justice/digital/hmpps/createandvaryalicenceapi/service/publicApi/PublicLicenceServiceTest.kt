@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -12,6 +14,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
@@ -21,6 +25,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -36,8 +43,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformTo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CurfewTimes as ModelCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
 
@@ -50,6 +63,7 @@ class PublicLicenceServiceTest {
     licenceRepository,
     licenceService,
     uploadFileConditionsService,
+    publicApiHdcDetailsEnabled = true,
   )
 
   @BeforeEach
@@ -241,13 +255,120 @@ class PublicLicenceServiceTest {
 
   @Nested
   inner class `Get licence by id` {
+
     @Test
     fun `service returns a licence by id`() {
+      // Given
       val licenceId: Long = 12345
       whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
+
+      // When
       val actualLicence = service.getLicenceById(licenceId)
 
-      assertThat(actualLicence).isEqualTo(publicLicence)
+      // Then
+      assertThat(actualLicence).usingRecursiveComparison().isEqualTo(publicLicence)
+    }
+
+    @Test
+    fun `service returns a hdc licence with out hdc detail when publicApiHdcDetailsEnabled is false`() {
+      // Given
+      val service = PublicLicenceService(
+        licenceRepository,
+        licenceService,
+        uploadFileConditionsService,
+        publicApiHdcDetailsEnabled = false,
+      )
+      val licenceId: Long = 12345
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
+      // When
+      val actualLicence = service.getLicenceById(licenceId)
+
+      // Then
+      assertThat(actualLicence).isInstanceOf(PublicLicence::class.java)
+      assertThat(actualLicence).isNotInstanceOf(PublicHdcLicence::class.java)
+    }
+
+    @Test
+    fun `service returns a hdc licence with hdc detail when publicApiHdcDetailsEnabled is true`() {
+      // Given
+      val service = PublicLicenceService(
+        licenceRepository,
+        licenceService,
+        uploadFileConditionsService,
+        publicApiHdcDetailsEnabled = true,
+      )
+      val licenceId: Long = 12345
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
+      // When
+      val actualLicence = service.getLicenceById(licenceId)
+
+      // Then
+      assertThat(actualLicence).isInstanceOf(PublicLicence::class.java)
+      assertThat(actualLicence).isInstanceOf(PublicHdcLicence::class.java)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `service returns HDC licence and variation with public curfew details`(isVariation: Boolean) {
+      // Given
+
+      val licence = if (isVariation) {
+        ModelHdcVariationLicence(
+          id = modelHdcLicence.id,
+          typeCode = modelHdcLicence.typeCode,
+          version = modelHdcLicence.version,
+          statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+          licenceVersion = modelHdcLicence.licenceVersion,
+          weeklyCurfewTimes = modelHdcLicence.weeklyCurfewTimes,
+          firstNightCurfewTimes = modelHdcLicence.firstNightCurfewTimes,
+          curfewAddress = modelHdcLicence.curfewAddress,
+        )
+      } else {
+        modelHdcLicence
+      }
+      whenever(licenceService.getLicenceById(12345)).thenReturn(licence)
+
+      // When
+      val actualLicence = service.getLicenceById(12345) as PublicHdcLicence
+
+      // Then
+      assertThat(actualLicence.id).isEqualTo(modelHdcLicence.id)
+      assertThat(actualLicence.kind).isEqualTo(if (isVariation) "HDC_VARIATION" else "HDC")
+      assertThat(actualLicence.statusCode).isEqualTo(licence.statusCode)
+      assertThat(actualLicence.curfewAddress).usingRecursiveComparison().isEqualTo(
+        PublicHdcCurfewAddress(
+          uprn = "uprn-123",
+          firstLine = "1 Test Street",
+          secondLine = "Test Area",
+          townOrCity = "Test Town",
+          county = "Test County",
+          postcode = "AB1 2CD",
+        ),
+      )
+      assertThat(actualLicence.firstNightCurfewTimes).usingRecursiveComparison().isEqualTo(
+        PublicCurfewTimes(
+          fromDay = null,
+          fromTime = LocalTime.of(22, 0),
+          untilDay = null,
+          untilTime = LocalTime.of(6, 0),
+        ),
+      )
+      assertThat(actualLicence.curfewTimes).usingRecursiveComparison().isEqualTo(
+        listOf(
+          PublicCurfewTimes(
+            fromDay = DayOfWeek.MONDAY,
+            fromTime = LocalTime.of(20, 0),
+            untilDay = DayOfWeek.TUESDAY,
+            untilTime = LocalTime.of(8, 0),
+          ),
+          PublicCurfewTimes(
+            fromDay = DayOfWeek.TUESDAY,
+            fromTime = LocalTime.of(21, 0),
+            untilDay = DayOfWeek.WEDNESDAY,
+            untilTime = LocalTime.of(9, 0),
+          ),
+        ),
+      )
     }
 
     @Test
@@ -381,6 +502,51 @@ class PublicLicenceServiceTest {
         id = 2,
         sequence = 2,
         text = "Bespoke two text",
+      ),
+    )
+
+    val modelHdcLicence = ModelHdcLicence(
+      id = 12345,
+      typeCode = LicenceType.AP,
+      version = "2.1",
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceVersion = "1.4",
+      weeklyCurfewTimes = listOf(
+        ModelCurfewTimes(
+          curfewTimesSequence = 2,
+          fromDay = DayOfWeek.TUESDAY,
+          fromTime = LocalTime.of(21, 0),
+          untilDay = DayOfWeek.WEDNESDAY,
+          untilTime = LocalTime.of(9, 0),
+          createdTimestamp = null,
+        ),
+        ModelCurfewTimes(
+          curfewTimesSequence = 1,
+          fromDay = DayOfWeek.MONDAY,
+          fromTime = LocalTime.of(20, 0),
+          untilDay = DayOfWeek.TUESDAY,
+          untilTime = LocalTime.of(8, 0),
+          createdTimestamp = null,
+        ),
+      ),
+      firstNightCurfewTimes = ModelCurfewTimes(
+        fromTime = LocalTime.of(22, 0),
+        untilTime = LocalTime.of(6, 0),
+        createdTimestamp = null,
+      ),
+      curfewAddress = ModelHdcCurfewAddress(
+        uprn = "uprn-123",
+        firstLine = "1 Test Street",
+        secondLine = "Test Area",
+        townOrCity = "Test Town",
+        county = "Test County",
+        postcode = "AB1 2CD",
+        source = AddressSource.MANUAL,
+        accommodationType = AccommodationType.RESIDENTIAL,
+        postReleaseResidentialChecksCompleted = false,
+        postReleaseResidentialChecksNotCompletedReason = "Old reason",
+        createdTimestamp = null,
+        lastUpdatedTimestamp = null,
       ),
     )
 

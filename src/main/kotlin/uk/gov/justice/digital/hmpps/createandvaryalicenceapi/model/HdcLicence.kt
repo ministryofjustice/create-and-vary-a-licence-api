@@ -371,7 +371,7 @@ data class HdcLicence(
   @field:Schema(description = "Is this licence a replacement for an opted in CRD licence?", example = "false")
   val isReplacementForOptedInLicence: Boolean = false,
 
-  @field:Schema(description = "Have the address checks been completed for this HDC licence?", example = "false")
+  @field:Schema(description = "Have the risk checks been completed for this HDC licence?", example = "false")
   val hdcRiskChecksComplete: Boolean = false,
 ) : Licence,
   SupportsElectronicMonitoring,
