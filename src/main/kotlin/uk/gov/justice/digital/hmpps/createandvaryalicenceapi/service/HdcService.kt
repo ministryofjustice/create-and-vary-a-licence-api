@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatusHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
@@ -59,6 +60,8 @@ class HdcService(
   }
 
   fun isApprovedForHdc(bookingId: Long, dateToCheck: LocalDate?) = if (dateToCheck == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
+
+  fun isRiskChecksComplete(bookingIdsToHdcStatus: HdcStatuses): Boolean = bookingIdsToHdcStatus.any { it.value == HdcStatus.RISK_CHECKS_COMPLETE || it.value == HdcStatus.APPROVED }
 
   @Transactional
   fun updateCrdForHdcLicences(licenceId: Long, newCrd: LocalDate?) {
