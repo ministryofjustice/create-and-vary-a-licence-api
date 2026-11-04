@@ -40,5 +40,6 @@ class HdcLicenceFactoryTest {
     assertThat(hdcLicence.homeDetentionCurfewEligibilityDate).isNull()
     assertThat(hdcLicence.homeDetentionCurfewActualDate).isNull()
     assertThat(hdcLicence.homeDetentionCurfewEndDate).isNull()
+    assertThat(hdcLicence.electronicMonitoringProvider).isNull()
   }
 }
