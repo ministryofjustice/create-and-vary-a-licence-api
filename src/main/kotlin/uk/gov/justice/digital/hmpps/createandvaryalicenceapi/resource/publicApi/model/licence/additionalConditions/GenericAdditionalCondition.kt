@@ -1,10 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions
 
-import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 
 @JsonTypeName(ConditionTypes.STANDARD)
 @Schema(
@@ -34,17 +31,5 @@ data class GenericAdditionalCondition(
     example = "You must not enter the location X",
   )
   override val text: String,
-
-  @field:Schema(
-    description = "The electronic monitoring end date for conditions 14b (524f2fd6-ad53-47dd-8edc-2161d3dd2ed4) and 14e (2F8A5418-C6E4-4F32-9E58-64B23550E504). May be null or omitted when not entered. Omitted for other STANDARD conditions.",
-    example = "2028-01-16",
-    type = "string",
-    format = "date",
-    nullable = true,
-    requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-  )
-  @field:JsonFormat(pattern = "yyyy-MM-dd")
-  @field:JsonInclude(JsonInclude.Include.NON_NULL)
-  val endDate: LocalDate? = null,
 
 ) : AdditionalCondition

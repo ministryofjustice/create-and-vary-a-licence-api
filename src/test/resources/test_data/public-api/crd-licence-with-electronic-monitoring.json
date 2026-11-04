@@ -25,7 +25,7 @@
       "additional": [
         {
           "id": 1,
-          "type": "ELECTRONIC_MONITORING",
+          "type": "ELECTRONIC_MONITORING_WITH_RESTRICTIONS",
           "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
           "category": "Electronic monitoring",
           "text": "Electronic monitoring until Sunday 16 January 2028",
@@ -34,7 +34,7 @@
         },
         {
           "id": 2,
-          "type": "STANDARD",
+          "type": "ELECTRONIC_MONITORING",
           "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
           "category": "Electronic monitoring",
           "text": "Location monitoring until Sunday 16 January 2028",
@@ -42,7 +42,7 @@
         },
         {
           "id": 3,
-          "type": "STANDARD",
+          "type": "ELECTRONIC_MONITORING",
           "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
           "category": "Electronic monitoring",
           "text": "Alcohol monitoring until Sunday 16 January 2028",
@@ -58,7 +58,7 @@
       "additional": [
         {
           "id": 4,
-          "type": "ELECTRONIC_MONITORING",
+          "type": "ELECTRONIC_MONITORING_WITH_RESTRICTIONS",
           "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
           "category": "Electronic monitoring",
           "text": "Electronic monitoring without an end date",
@@ -66,14 +66,14 @@
         },
         {
           "id": 5,
-          "type": "STANDARD",
+          "type": "ELECTRONIC_MONITORING",
           "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
           "category": "Electronic monitoring",
           "text": "Location monitoring without an end date"
         },
         {
           "id": 6,
-          "type": "STANDARD",
+          "type": "ELECTRONIC_MONITORING",
           "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
           "category": "Electronic monitoring",
           "text": "Alcohol monitoring without an end date"

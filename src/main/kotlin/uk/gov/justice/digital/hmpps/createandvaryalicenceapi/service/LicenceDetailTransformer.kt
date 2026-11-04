@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleUploadAdditionalCondition
@@ -101,13 +102,22 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
 fun transformElectronicTagCondition(model: AdditionalCondition): ModelAdditionalCondition = when (model.code) {
   ELECTRONIC_TAG_COND_CODE_14A -> transformElectronicMonitoring(model)
   ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E ->
-    standardAdditionalCondition(model).copy(endDate = electronicMonitoringEndDate(model))
+    transformElectronicMonitoringWithoutRestriction(model)
   else -> error("Electronic monitoring condition code '${model.code}' isn't supported.")
 }
 
-fun transformElectronicMonitoring(model: AdditionalCondition) = ElectronicMonitoringAdditionalConditionWithRestriction(
+fun transformElectronicMonitoringWithoutRestriction(model: AdditionalCondition) = ElectronicMonitoringAdditionalCondition(
   category = model.category.orEmpty(),
   type = ConditionTypes.ELECTRONIC_MONITORING,
+  id = model.id ?: 0,
+  code = model.code.orEmpty(),
+  text = model.expandedText.orEmpty(),
+  endDate = electronicMonitoringEndDate(model),
+)
+
+fun transformElectronicMonitoring(model: AdditionalCondition) = ElectronicMonitoringAdditionalConditionWithRestriction(
+  category = model.category.orEmpty(),
+  type = ConditionTypes.ELECTRONIC_MONITORING_WITH_RESTRICTIONS,
   id = model.id ?: 0,
   code = model.code.orEmpty(),
   text = model.expandedText.orEmpty(),

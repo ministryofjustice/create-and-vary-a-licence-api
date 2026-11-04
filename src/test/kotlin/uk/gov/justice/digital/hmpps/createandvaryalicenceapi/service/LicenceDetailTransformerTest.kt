@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleUploadAdditionalCondition
@@ -79,7 +80,7 @@ class LicenceDetailTransformerTest {
       ),
       ElectronicMonitoringAdditionalConditionWithRestriction(
         category = "",
-        type = ConditionTypes.ELECTRONIC_MONITORING,
+        type = ConditionTypes.ELECTRONIC_MONITORING_WITH_RESTRICTIONS,
         id = 5,
         code = ELECTRONIC_TAG_COND_CODE_14A,
         text = "You must wear an electronic monitoring tag for curfew purposes.",
@@ -129,6 +130,19 @@ class LicenceDetailTransformerTest {
       val actual = json["conditions"][period]["additional"][0]
       assertThat(actual["endDate"].asText()).isEqualTo("2028-01-16")
     }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = [ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E])
+  fun `14B and 14E EM conditions have no restrictions`(code: String) {
+    val actual = monitoringCondition(code).let(::transformElectronicTagCondition)
+
+    assertThat(actual).isInstanceOf(ElectronicMonitoringAdditionalCondition::class.java)
+    assertThat(actual).isNotInstanceOf(ElectronicMonitoringAdditionalConditionWithRestriction::class.java)
+
+    val json = createTestMapper().readTree(createTestMapper().writeValueAsString(actual))
+    assertThat(json["type"].asText()).isEqualTo(ConditionTypes.ELECTRONIC_MONITORING)
+    assertThat(json.has("restrictions")).isFalse()
   }
 
   @ParameterizedTest

@@ -69,7 +69,7 @@
         },
         {
           "category": "",
-          "type": "ELECTRONIC_MONITORING",
+          "type": "ELECTRONIC_MONITORING_WITH_RESTRICTIONS",
           "id": 5,
           "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
           "text": "You must wear an electronic monitoring tag for curfew purposes.",

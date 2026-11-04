@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 object ConditionTypes {
   const val ELECTRONIC_MONITORING = "ELECTRONIC_MONITORING"
+  const val ELECTRONIC_MONITORING_WITH_RESTRICTIONS = "ELECTRONIC_MONITORING_WITH_RESTRICTIONS"
 
   @Deprecated(
     message = "Use MULTIPLE_UPLOADS instead",
@@ -23,8 +24,12 @@ object ConditionTypes {
   discriminatorMapping = [
     DiscriminatorMapping(value = ConditionTypes.STANDARD, schema = GenericAdditionalCondition::class),
     DiscriminatorMapping(
-      value = ConditionTypes.ELECTRONIC_MONITORING,
+      value = ConditionTypes.ELECTRONIC_MONITORING_WITH_RESTRICTIONS,
       schema = ElectronicMonitoringAdditionalConditionWithRestriction::class,
+    ),
+    DiscriminatorMapping(
+      value = ConditionTypes.ELECTRONIC_MONITORING,
+      schema = ElectronicMonitoringAdditionalCondition::class,
     ),
     DiscriminatorMapping(
       value = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
