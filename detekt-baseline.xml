@@ -11,6 +11,7 @@
     <ID>LongMethod:HardStopLicence.kt:HardStopLicence$override fun toString: String</ID>
     <ID>LongMethod:HdcLicence.kt:HdcLicence$fun copy: HdcLicence</ID>
     <ID>LongMethod:HdcLicence.kt:HdcLicence$override fun toString: String</ID>
+    <ID>LongMethod:HdcLicenceFactory.kt:HdcLicenceFactory$fun createFromCrd</ID>
     <ID>LongMethod:HdcVariationLicence.kt:HdcVariationLicence$fun copy: HdcVariationLicence</ID>
     <ID>LongMethod:HdcVariationLicence.kt:HdcVariationLicence$override fun toString: String</ID>
     <ID>LongMethod:LicenceCreationService.kt:LicenceCreationService$@Transactional fun createHardStopLicence: CreateLicenceResponse</ID>
