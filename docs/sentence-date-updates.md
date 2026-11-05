@@ -26,8 +26,8 @@ four things:
 3. **Telling the responsible probation practitioner (COM)** about meaningful changes,
    so they're not caught out.
 4. **Automatically protecting the licence process** — moving a licence into or out of
-   the "hard stop" period, or (in some cases) stopping the licence altogether — if the
-   date change means the existing licence can no longer safely be used.
+   the "hard stop" period — if the date change means the existing licence can no longer be
+   used as it stands.
 
 ## Key terms
 
@@ -123,23 +123,6 @@ under normal (non-hard-stop) rules:
   gets reversed shortly afterwards).
 - If that flagging behaviour is switched off, the in-flight licences are deactivated
   **immediately**.
-
-### Policy version safeguard
-
-Separately, if a licence was created under a post- licence progression policy version (currently version 4.0 and 4.1) 
-and is still at a pre-release stage, and the date change causes the licence start date
-to move to before the licence progression policy start date, the licence is automatically **deactivated**, 
-so that the case can be re-created under the correct, older policy version instead. 
-In this case, the responsible practitioner is notified separately that this has happened, rather than
-being sent the usual "dates changed" notification.
-
-The inverse of this scenario is also true. If a licence was created under an older version of policy 
-(version 3.0 or below), is still in a pre-release stage, and the date change causes the 
-licence start date to move after the licence progression policy start date, the licence is automatically
-**deactivated**. This is to allow the licence to be re-recreated on the correct, more recent
-policy version.
-In this case, the responsible practitioner is notified separately that this has happened, rather than
-being sent the usual "dates changed" notification.
 
 ## A couple of important edge cases
 

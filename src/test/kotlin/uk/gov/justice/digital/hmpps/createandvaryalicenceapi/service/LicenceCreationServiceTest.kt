@@ -74,7 +74,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as E
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 class LicenceCreationServiceTest {
-  private val licencePolicyService = LicencePolicyService(progressionModelPolicyStartDate = LocalDate.now(), usePolicy4dot1 = true)
+  private val licencePolicyService = LicencePolicyService()
 
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val standardConditionRepository = mock<StandardConditionRepository>()
