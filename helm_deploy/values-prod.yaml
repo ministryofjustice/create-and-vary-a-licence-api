@@ -10,6 +10,7 @@ generic-service:
     contextColour: green
 
   env:
+    REPOSITORY_UNPROXY_ENABLED: "true"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/oauth/token"
