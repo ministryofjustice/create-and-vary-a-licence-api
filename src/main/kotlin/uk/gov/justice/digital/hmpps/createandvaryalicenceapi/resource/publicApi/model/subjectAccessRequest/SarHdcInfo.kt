@@ -68,8 +68,10 @@ enum class SarAccommodationType(@JsonValue val description: String) {
 
   companion object {
     fun from(type: AccommodationType) = when (type) {
-      AccommodationType.CAS -> CAS
       AccommodationType.RESIDENTIAL -> RESIDENTIAL
+      AccommodationType.CAS -> CAS
+      AccommodationType.CAS_1_APPROVED_PREMISES -> CAS
+      AccommodationType.CAS_2 -> CAS
     }
   }
 }
