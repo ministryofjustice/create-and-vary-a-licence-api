@@ -149,6 +149,7 @@ springdoc:
       enabled: true
   swagger-ui:
     urls-primary-name: "public"
+    filter: true
 
 cache:
   evict:
