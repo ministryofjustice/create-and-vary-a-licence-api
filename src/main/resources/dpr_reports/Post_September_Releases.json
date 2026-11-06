@@ -19,7 +19,7 @@
       "id": "licence-dataset",
       "name": "licence-dataset",
       "datasource": "cvl",
-      "query": "select licence_start_date, crn, status_code, probation_area_code, probation_area_description, probation_pdu_code, probation_pdu_description, eligible_kind  from licence l where licence_start_date >= '2026-09-02' and status_code != 'INACTIVE'",
+      "query": "select licence_start_date, crn, status_code, probation_area_code, probation_area_description, probation_pdu_code, probation_pdu_description, eligible_kind, submitted_date  from licence l where licence_start_date >= '2026-09-02' and status_code != 'INACTIVE'",
       "schema": {
         "field": [
           {
@@ -61,6 +61,11 @@
             "name": "eligible_kind",
             "type": "string",
             "display": "The kind of licence the offender is eligible for"
+          },
+          {
+            "name": "submitted_date",
+            "type": "date",
+            "display": "Licence submitted date"
           }
         ]
       }
@@ -154,6 +159,13 @@
           {
             "name": "$ref:eligible_kind",
             "display": "Eligible kind",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:submitted_date",
+            "display": "Licence submitted date",
             "visible": "true",
             "sortable": true,
             "defaultsort": false

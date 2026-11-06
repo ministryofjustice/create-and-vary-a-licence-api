@@ -8,10 +8,3 @@ enum class PolicyVersion(val version: String) {
   V4_0("4.0"),
   V4_1("4.1"),
 }
-
-val PRE_PROGRESSION_POLICY_VERSIONS = listOf(
-  PolicyVersion.V1_0.version,
-  PolicyVersion.V2_0.version,
-  PolicyVersion.V2_1.version,
-  PolicyVersion.V3_0.version,
-)
