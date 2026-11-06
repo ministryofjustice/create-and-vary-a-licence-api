@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 
 object ConditionTypes {
   const val ELECTRONIC_MONITORING = "ELECTRONIC_MONITORING"
@@ -18,7 +19,7 @@ object ConditionTypes {
 }
 
 @Schema(
-  description = "Describes each additional condition on the licence, A discriminator exists to allow specific types of conditions to contain additional info",
+  description = "Describes each additional condition on the licence, A discriminator exists to allow specific types of conditions to contain additional info, $baseApiVersion",
   discriminatorProperty = "type",
   discriminatorMapping = [
     DiscriminatorMapping(value = ConditionTypes.STANDARD, schema = GenericAdditionalCondition::class),
