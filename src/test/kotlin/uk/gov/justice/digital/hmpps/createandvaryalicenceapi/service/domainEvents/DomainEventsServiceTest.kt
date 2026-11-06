@@ -104,7 +104,7 @@ class DomainEventsServiceTest {
   }
 
   @Test
-  fun `does not create and publishes a domain event when status is not ACTIVE or INACTIVE`() {
+  fun `does not publish a domain event for SUBMITTED status`() {
     domainEventsService.recordDomainEvent(TestData.createCrdLicence(), LicenceStatus.SUBMITTED)
 
     verifyNoInteractions(applicationEventPublisher)

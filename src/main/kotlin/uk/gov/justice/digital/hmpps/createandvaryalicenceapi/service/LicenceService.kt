@@ -836,6 +836,8 @@ class LicenceService(
       "${licenceEntity.forename.orEmpty()} ${licenceEntity.surname.orEmpty()}",
       licenceId.toString(),
     )
+
+    domainEventsService.recordDomainEvent(licenceEntity, VARIATION_APPROVED)
   }
 
   @Transactional
