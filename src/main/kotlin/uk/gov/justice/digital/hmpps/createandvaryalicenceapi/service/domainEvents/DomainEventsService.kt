@@ -18,6 +18,17 @@ class DomainEventsService(
 ) {
   fun recordDomainEvent(licence: Licence, licenceStatus: LicenceStatus) {
     when (licenceStatus) {
+      LicenceStatus.APPROVED, LicenceStatus.VARIATION_APPROVED -> {
+        val domainEvent = createDomainEvent(
+          licence.kind.approvedDomainEventType(),
+          licence.id.toString(),
+          licence.crn,
+          licence.nomsId,
+          "Licence approved for Licence ID ${licence.id}",
+        )
+        applicationEventPublisher.publishEvent(domainEvent)
+      }
+
       LicenceStatus.ACTIVE -> {
         val domainEvent = createDomainEvent(
           licence.kind.activatedDomainEventType(),
@@ -69,6 +80,12 @@ class DomainEventsService(
   }
 
   enum class LicenceDomainEventType(val value: String) {
+    LICENCE_APPROVED("create-and-vary-a-licence.licence.approved"),
+    HDC_LICENCE_APPROVED("create-and-vary-a-licence.hdc-licence.approved"),
+    PRRD_LICENCE_APPROVED("create-and-vary-a-licence.prrd-licence.approved"),
+    LICENCE_VARIATION_APPROVED("create-and-vary-a-licence.variation.approved"),
+    HDC_LICENCE_VARIATION_APPROVED("create-and-vary-a-licence.hdc-variation.approved"),
+    TIME_SERVED_LICENCE_APPROVED("create-and-vary-a-licence.time-served-licence.approved"),
     LICENCE_ACTIVATED("create-and-vary-a-licence.licence.activated"),
     HDC_LICENCE_ACTIVATED("create-and-vary-a-licence.hdc-licence.activated"),
     PRRD_LICENCE_ACTIVATED("create-and-vary-a-licence.prrd-licence.activated"),
