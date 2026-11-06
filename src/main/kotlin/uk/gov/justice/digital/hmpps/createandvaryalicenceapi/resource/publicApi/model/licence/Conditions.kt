@@ -2,8 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 
-@Schema(description = "The type of conditions on a licence which can be AP (All Purpose) and/or PSS (Post Sentence Supervision)")
+@Schema(description = "The type of conditions on a licence which can be AP (All Purpose) and/or PSS (Post Sentence Supervision), $baseApiVersion")
 data class Conditions(
 
   @field:JsonProperty("AP")

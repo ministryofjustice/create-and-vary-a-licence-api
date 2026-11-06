@@ -42,7 +42,6 @@ generic-service:
     HARDSTOP_DEACTIVATION_JOB_ENABLED: true
     HDC_ENABLED: true
     HDC_CREATION_ENABLED: false
-    PUBLIC_API_HDC_DETAILS_ENABLED: true
     REMAND_ENABLED: true
 
     # Event listeners

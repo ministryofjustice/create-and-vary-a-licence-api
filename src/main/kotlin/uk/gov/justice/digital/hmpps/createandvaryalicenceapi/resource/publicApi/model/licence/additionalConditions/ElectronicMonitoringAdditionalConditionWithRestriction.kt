@@ -2,11 +2,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType
 
 @JsonTypeName(ConditionTypes.ELECTRONIC_MONITORING)
 @Schema(
-  description = "Describes an instance of the electronic monitoring condition on the licence",
+  description = "Describes an instance of the electronic monitoring condition on the licence, $baseApiVersion",
 )
 data class ElectronicMonitoringAdditionalConditionWithRestriction(
   @field:Schema(description = "The ID of the condition", example = "123456") override val id: Long,
