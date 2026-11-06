@@ -130,8 +130,6 @@ feature:
       enabled: true
     hdcCreation:
       enabled: true
-    publicApiHdcDetails:
-      enabled: true
     standardRecalls:
       enabled: true
     restrictedPatients:

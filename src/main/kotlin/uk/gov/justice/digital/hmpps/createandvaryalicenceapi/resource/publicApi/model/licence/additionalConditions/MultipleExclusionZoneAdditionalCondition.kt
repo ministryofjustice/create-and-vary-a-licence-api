@@ -2,10 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 
 @JsonTypeName(ConditionTypes.MULTIPLE_EXCLUSION_ZONE)
 @Schema(
-  description = "Describes an instance of the multiple exclusion zone condition on the licence",
+  description = "Describes an instance of the multiple exclusion zone condition on the licence, $baseApiVersion",
 )
 @Deprecated(
   message = "Use MultipleUploadAdditionalCondition instead",

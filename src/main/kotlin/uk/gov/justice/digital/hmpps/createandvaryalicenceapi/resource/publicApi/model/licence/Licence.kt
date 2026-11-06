@@ -2,12 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@Schema(description = "Describes a licence within this service")
+@Schema(description = "Describes a licence within this service, $baseApiVersion")
 open class Licence(
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")

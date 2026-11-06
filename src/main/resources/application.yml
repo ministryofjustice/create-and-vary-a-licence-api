@@ -146,6 +146,7 @@ self:
     link: "http://localhost:8089"
 
 springdoc:
+  writer-with-order-by-keys: true
   api-docs:
     enabled: false
     groups:
@@ -183,8 +184,6 @@ feature:
       enabled: ${HDC_ENABLED}
     hdcCreation:
       enabled: ${HDC_CREATION_ENABLED:#{false}}
-    publicApiHdcDetails:
-      enabled: ${PUBLIC_API_HDC_DETAILS_ENABLED:#{false}}
     remand:
       enabled: ${REMAND_ENABLED}
 

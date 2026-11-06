@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
@@ -21,19 +20,23 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
+import java.util.logging.Logger
 
 @RestController
 @Tag(name = Tags.LICENCES)
 @PreAuthorize("hasAnyRole('VIEW_LICENCES')")
 @RequestMapping("/public", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicenceController(private val publicLicenceService: PublicLicenceService) {
+
+  private val log: Logger = Logger.getLogger(this::class.java.name)
+
+  @Deprecated("Use the v2 endpoint instead")
   @GetMapping(value = ["/licences/id/{licenceId}"])
   @ResponseBody
   @Operation(
-    summary = "Get a licence by its licence id",
+    summary = "Get a licence by its licence id, $baseApiVersion",
     description = "Returns a single licence detail by its unique identifier. " +
       "Requires ROLE_VIEW_LICENCES.",
     security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
@@ -46,14 +49,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
         content = [
           Content(
             mediaType = "application/json",
-            schema = Schema(
-              oneOf = [Licence::class, PublicHdcLicence::class],
-              discriminatorProperty = "kind",
-              discriminatorMapping = [
-                DiscriminatorMapping(value = "HDC", schema = PublicHdcLicence::class),
-                DiscriminatorMapping(value = "HDC_VARIATION", schema = PublicHdcLicence::class),
-              ],
-            ),
+            schema = Schema(implementation = Licence::class),
           ),
         ],
       ),
@@ -79,7 +75,10 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     @Parameter(name = "licenceId", description = "This is the identifier for a licence")
     @Min(1)
     licenceId: Long,
-  ): Licence = publicLicenceService.getLicenceById(licenceId)
+  ): Licence {
+    log.info("Getting licence by id: $licenceId using $baseApiVersion")
+    return publicLicenceService.getLicenceById(licenceId)
+  }
 
   @GetMapping(value = ["/licence-summaries/prison-number/{prisonNumber}"])
   @ResponseBody
