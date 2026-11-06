@@ -33,6 +33,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Cour
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.remandAndSentencing.RemandAndSentencingApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.remandAndSentencing.RemandOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -45,6 +47,7 @@ class LicenceActivationServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val auditService = mock<AuditService>()
   private val telemetryService = mock<TelemetryService>()
+  private val remandAndSentencingApiClient = mock<RemandAndSentencingApiClient>()
 
   private var service = LicenceActivationService(
     licenceRepository,
@@ -52,6 +55,7 @@ class LicenceActivationServiceTest {
     hdcService,
     prisonerSearchApiClient,
     prisonApiClient,
+    remandAndSentencingApiClient,
     auditService,
     telemetryService,
   )
@@ -70,6 +74,7 @@ class LicenceActivationServiceTest {
       licenceService,
       hdcService,
       prisonerSearchApiClient,
+      remandAndSentencingApiClient,
       iS91DeterminationService,
       telemetryService,
     )
@@ -533,6 +538,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      remandAndSentencingApiClient,
       auditService,
       telemetryService,
       remandEnabled = true,
@@ -544,7 +550,9 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
       .thenReturn(listOf(remandPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
-      .thenReturn(listOf(aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!)))
+      .thenReturn(emptyList())
+    whenever(remandAndSentencingApiClient.getRemandOutcome(remandLicence.nomsId!!))
+      .thenReturn(aRemandOutcome)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -558,13 +566,14 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job activates both IS91 and remand licences where there are court outcomes for these licences`() {
+  fun `licence activation job activates both IS91 and remand licences`() {
     service = LicenceActivationService(
       licenceRepository,
       licenceService,
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      remandAndSentencingApiClient,
       auditService,
       telemetryService,
       remandEnabled = true,
@@ -592,9 +601,10 @@ class LicenceActivationServiceTest {
       .thenReturn(
         listOf(
           aIS91CourtEventOutcome.copy(bookingId = is91Licence.bookingId!!),
-          aRemandCourtEventOutcome.copy(bookingId = remandLicence.bookingId!!),
         ),
       )
+    whenever(remandAndSentencingApiClient.getRemandOutcome(remandLicence.nomsId!!))
+      .thenReturn(aRemandOutcome)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -615,6 +625,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      remandAndSentencingApiClient,
       auditService,
       telemetryService,
       remandEnabled = true,
@@ -625,7 +636,8 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
       .thenReturn(listOf(nonHdcPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
-      .thenReturn(listOf(aRemandCourtEventOutcome))
+      .thenReturn(emptyList())
+    whenever { remandAndSentencingApiClient.getRemandOutcome(remandLicence.nomsId!!) }.thenReturn(aRemandOutcome)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -646,6 +658,7 @@ class LicenceActivationServiceTest {
       hdcService,
       prisonerSearchApiClient,
       prisonApiClient,
+      remandAndSentencingApiClient,
       auditService,
       telemetryService,
       remandEnabled = true,
@@ -656,7 +669,8 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
       .thenReturn(listOf(nonHdcPrisoner))
     whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
-      .thenReturn(listOf(aRemandCourtEventOutcome))
+      .thenReturn(emptyList())
+    whenever { remandAndSentencingApiClient.getRemandOutcome(remandLicence.nomsId!!) }.thenReturn(aRemandOutcome)
     whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
       .thenReturn(HdcStatuses(emptyList()))
 
@@ -666,6 +680,41 @@ class LicenceActivationServiceTest {
     verify(licenceService).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
+  }
+
+  @Test
+  fun `licence activation job does not activate licences where prisoner does not have a remand outcome`() {
+    service = LicenceActivationService(
+      licenceRepository,
+      licenceService,
+      hdcService,
+      prisonerSearchApiClient,
+      prisonApiClient,
+      remandAndSentencingApiClient,
+      auditService,
+      telemetryService,
+      remandEnabled = true,
+    )
+    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
+    val remandPrisoner = nonHdcPrisoner.copy(status = "ACTIVE IN")
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
+      .thenReturn(listOf(remandPrisoner))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(emptyList())
+    whenever(remandAndSentencingApiClient.getRemandOutcome(remandLicence.nomsId!!))
+      .thenReturn(aRemandOutcome.copy(isOnRemand = false))
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(emptyList(), REMAND_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
     verify(telemetryService).recordActivateLicencesJobEvent(0, 0, 0, 0)
   }
 
@@ -845,9 +894,7 @@ class LicenceActivationServiceTest {
     outcomeReasonCode = "5500",
   )
 
-  val aRemandCourtEventOutcome = CourtEventOutcome(
-    bookingId = 54321,
-    eventId = 654321,
-    outcomeReasonCode = "4531",
+  val aRemandOutcome = RemandOutcome(
+    isOnRemand = true,
   )
 }
