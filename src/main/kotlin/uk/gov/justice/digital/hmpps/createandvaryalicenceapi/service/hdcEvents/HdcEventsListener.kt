@@ -43,7 +43,7 @@ class HdcEventsListener(
         RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
         OPT_IN -> hdcStatusChangedHandler.handleOptIn(rawMessage)
         ADDRESS_WITHDRAWN -> hdcStatusChangedHandler.handleAddressWithdrawn(rawMessage)
-        RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES -> hdcStatusChangedHandler.handleResidentialAddressChangedToApprovedPremises(rawMessage)
+        RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES -> hdcStatusChangedHandler.handleAddressChangedToApprovedPremises(rawMessage, eventType)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)

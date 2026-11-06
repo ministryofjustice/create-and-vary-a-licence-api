@@ -103,8 +103,8 @@ class HdcStatusChangedHandlerTest {
   }
 
   @Test
-  fun `handleResidentialAddressChangedToApprovedPremises processes event without changing the licence`() {
-    handler.handleResidentialAddressChangedToApprovedPremises(eventJson)
+  fun `handleAddressChangedToApprovedPremises processes event without changing the licence`() {
+    handler.handleAddressChangedToApprovedPremises(eventJson, HdcCvlEventType.RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES)
 
     verifyNoInteractions(hdcLifecycleService)
   }

@@ -56,7 +56,7 @@ class HdcEventsListenerTest {
 
     listener.onMessage(message)
 
-    verify(handler).handleResidentialAddressChangedToApprovedPremises(eventJson)
+    verify(handler).handleAddressChangedToApprovedPremises(eventJson, HdcCvlEventType.RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES)
   }
 
   @Test
