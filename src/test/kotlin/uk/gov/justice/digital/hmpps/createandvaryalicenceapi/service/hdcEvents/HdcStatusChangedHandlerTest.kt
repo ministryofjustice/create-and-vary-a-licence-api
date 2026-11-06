@@ -103,6 +103,13 @@ class HdcStatusChangedHandlerTest {
   }
 
   @Test
+  fun `handleAddressChangedToApprovedPremises processes event without changing the licence`() {
+    handler.handleAddressChangedToApprovedPremises(eventJson, HdcCvlEventType.RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES)
+
+    verifyNoInteractions(hdcLifecycleService)
+  }
+
+  @Test
   fun `parses event correctly from JSON`() {
     val event = mapper.readValue(eventJson, HdcStatusChangedEvent::class.java)
 
