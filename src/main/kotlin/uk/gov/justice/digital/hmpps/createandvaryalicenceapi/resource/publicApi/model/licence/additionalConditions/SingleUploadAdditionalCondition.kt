@@ -2,10 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 
 @JsonTypeName(ConditionTypes.SINGLE_UPLOAD)
 @Schema(
-  description = "Describes an additional condition on the licence that has a single associated upload",
+  description = "Describes an additional condition on the licence that has a single associated upload, $baseApiVersion",
 )
 data class SingleUploadAdditionalCondition(
   @field:Schema(description = "The ID of the condition", example = "123456") override val id: Long,

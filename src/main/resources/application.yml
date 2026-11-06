@@ -126,15 +126,12 @@ notify:
     initialComAllocation: a584b741-82ce-41de-adce-0a665dc27b0f
     editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
     unapprovedLicence: 11f3d28e-d7d9-47f9-bbad-57bd32fbed45
-    policyVersionInactivated: de23bd34-fcc3-46d8-914a-82a13d3768ae
 
     # Variation emails
     variationForApproval: 2dc01a48-73f1-4dde-931e-05eaf502441e
     variationApproved: 24ad56b7-7bec-4fdb-ac8b-3b5af6f18666
     variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
     licenceReviewOverdue: 2eeff8dd-8935-404c-ab39-0eed5e083db5
-
-    progressionLicenceDeactivated: 32a0542c-5f02-4c4a-b536-41688f015935
 
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
@@ -146,6 +143,7 @@ self:
     link: "http://localhost:8089"
 
 springdoc:
+  writer-with-order-by-keys: true
   api-docs:
     enabled: false
     groups:
@@ -164,7 +162,7 @@ dpr:
     manage-users:
       host: ${DPR_MANAGE_USERS_HOST}
     definition:
-      locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json, dpr_reports/Licence_Variations_In_London.json, dpr_reports/Approved_Licences_Created_In_London.json, dpr_reports/Pre_Release_Cases_Submitted_Approved.json, dpr_reports/Post_September_Releases.json, dpr_reports/Health_Appointment_And_Drugs_Testing.json, dpr_reports/Licences_With_Health_Licence_Conditions.json
+      locations: dpr_reports/Active_Licences.json, dpr_reports/Install_At_Source.json, dpr_reports/Licence_Variations_In_London.json, dpr_reports/Approved_Licences_Created_In_London.json, dpr_reports/Pre_Release_Cases_Submitted_Approved.json, dpr_reports/Post_September_Releases.json, dpr_reports/Health_Appointment_And_Drugs_Testing.json, dpr_reports/Licences_With_Health_Licence_Conditions.json, dpr_reports/Licences_With_Restriction_Zone_Conditions.json
     system:
       role: ROLE_CVL_ADMIN
       token:
@@ -183,16 +181,8 @@ feature:
       enabled: ${HDC_ENABLED}
     hdcCreation:
       enabled: ${HDC_CREATION_ENABLED:#{false}}
-    publicApiHdcDetails:
-      enabled: ${PUBLIC_API_HDC_DETAILS_ENABLED:#{false}}
     remand:
       enabled: ${REMAND_ENABLED}
-
-progression:
-  model:
-    policy-start-date: ${PROGRESSION_MODEL_POLICY_START_DATE:#{null}}
-    notification-window-end-date: ${PROGRESSION_MODEL_NOTIFICATION_WINDOW_END_DATE:#{null}}
-    use-policy-4-dot-1: ${PROGRESSION_MODEL_USE_POLICY_4_DOT_1:#{false}}
 
 hmpps:
   cases:
