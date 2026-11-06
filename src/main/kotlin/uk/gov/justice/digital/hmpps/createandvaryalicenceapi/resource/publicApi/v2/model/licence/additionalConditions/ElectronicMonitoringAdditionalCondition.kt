@@ -26,7 +26,7 @@ open class ElectronicMonitoringAdditionalCondition(
   override val text: String,
 
   @field:Schema(
-    description = "The electronic monitoring end date, or null if no date was recorded, including on historical licences",
+    description = "The electronic monitoring end date",
     example = "2028-01-16",
   )
   @field:JsonFormat(pattern = "yyyy-MM-dd")

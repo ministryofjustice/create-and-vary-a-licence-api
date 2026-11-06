@@ -17,6 +17,10 @@ class ElectronicMonitoringAdditionalConditionWithRestriction(
   category: String,
   code: String,
   text: String,
+  @field:Schema(
+    description = "The electronic monitoring end date",
+    example = "2028-01-16",
+  )
   override val endDate: LocalDate? = null,
 
   @field:Schema(
