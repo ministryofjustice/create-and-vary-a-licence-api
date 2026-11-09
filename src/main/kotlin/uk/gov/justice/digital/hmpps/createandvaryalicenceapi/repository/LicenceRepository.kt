@@ -211,17 +211,6 @@ interface LicenceRepository :
 
   @Query(
     """
-    SELECT l
-    FROM Licence l
-    WHERE l.version in ('1.0', '2.0', '2.1', '3.0')
-    AND l.statusCode in (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED)
-    AND l.licenceStartDate >= :policyV4GoLiveDate
-  """,
-  )
-  fun getLicencesForProgressionDeactivation(policyV4GoLiveDate: LocalDate): List<Licence>
-
-  @Query(
-    """
             SELECT l FROM CrdLicence l WHERE l.nomsId = :nomsNumber
                 AND l.kind = 'CRD' AND l.statusCode IN ('APPROVED', 'SUBMITTED', 'IN_PROGRESS')
                     ORDER BY l.dateLastUpdated DESC, l.idInternal DESC

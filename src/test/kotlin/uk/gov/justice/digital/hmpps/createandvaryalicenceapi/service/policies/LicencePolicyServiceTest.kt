@@ -9,103 +9,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someOldModelAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
-import java.time.LocalDate
 
 class LicencePolicyServiceTest {
-  private val progressionModelPolicyStartDate = LocalDate.now().plusMonths(1)
-  private val licencePolicyService =
-    LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
-
-  @Nested
-  inner class `Progression policy start date is today` {
-    private val progressionModelPolicyStartDate = LocalDate.now()
-    private val licencePolicyService =
-      LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate)
-
-    @Nested
-    inner class `useV4_1Policy enabled` {
-      private val licencePolicyService =
-        LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate, usePolicy4dot1 = true)
-
-      @Test
-      fun `Policy version 4_1 is returned if licence start date is not provided`() {
-        val policy = licencePolicyService.currentPolicy(null)
-        assertThat(policy.version).isEqualTo("4.1")
-      }
-
-      @Test
-      fun `Policy version 3 is returned if progress model policy start date is null`() {
-        val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
-
-        val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
-        assertThat(policy.version).isEqualTo("3.0")
-      }
-
-      @Test
-      fun `Policy version 4_1 is returned if licence start date is on or after progress model policy start date`() {
-        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate).version).isEqualTo("4.1")
-        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate.plusDays(1)).version).isEqualTo("4.1")
-      }
-    }
-
-    @Nested
-    inner class `useV4_1Policy disabled` {
-      private val licencePolicyService =
-        LicencePolicyService(progressionModelPolicyStartDate = progressionModelPolicyStartDate, usePolicy4dot1 = false)
-
-      @Test
-      fun `Policy version 4 is returned if licence start date is not provided`() {
-        val policy = licencePolicyService.currentPolicy(null)
-        assertThat(policy.version).isEqualTo("4.0")
-      }
-
-      @Test
-      fun `Policy version 3 is returned if progress model policy start date is null`() {
-        val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
-
-        val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
-        assertThat(policy.version).isEqualTo("3.0")
-      }
-
-      @Test
-      fun `Policy version 4 is returned if licence start date is on or after progress model policy start date`() {
-        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate).version).isEqualTo("4.0")
-        assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate.plusDays(1)).version).isEqualTo("4.0")
-      }
-    }
-  }
+  private val licencePolicyService = LicencePolicyService()
 
   @Test
   fun `Check all policy versions are mapped`() {
     val policyServiceVersions = LicencePolicyService().allPolicies().map { it.version }.toSet()
     val apiRepresentationVersions = PolicyVersion.entries.map { it.version }.toSet()
     assertThat(policyServiceVersions).isEqualTo(apiRepresentationVersions)
-  }
-
-  @Test
-  fun `Policy version 3 is returned if licence start date is not provided`() {
-    val policy = licencePolicyService.currentPolicy(null)
-    assertThat(policy.version).isEqualTo("3.0")
-  }
-
-  @Test
-  fun `Policy version 3 is returned if licence start date is before progress model policy start date`() {
-    val policy = licencePolicyService.currentPolicy(progressionModelPolicyStartDate.minusDays(1))
-    assertThat(policy.version).isEqualTo("3.0")
-  }
-
-  @Test
-  fun `Policy version 3 is returned if progress model policy start date is null`() {
-    val licencePolicyServiceNullStartDate = LicencePolicyService(progressionModelPolicyStartDate = null)
-
-    val policy = licencePolicyServiceNullStartDate.currentPolicy(LocalDate.now())
-    assertThat(policy.version).isEqualTo("3.0")
-  }
-
-  @Test
-  fun `Policy version 4 is returned if licence start date is on or after progress model policy start date`() {
-    assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate).version).isEqualTo("4.0")
-    assertThat(licencePolicyService.currentPolicy(progressionModelPolicyStartDate.plusDays(1)).version).isEqualTo("4.0")
   }
 
   @Test

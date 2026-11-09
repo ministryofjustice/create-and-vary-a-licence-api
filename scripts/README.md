@@ -1,7 +1,7 @@
 ### smoke-dev.sh
 
-`smoke-dev.sh` is a bash script that runs a simple smoke test against the create-and-vary-a-licence-api in the dev
-environment.
+`smoke-dev.sh` runs a simple smoke test against create-and-vary-a-licence-api in `dev` (default),
+`test1` or `test2`. All three environments use dev Auth.
 
 It checks:
 
@@ -10,14 +10,29 @@ It checks:
 3. Swagger UI is available (HTTP 200)
 4. The SAR (`/subject-access-request`) endpoint is secured — an unauthenticated request is rejected with HTTP 401
 5. A SAR request with valid credentials succeeds (HTTP 200 or 204)
+6. When a licence ID is supplied, a public v2 licence request with valid credentials succeeds (HTTP 200)
+   and its JSON response is printed
 
-Dependencies: `jq`, `kubectl` (with access to the `create-and-vary-a-licence-dev` namespace).
+Dependencies: `jq`, `kubectl` (with access to the `create-and-vary-a-licence-<environment>` namespace).
 
 Run directly from the `scripts/` directory:
 
 ```bash
 ./smoke-dev.sh
 ```
+
+The public v2 request only runs when a licence ID is supplied on the command line.
+Optionally select an environment (defaults to dev):
+
+```bash
+./smoke-dev.sh test1
+./smoke-dev.sh 123
+./smoke-dev.sh test2 123
+```
+
+These checks reuse the same token as the SAR check. The system client must have `ROLE_VIEW_LICENCES`;
+HTTP 403 fails the check, as does HTTP 404 if the selected licence does not exist.
+The licence response body is printed as formatted JSON; the token is not printed.
 
 ### export-additional-conditions.sh
 
