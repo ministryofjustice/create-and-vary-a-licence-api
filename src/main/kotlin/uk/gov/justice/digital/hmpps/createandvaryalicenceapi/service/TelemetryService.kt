@@ -114,14 +114,6 @@ class TelemetryService(
     )
   }
 
-  fun recordDeactivateProgressionLicencesJobEvent(licencesDeactivated: Int = 0) {
-    telemetryClient.trackEvent(
-      "DeactivateProgressionLicencesJob",
-      mapOf("licences" to licencesDeactivated.toString()),
-      null,
-    )
-  }
-
   fun recordTimeOutLicenceJobEvent(licencesTimedOut: Int = 0) {
     telemetryClient.trackEvent(
       "TimeOutLicencesJob",

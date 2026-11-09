@@ -2,10 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 
 @JsonTypeName(ConditionTypes.MULTIPLE_UPLOADS)
 @Schema(
-  description = "Describes a multiple upload condition (restricted areas or other)",
+  description = "Describes a multiple upload condition (restricted areas or other), $baseApiVersion",
 )
 data class MultipleUploadAdditionalCondition(
   @field:Schema(description = "The ID of the condition", example = "123456")

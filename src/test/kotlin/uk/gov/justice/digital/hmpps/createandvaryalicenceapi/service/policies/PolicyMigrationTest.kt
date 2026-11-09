@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditionChanges
-import java.time.LocalDate
 import kotlin.text.Charsets.UTF_8
 
 data class ConditionChanges(
@@ -28,7 +27,7 @@ data class PolicyDifferences(
 class PolicyMigrationTest {
   private val currentPolicy = POLICY_V4_1.version
 
-  private val licencePolicyService = LicencePolicyService(progressionModelPolicyStartDate = LocalDate.now())
+  private val licencePolicyService = LicencePolicyService()
   private val objectMapper = jacksonObjectMapper()
 
   @Test
