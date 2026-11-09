@@ -1,0 +1,7 @@
+{
+  "status": 500,
+  "errorCode": null,
+  "userMessage": "Unexpected error: Text 'not-a-date' could not be parsed at index 0",
+  "developerMessage": "Text 'not-a-date' could not be parsed at index 0",
+  "moreInfo": null
+}

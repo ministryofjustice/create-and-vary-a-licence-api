@@ -11,6 +11,23 @@ This service provides access to data stored in the licences database via API end
 The main client is the create-and-vary-a-licence (UI) service.
 It is built as docker image and deployed to the MOJ Cloud Platform.
 
+## Public licence API versions
+
+Both endpoints require `ROLE_VIEW_LICENCES` and run without a feature toggle:
+
+* `GET /public/licences/id/{licenceId}` keeps the original response.
+* `GET /public/v2/licences/id/{licenceId}` adds HDC curfew details and EM end dates for conditions 14a, 14b and 14e.
+
+V2 controllers and DTOs live in `resource.publicApi.v2` and its `model.licence` package.
+Summaries, policies and image uploads retain their existing endpoints.
+
+Both versions are documented in the `public` Swagger group at `/v3/api-docs/public` when enabled.
+V2 DTO schema names use the `V2` postfix (for example, `LicenceV2`) to avoid collisions in combined Swagger documents.
+
+In v2, 14a uses `ELECTRONIC_MONITORING_WITH_RESTRICTIONS`; 14b and 14e use `ELECTRONIC_MONITORING`.
+All include `endDate` as `yyyy-MM-dd`, or `null` when missing or blank. Policies before 4.0 did not
+collect an end date for 14a.
+
 ## Building the project
 
 Tools required:

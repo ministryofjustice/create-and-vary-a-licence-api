@@ -2,10 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 
 @JsonTypeName(ConditionTypes.STANDARD)
 @Schema(
-  description = "Describes an instance of a additional condition on the licence",
+  description = "Describes an instance of a additional condition on the licence, $baseApiVersion",
 )
 data class GenericAdditionalCondition(
   @field:Schema(description = "The ID of the condition", example = "123456")

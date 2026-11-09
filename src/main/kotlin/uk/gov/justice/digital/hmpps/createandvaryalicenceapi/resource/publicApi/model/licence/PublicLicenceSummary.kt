@@ -2,12 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.baseApiVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
-@Schema(description = "Describes a licence summary within this service")
+@Schema(description = "Describes a licence summary within this service, $baseApiVersion")
 data class PublicLicenceSummary(
 
   @field:Schema(description = "Unique identifier for this licence within the service", example = "99999")

@@ -1,10 +1,12 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.latestApiVersion
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.latestApiVersionPostFix
 import java.time.DayOfWeek
 import java.time.LocalTime
 
-@Schema(description = "HDC licence details")
+@Schema(name = "PublicHdcLicence$latestApiVersionPostFix", description = "HDC licence details, $latestApiVersion")
 class PublicHdcLicence(
   licence: Licence,
 
@@ -37,7 +39,7 @@ class PublicHdcLicence(
   conditions = licence.conditions,
 )
 
-@Schema(description = "Curfew address")
+@Schema(name = "PublicHdcCurfewAddress$latestApiVersionPostFix", description = "Curfew address, $latestApiVersion")
 data class PublicHdcCurfewAddress(
   @field:Schema(description = "The address's Unique Property Reference Number")
   val uprn: String?,
@@ -58,7 +60,7 @@ data class PublicHdcCurfewAddress(
   val postcode: String,
 )
 
-@Schema(description = "Curfew time")
+@Schema(name = "PublicCurfewTimes$latestApiVersionPostFix", description = "Curfew time, $latestApiVersion")
 data class PublicCurfewTimes(
   @field:Schema(description = "The day on which this curfew starts", example = "MONDAY", implementation = DayOfWeek::class)
   val fromDay: DayOfWeek?,
