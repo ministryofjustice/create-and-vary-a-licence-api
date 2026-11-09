@@ -15,7 +15,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
@@ -542,7 +542,7 @@ class PublicLicenceServiceTest {
         county = "Test County",
         postcode = "AB1 2CD",
         source = AddressSource.MANUAL,
-        accommodationType = AccommodationType.RESIDENTIAL,
+        accommodationType = CvlAccommodationType.RESIDENTIAL,
         postReleaseResidentialChecksCompleted = false,
         postReleaseResidentialChecksNotCompletedReason = "Old reason",
         createdTimestamp = null,

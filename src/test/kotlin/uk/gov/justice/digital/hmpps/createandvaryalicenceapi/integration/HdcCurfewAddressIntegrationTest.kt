@@ -8,7 +8,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 
@@ -146,7 +146,7 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
     val uri = "/licence/id/1/hdc/curfew/address"
     val request = AddHdcCurfewAddressRequest(
       address = null,
-      accommodationType = AccommodationType.RESIDENTIAL,
+      accommodationType = CvlAccommodationType.RESIDENTIAL,
       postReleaseResidentialChecksCompleted = false,
       postReleaseResidentialChecksNotCompletedReason = "Checks pending",
     )
@@ -168,7 +168,7 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
     assertThat(updated.postReleaseResidentialChecksNotCompletedReason)
       .isEqualTo("Checks pending")
 
-    assertThat(updated.accommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    assertThat(updated.accommodationType).isEqualTo(CvlAccommodationType.RESIDENTIAL)
 
     assertThat(testRepository.findAllHdcCurfewAddresses().size).isEqualTo(1)
 
@@ -187,7 +187,7 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
 
     val request = AddHdcCurfewAddressRequest(
       address = null,
-      accommodationType = AccommodationType.RESIDENTIAL,
+      accommodationType = CvlAccommodationType.RESIDENTIAL,
       postReleaseResidentialChecksCompleted = true,
       postReleaseResidentialChecksNotCompletedReason = null,
     )
@@ -230,7 +230,7 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
     source: AddressSource = AddressSource.MANUAL,
     postReleaseResidentialChecksCompleted: Boolean = true,
     postReleaseResidentialChecksNotCompletedReason: String? = null,
-    accommodationType: AccommodationType = AccommodationType.RESIDENTIAL,
+    accommodationType: CvlAccommodationType = CvlAccommodationType.RESIDENTIAL,
   ): AddHdcCurfewAddressRequest = AddHdcCurfewAddressRequest(
     address = AddAddressRequest(
       uprn = uprn,

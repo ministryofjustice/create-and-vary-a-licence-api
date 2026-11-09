@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonValue
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -67,11 +67,9 @@ enum class SarAccommodationType(@JsonValue val description: String) {
   ;
 
   companion object {
-    fun from(type: AccommodationType) = when (type) {
-      AccommodationType.RESIDENTIAL -> RESIDENTIAL
-      AccommodationType.CAS -> CAS
-      AccommodationType.CAS_1_APPROVED_PREMISES -> CAS
-      AccommodationType.CAS_2 -> CAS
+    fun from(type: CvlAccommodationType) = when (type) {
+      CvlAccommodationType.RESIDENTIAL -> RESIDENTIAL
+      CvlAccommodationType.CAS -> CAS
     }
   }
 }

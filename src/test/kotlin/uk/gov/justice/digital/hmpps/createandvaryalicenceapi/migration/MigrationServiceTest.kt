@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAddress
@@ -346,7 +347,7 @@ class MigrationServiceTest {
       val savedLicence = licenceCaptor.firstValue
       assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
       assertThat(savedLicence.approvedByUsername).isNull()
-      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(AccommodationType.CAS)
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.CAS)
     }
 
     @Test
@@ -381,7 +382,7 @@ class MigrationServiceTest {
       val savedLicence = licenceCaptor.firstValue
       assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
       assertThat(savedLicence.approvedByUsername).isNull()
-      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(AccommodationType.CAS)
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.CAS)
     }
 
     @Test
@@ -416,7 +417,7 @@ class MigrationServiceTest {
       val savedLicence = licenceCaptor.firstValue
       assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
       assertThat(savedLicence.approvedByUsername).isNull()
-      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(AccommodationType.CAS)
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.CAS)
     }
 
     @Test
@@ -451,7 +452,7 @@ class MigrationServiceTest {
       val savedLicence = licenceCaptor.firstValue
       assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
       assertThat(savedLicence.approvedByUsername).isNull()
-      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.RESIDENTIAL)
     }
   }
 

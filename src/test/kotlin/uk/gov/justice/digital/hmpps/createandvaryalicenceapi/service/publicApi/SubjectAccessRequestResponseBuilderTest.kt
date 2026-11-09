@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
@@ -167,71 +167,7 @@ class SubjectAccessRequestResponseBuilderTest {
 
   @Test
   fun `a CAS curfew addressType is mapped to CAS for the SAR response`() {
-    val curfewAddress = hdcLicence.curfewAddress!!.copy(accommodationType = AccommodationType.CAS)
-    val licence = hdcLicence.copy(curfewAddress = curfewAddress, weeklyCurfewTimes = emptyList())
-
-    val sarResponse = SubjectAccessRequestResponseBuilder("https://some-host")
-      .addLicence(licence)
-      .build()
-
-    val content = sarResponse.content as Content
-    with(content.licences.first()) {
-      assertThat(hdcInfo).isEqualTo(
-        SarHdcInfo(
-          curfewAddress = SarHdcCurfewAddress(
-            accommodationType = SarAccommodationType.CAS,
-            firstLine = "1 Test Street",
-            secondLine = "Test Area",
-            townOrCity = "Test Town",
-            county = "Test County",
-            postcode = "AB1 2CD",
-          ),
-          firstNight = SarFirstNight(
-            firstNightFrom = LocalTime.of(12, 0),
-            firstNightUntil = LocalTime.of(13, 0),
-            createdTimestamp = null,
-          ),
-          curfewTimes = emptyList(),
-        ),
-      )
-    }
-  }
-
-  @Test
-  fun `a CAS_1_APPROVED_PREMISES curfew addressType is mapped to CAS for the SAR response`() {
-    val curfewAddress = hdcLicence.curfewAddress!!.copy(accommodationType = AccommodationType.CAS_1_APPROVED_PREMISES)
-    val licence = hdcLicence.copy(curfewAddress = curfewAddress, weeklyCurfewTimes = emptyList())
-
-    val sarResponse = SubjectAccessRequestResponseBuilder("https://some-host")
-      .addLicence(licence)
-      .build()
-
-    val content = sarResponse.content as Content
-    with(content.licences.first()) {
-      assertThat(hdcInfo).isEqualTo(
-        SarHdcInfo(
-          curfewAddress = SarHdcCurfewAddress(
-            accommodationType = SarAccommodationType.CAS,
-            firstLine = "1 Test Street",
-            secondLine = "Test Area",
-            townOrCity = "Test Town",
-            county = "Test County",
-            postcode = "AB1 2CD",
-          ),
-          firstNight = SarFirstNight(
-            firstNightFrom = LocalTime.of(12, 0),
-            firstNightUntil = LocalTime.of(13, 0),
-            createdTimestamp = null,
-          ),
-          curfewTimes = emptyList(),
-        ),
-      )
-    }
-  }
-
-  @Test
-  fun `a CAS_2 curfew addressType is mapped to CAS for the SAR response`() {
-    val curfewAddress = hdcLicence.curfewAddress!!.copy(accommodationType = AccommodationType.CAS_2)
+    val curfewAddress = hdcLicence.curfewAddress!!.copy(accommodationType = CvlAccommodationType.CAS)
     val licence = hdcLicence.copy(curfewAddress = curfewAddress, weeklyCurfewTimes = emptyList())
 
     val sarResponse = SubjectAccessRequestResponseBuilder("https://some-host")
@@ -263,7 +199,7 @@ class SubjectAccessRequestResponseBuilderTest {
 
   @Test
   fun `a RESIDENTIAL curfew addressType is mapped to RESIDENTIAL for the SAR response`() {
-    val curfewAddress = hdcLicence.curfewAddress!!.copy(accommodationType = AccommodationType.RESIDENTIAL)
+    val curfewAddress = hdcLicence.curfewAddress!!.copy(accommodationType = CvlAccommodationType.RESIDENTIAL)
     val licence = hdcLicence.copy(curfewAddress = curfewAddress, weeklyCurfewTimes = emptyList())
 
     val sarResponse = SubjectAccessRequestResponseBuilder("https://some-host")

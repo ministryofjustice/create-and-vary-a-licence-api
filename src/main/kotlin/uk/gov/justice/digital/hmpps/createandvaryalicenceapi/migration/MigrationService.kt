@@ -15,11 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ProbationCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.CAS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.CAS_1_APPROVED_PREMISES
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.CAS_2
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType.RESIDENTIAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.ExistingCvlLicenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.noRetryExceptions.HdcLicenceSupersededByCvlLicenceException
@@ -257,7 +252,7 @@ class MigrationService(
         licence = licence,
         reference = UUID.randomUUID().toString(),
         source = AddressSource.MANUAL_MIGRATED,
-        accommodationType = mapAccommodationType(it.addressType),
+        accommodationType = it.addressType.cvlAccommodationType,
       )
     }
 
@@ -317,13 +312,6 @@ class MigrationService(
     } catch (e: IllegalStateException) {
       throw MissingStaffException("Missing Com using staffId $staffId")
     }
-  }
-
-  private fun mapAccommodationType(accommodationType: AccommodationType): AccommodationType = when (accommodationType) {
-    RESIDENTIAL -> RESIDENTIAL
-    CAS -> CAS
-    CAS_1_APPROVED_PREMISES -> CAS
-    CAS_2 -> CAS
   }
 
   companion object {
