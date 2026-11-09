@@ -1,12 +1,27 @@
 #!/usr/bin/env bash
 
-# Smoke test for hmpps-hdc-api in the dev environment.
-# Requires: jq, kubectl (with access to the licences-dev namespace)
+# Smoke test for create-and-vary-a-licence-api.
+# Requires: jq, kubectl with access to the selected environment's UI namespace.
 
-BASE_URL=https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk
+ENVIRONMENT=dev
+case "${1:-}" in
+  dev|test1|test2)
+    ENVIRONMENT="$1"
+    shift
+    ;;
+esac
+
+if [[ $# -gt 1 || ( $# -eq 1 && ! "$1" =~ ^[1-9][0-9]*$ ) ]]; then
+  echo "Usage: ./smoke-dev.sh [dev|test1|test2] [positive-licence-id]" >&2
+  exit 1
+fi
+
+LICENCE_ID="${1:-}"
+
+BASE_URL="https://create-and-vary-a-licence-api-${ENVIRONMENT}.hmpps.service.justice.gov.uk"
 AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 SWAGGER_URL="${BASE_URL}/swagger-ui/index.html?configUrl=/v3/api-docs"
-NAMESPACE=create-and-vary-a-licence-dev
+NAMESPACE="create-and-vary-a-licence-${ENVIRONMENT}"
 # fake PRN for testing
 SAR_PRN=A0000AA
 
@@ -49,10 +64,8 @@ get_token() {
     -H "Authorization: Basic ${AUTH_BASIC}" | jq -r '.access_token'
 }
 
-echo "=== create-and-vary-a-licence-api smoke test (dev) ==="
+echo "=== create-and-vary-a-licence-api smoke test (${ENVIRONMENT}) ==="
 echo
-
-
 
 echo "1. /info"
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/info")
@@ -87,6 +100,21 @@ if [[ "${STATUS}" == "200" || "${STATUS}" == "204" ]]; then
   pass "SAR request succeeds (HTTP ${STATUS})"
 else
   fail "SAR request failed (expected 200 or 204, got ${STATUS})"
+fi
+
+if [[ -n "${LICENCE_ID}" ]]; then
+  PUBLIC_LICENCE_URL="${BASE_URL}/public/v2/licences/id/${LICENCE_ID}"
+  echo
+  echo "6. Public v2 licence endpoint (with credentials)"
+  RESPONSE=$(curl -sS -w $'\n%{http_code}' "${PUBLIC_LICENCE_URL}" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -H "Accept: application/json")
+  STATUS="${RESPONSE##*$'\n'}"
+  BODY="${RESPONSE%$'\n'*}"
+  check_status "Public v2 licence ${LICENCE_ID} is accessible" "200" "${STATUS}"
+  if ! printf '%s\n' "${BODY}" | jq .; then
+    fail "Public v2 licence response is not valid JSON"
+  fi
 fi
 
 echo
