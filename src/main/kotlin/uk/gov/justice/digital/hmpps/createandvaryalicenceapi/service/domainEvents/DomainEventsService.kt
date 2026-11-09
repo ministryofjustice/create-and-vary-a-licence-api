@@ -9,6 +9,7 @@ import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 
 @Service
 class DomainEventsService(
@@ -19,8 +20,8 @@ class DomainEventsService(
   fun recordDomainEvent(licence: Licence, licenceStatus: LicenceStatus) {
     when (licenceStatus) {
       LicenceStatus.APPROVED, LicenceStatus.VARIATION_APPROVED -> {
-        val description = if (licenceStatus == LicenceStatus.VARIATION_APPROVED) {
-          "Variation approved for Licence ID ${licence.id} kind ${licence.kind}"
+        val description = if (licence.kind in listOf(LicenceKind.VARIATION, LicenceKind.HDC_VARIATION)) {
+          "Variation approved for Licence ID ${licence.id}"
         } else {
           "Licence approved for Licence ID ${licence.id}"
         }

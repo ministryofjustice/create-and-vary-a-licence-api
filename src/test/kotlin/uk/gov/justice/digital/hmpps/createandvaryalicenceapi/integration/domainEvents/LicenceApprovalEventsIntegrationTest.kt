@@ -92,8 +92,8 @@ class LicenceApprovalEventsIntegrationTest : IntegrationTestBase() {
     assertThat(event.detailUrl).contains("/public/licences/id/$licenceId")
     assertThat(event.version).isEqualTo(1)
     assertThat(event.occurredAt).isNotNull()
-    if (licence.kind == LicenceKind.VARIATION || licence.kind == LicenceKind.HDC_VARIATION) {
-      assertThat(event.description).isEqualTo("Variation approved for Licence ID $licenceId kind ${licence.kind}")
+    if (licence.kind in listOf(LicenceKind.VARIATION, LicenceKind.HDC_VARIATION)) {
+      assertThat(event.description).isEqualTo("Variation approved for Licence ID $licenceId")
     } else {
       assertThat(event.description).isEqualTo("Licence approved for Licence ID $licenceId")
     }
