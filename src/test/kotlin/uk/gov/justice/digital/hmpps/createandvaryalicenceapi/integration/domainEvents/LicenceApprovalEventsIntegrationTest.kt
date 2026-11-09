@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class LicenceApprovalEventsIntegrationTest : IntegrationTestBase() {
@@ -91,7 +92,11 @@ class LicenceApprovalEventsIntegrationTest : IntegrationTestBase() {
     assertThat(event.detailUrl).contains("/public/licences/id/$licenceId")
     assertThat(event.version).isEqualTo(1)
     assertThat(event.occurredAt).isNotNull()
-    assertThat(event.description).isEqualTo("Licence approved for Licence ID $licenceId")
+    if (licence.kind == LicenceKind.VARIATION || licence.kind == LicenceKind.HDC_VARIATION) {
+      assertThat(event.description).isEqualTo("Variation approved for Licence ID $licenceId kind ${licence.kind}")
+    } else {
+      assertThat(event.description).isEqualTo("Licence approved for Licence ID $licenceId")
+    }
     assertThat(event.personReference.crn()).isEqualTo(licence.crn)
     assertThat(event.personReference.noms()).isEqualTo(licence.nomsId)
   }

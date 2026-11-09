@@ -19,12 +19,18 @@ class DomainEventsService(
   fun recordDomainEvent(licence: Licence, licenceStatus: LicenceStatus) {
     when (licenceStatus) {
       LicenceStatus.APPROVED, LicenceStatus.VARIATION_APPROVED -> {
+        val description = if (licenceStatus == LicenceStatus.VARIATION_APPROVED) {
+          "Variation approved for Licence ID ${licence.id} kind ${licence.kind}"
+        } else {
+          "Licence approved for Licence ID ${licence.id}"
+        }
+
         val domainEvent = createDomainEvent(
           licence.kind.approvedDomainEventType(),
           licence.id.toString(),
           licence.crn,
           licence.nomsId,
-          "Licence approved for Licence ID ${licence.id}",
+          description,
         )
         applicationEventPublisher.publishEvent(domainEvent)
       }
