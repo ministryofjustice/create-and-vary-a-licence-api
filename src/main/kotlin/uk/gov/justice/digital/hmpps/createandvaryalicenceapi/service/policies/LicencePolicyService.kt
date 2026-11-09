@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -17,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSug
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licencePolicyChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrAfter
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 
@@ -58,28 +56,15 @@ data class LicenceConditionChanges(
 @Service
 class LicencePolicyService(
   private var policies: List<LicencePolicy> = emptyList(),
-  @param:Value("\${progression.model.policy-start-date:#{null}}")
-  private val progressionModelPolicyStartDate: LocalDate? = null,
-  @param:Value("\${progression.model.use-policy-4-dot-1:#{false}}")
-  private val usePolicy4dot1: Boolean? = null,
 ) {
 
   init {
     policies = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0, POLICY_V4_0, POLICY_V4_1)
   }
 
-  fun currentPolicy(licenceStartDate: LocalDate? = null): LicencePolicy {
-    if (licenceStartDate?.isOnOrAfter(progressionModelPolicyStartDate) == true ||
-      LocalDate.now().isOnOrAfter(progressionModelPolicyStartDate)
-    ) {
-      return if (usePolicy4dot1 == true) {
-        POLICY_V4_1
-      } else {
-        POLICY_V4_0
-      }
-    }
-    return POLICY_V3_0
-  }
+  // LSD can be used to determine which policy version applies to a licence.
+  // At the moment it doesn't but this is likely to be useful again in the future.
+  fun currentPolicy(licenceStartDate: LocalDate? = null) = POLICY_V4_1
 
   fun currentPolicyVersion(licenceStartDate: LocalDate? = null): String = currentPolicy(licenceStartDate).version
 

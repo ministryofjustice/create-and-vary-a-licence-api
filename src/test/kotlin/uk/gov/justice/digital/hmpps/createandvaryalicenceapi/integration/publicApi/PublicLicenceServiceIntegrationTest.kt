@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -56,7 +57,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     @Sql("classpath:test_data/seed-hdc-licence-id-1-with-curfew-details.sql")
     fun `HDC licence response can be deserialized as a regular licence`() {
       // Given
-      val request = buildGetRequest(uri = "/public/licences/id/1")
+      val request = buildGetRequest(uri = "/public/v2/licences/id/1")
 
       // When
       val response = request.exchange()
@@ -80,7 +81,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
     private fun assertHdcCurfewDetails(kind: String) {
       // Given
-      val request = buildGetRequest(uri = "/public/licences/id/1")
+      val request = buildGetRequest(uri = "/public/v2/licences/id/1")
 
       // When
       val response = request.exchange()
@@ -100,17 +101,26 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .jsonPath("$.curfewTimes[0].fromDay").isEqualTo("MONDAY")
         .jsonPath("$.curfewTimes[0].fromTime").isEqualTo("19:00:00")
         .jsonPath("$.curfewTimes[1].fromDay").isEqualTo("TUESDAY")
+
+      buildGetRequest(uri = "/public/licences/id/1").exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.kind").isEqualTo(kind)
+        .jsonPath("$.curfewAddress").doesNotExist()
+        .jsonPath("$.firstNightCurfewTimes").doesNotExist()
+        .jsonPath("$.curfewTimes").doesNotExist()
     }
   }
 
   @Nested
   inner class `Get CRD licence by id` {
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = ["/public", "/public/v2"])
     @Sql("classpath:test_data/seed-crd-licence-id-1-with-conditions.sql")
-    fun `CRD licence response can be deserialized as a regular licence`() {
+    fun `CRD licence response can be deserialized as a regular licence`(apiPath: String) {
       // Given
-      val request = buildGetRequest(uri = "/public/licences/id/1")
+      val request = buildGetRequest(uri = "$apiPath/licences/id/1")
 
       // When
       val response = request.exchange()
@@ -121,6 +131,27 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
         .expectBody().json(serializedContent("crd-licence"), JsonCompareMode.STRICT)
         .returnResult()
     }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["/public", "/public/v2"])
+  fun `get licence by id requires authentication`(apiPath: String) {
+    webTestClient.get().uri("$apiPath/licences/id/1").exchange()
+      .expectStatus().isUnauthorized
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["/public", "/public/v2"])
+  fun `get licence by id requires view licences role`(apiPath: String) {
+    buildGetRequest(uri = "$apiPath/licences/id/1", role = "ROLE_CVL_VERY_WRONG").exchange()
+      .expectStatus().isForbidden
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["/public", "/public/v2"])
+  fun `get licence by id returns not found for missing licences`(apiPath: String) {
+    buildGetRequest(uri = "$apiPath/licences/id/99999").exchange()
+      .expectStatus().isNotFound
   }
 
   @Nested

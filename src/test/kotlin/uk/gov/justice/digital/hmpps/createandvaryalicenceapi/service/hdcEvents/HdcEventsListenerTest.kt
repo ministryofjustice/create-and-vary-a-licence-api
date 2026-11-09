@@ -39,6 +39,27 @@ class HdcEventsListenerTest {
   }
 
   @Test
+  fun `onMessage processes RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES event successfully`() {
+    val event = HdcStatusChangedEvent(
+      occurredAt = LocalDateTime.now(),
+      licenceId = 123L,
+      bookingId = 456L,
+      nomsNumber = "A1234BC",
+      triggeredBy = "test.user",
+      reason = "Residential address changed to approved premises",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+    val message = GenericMessage(
+      eventJson,
+      mapOf("eventType" to "RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES"),
+    )
+
+    listener.onMessage(message)
+
+    verify(handler).handleAddressChangedToApprovedPremises(eventJson, HdcCvlEventType.RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES)
+  }
+
+  @Test
   fun `onMessage processes OPT_OUT event successfully`() {
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),

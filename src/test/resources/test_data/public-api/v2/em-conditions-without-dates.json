@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "category": "Electronic monitoring",
+    "type": "ELECTRONIC_MONITORING_WITH_RESTRICTIONS",
+    "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+    "text": "Electronic monitoring with restrictions until Sunday 16 January 2028.",
+    "restrictions": ["CURFEW", "EXCLUSION_ZONE"],
+    "endDate": null
+  },
+  {
+    "id": 2,
+    "category": "Electronic monitoring",
+    "type": "ELECTRONIC_MONITORING",
+    "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+    "text": "Trail monitoring until Tuesday 1 February 2028.",
+    "endDate": null
+  },
+  {
+    "id": 3,
+    "category": "Electronic monitoring",
+    "type": "ELECTRONIC_MONITORING",
+    "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
+    "text": "Alcohol monitoring until Tuesday 29 February 2028.",
+    "endDate": null
+  },
+  {
+    "id": 5,
+    "category": "Residence",
+    "type": "STANDARD",
+    "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
+    "text": "Live at the approved address."
+  }
+]
