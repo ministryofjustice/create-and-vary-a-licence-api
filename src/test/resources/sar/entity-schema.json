@@ -210,7 +210,7 @@
     "version": "String"
   },
   "HdcCurfewAddress": {
-    "accommodationType": "AccommodationType",
+    "accommodationType": "CvlAccommodationType",
     "county": "String",
     "createdTimestamp": "LocalDateTime",
     "firstLine": "String",
