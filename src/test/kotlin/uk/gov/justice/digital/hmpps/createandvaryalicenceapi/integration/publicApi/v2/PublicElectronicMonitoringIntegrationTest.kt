@@ -11,14 +11,81 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.CurfewAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.CurfewTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
+import java.time.LocalTime
 
 class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
   @Autowired
   private lateinit var jdbcTemplate: JdbcTemplate
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-crd-licence-id-1-with-conditions.sql",
+    "classpath:test_data/public-api/v2/seed-curfew-conditions-v3.sql",
+  )
+  fun `v2 exposes curfew condition times from v3 policy fields`() {
+    // Given
+    val request = webTestClient.get().uri("/public/v2/licences/id/1")
+      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+
+    // When
+    val result = request.exchange()
+
+    // Then
+    result.expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
+    val body = result.expectBody<String>().returnResult().responseBody
+    val licence = mapper.readValue(body, Licence::class.java)
+
+    val conditions = licence.conditions.apConditions.additional
+    assertThat(conditions).hasSize(1)
+    val curfewCondition = conditions.single() as CurfewAdditionalCondition
+    assertThat(curfewCondition.curfewTimes).containsExactly(
+      CurfewTime(startTime = LocalTime.of(19, 0), endTime = LocalTime.of(19, 0)),
+      CurfewTime(startTime = LocalTime.of(8, 30), endTime = LocalTime.of(21, 45)),
+      CurfewTime(startTime = LocalTime.of(6, 15), endTime = LocalTime.of(22, 30)),
+    )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-crd-licence-id-1-with-conditions.sql",
+    "classpath:test_data/public-api/v2/seed-curfew-conditions-v4.sql",
+  )
+  fun `v2 exposes curfew condition times from v4 policy fields`() {
+    // Given
+    val request = webTestClient.get().uri("/public/v2/licences/id/1")
+      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+
+    // When
+    val result = request.exchange()
+
+    // Then
+    result.expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
+    val body = result.expectBody<String>().returnResult().responseBody
+    val licence = mapper.readValue(body, Licence::class.java)
+
+    val conditions = licence.conditions.apConditions.additional
+    assertThat(conditions).hasSize(3).allMatch { it is CurfewAdditionalCondition }
+    val curfewConditions = conditions.filterIsInstance<CurfewAdditionalCondition>()
+    assertThat(curfewConditions[0].curfewTimes).containsExactly(
+      CurfewTime(startTime = LocalTime.of(1, 0), endTime = LocalTime.of(14, 0)),
+    )
+    assertThat(curfewConditions[1].curfewTimes).containsExactly(
+      CurfewTime(startTime = LocalTime.of(3, 15), endTime = LocalTime.of(16, 45)),
+      CurfewTime(startTime = LocalTime.of(5, 30), endTime = LocalTime.of(18, 45)),
+    )
+    assertThat(curfewConditions[2].curfewTimes).containsExactly(
+      CurfewTime(startTime = LocalTime.of(7, 10), endTime = LocalTime.of(8, 20)),
+      CurfewTime(startTime = LocalTime.of(9, 30), endTime = LocalTime.of(10, 40)),
+      CurfewTime(startTime = LocalTime.of(11, 50), endTime = LocalTime.of(12, 55)),
+    )
+  }
 
   @ParameterizedTest
   @CsvSource("4.0,CRD", "4.1,CRD", "4.1,HDC", "4.1,HDC_VARIATION")
