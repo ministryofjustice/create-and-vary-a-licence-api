@@ -34,7 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as Mo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.AdditionalCondition as PublicAdditionalCondition
 
 private val electronicMonitoringEndDateFormatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ENGLISH)
-private val curfewTimeFormatter = DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("h:mm a").toFormatter(Locale.ENGLISH)
+private val curfewTimeFormatter = DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("h:mm[ ]a").toFormatter(Locale.ENGLISH)
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
 
 private val curfewTimeFields = listOf(
