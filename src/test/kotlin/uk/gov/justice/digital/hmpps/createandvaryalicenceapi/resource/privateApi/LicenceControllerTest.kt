@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -81,7 +80,6 @@ class LicenceControllerTest {
           updateSentenceDateService,
           licenceCreationService,
           prisonEventHandlerEnabled = false,
-          remandEnabled = false,
         ),
       )
       .setControllerAdvice(ControllerAdvice())
@@ -343,25 +341,6 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).discardLicence(4)
-  }
-
-  @Test
-  fun `update prison information`() {
-    val expectedRequest = UpdatePrisonInformationRequest(
-      prisonCode = "PVI",
-      prisonDescription = "Pentonville (HMP)",
-      prisonTelephone = "+44 276 54545",
-    )
-
-    mvc.perform(
-      put("/licence/id/4/prison-information")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(expectedRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updatePrisonInformation(4, expectedRequest)
   }
 
   @Test
