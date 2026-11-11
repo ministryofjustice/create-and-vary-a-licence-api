@@ -41,7 +41,7 @@ class ReleaseDateService(
       return false
     }
 
-    return today >= hardStopDate && today <= licenceStartDate
+    return today in hardStopDate..licenceStartDate
   }
 
   fun isDueToBeReleasedInTheNextTwoWorkingDays(licenceStartDate: LocalDate?): Boolean {

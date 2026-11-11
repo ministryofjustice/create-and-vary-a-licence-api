@@ -39,7 +39,6 @@ generic-service:
     DB_SSL_ENABLED: "true"
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
     HMPPS_SQS_USE_WEB_TOKEN: true
-    HARDSTOP_DEACTIVATION_JOB_ENABLED: true
     HDC_ENABLED: true
     HDC_CREATION_ENABLED: false
     REMAND_ENABLED: true
