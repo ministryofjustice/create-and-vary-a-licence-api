@@ -194,7 +194,7 @@ class MigrationService(
       topupSupervisionExpiryDate = sentence.topupSupervisionExpiryDate,
       postRecallReleaseDate = sentence.postRecallReleaseDate,
 
-      // License details
+      // Licence details
       licenceStartDate = licence.homeDetentionCurfewActualDate,
       licenceActivatedDate = licence.licenceActivationDate?.atStartOfDay(),
       licenceExpiryDate = licence.licenceExpiryDate,
@@ -252,7 +252,7 @@ class MigrationService(
         licence = licence,
         reference = UUID.randomUUID().toString(),
         source = AddressSource.MANUAL_MIGRATED,
-        accommodationType = it.addressType,
+        accommodationType = it.addressType.cvlAccommodationType,
       )
     }
 
