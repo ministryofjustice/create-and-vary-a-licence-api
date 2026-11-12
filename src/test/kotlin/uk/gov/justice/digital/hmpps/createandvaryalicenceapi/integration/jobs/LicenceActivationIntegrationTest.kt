@@ -124,8 +124,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         CurrentPrisonerHdcStatus(345, HdcStatus.APPROVED),
       ),
     )
-    remandAndSentencingApiMockServer.stubRemandStatusForAnyNonRemandPrisoners(isOnRemand = false)
-    remandAndSentencingApiMockServer.stubRemandStatusForRemandPrisoner("A1234AG", isOnRemand = true)
+    remandAndSentencingApiMockServer.stubRemandStatuses(setOf("A1234AG"))
   }
 
   private companion object {

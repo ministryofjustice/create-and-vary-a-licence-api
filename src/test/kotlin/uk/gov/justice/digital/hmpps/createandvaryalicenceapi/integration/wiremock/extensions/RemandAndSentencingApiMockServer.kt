@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.remandAndSentencing.PersonStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.remandAndSentencing.PersonStatusesResponse
 
 class RemandAndSentencingApiMockServer :
   WireMockExtension(
@@ -13,25 +15,16 @@ class RemandAndSentencingApiMockServer :
       .options(wireMockConfig().port(8102)),
   ) {
 
-  fun stubRemandStatusForRemandPrisoner(prisonNumber: String, isOnRemand: Boolean) {
-    stubFor(
-      get(urlEqualTo("/person/$prisonNumber/status")).willReturn(
-        aResponse().withHeader("Content-Type", "application/json").withBody(
-          """{
-                "isOnRemand": "$isOnRemand"
-               }""",
-        ).withStatus(200),
-      ),
-    )
-  }
+  private val objectMapper = ObjectMapper()
 
-  fun stubRemandStatusForAnyNonRemandPrisoners(isOnRemand: Boolean = false) {
+  fun stubRemandStatuses(remandPrisonerNumbers: Set<String>) {
+    val peopleStatus =
+      remandPrisonerNumbers.associateWith { PersonStatus(isOnRemand = true, isCurrentlyOnRecall = false) }
+
     stubFor(
-      get(urlPathMatching("/person/.*/status")).willReturn(
+      post(urlEqualTo("/person/statuses")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
-          """{
-                "isOnRemand": "$isOnRemand"
-               }""",
+          objectMapper.writeValueAsString(PersonStatusesResponse(peopleStatus)),
         ).withStatus(200),
       ),
     )

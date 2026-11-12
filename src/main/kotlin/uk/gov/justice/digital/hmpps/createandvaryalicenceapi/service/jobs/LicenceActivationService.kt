@@ -11,11 +11,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IMMIGRATION_OFFENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.Is91CourtEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RemandDeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.remandAndSentencing.RemandAndSentencingApiClient
 import java.time.LocalDate
 
 data class LicenceWithPrisoner(val licence: Licence, val prisoner: PrisonerSearchPrisoner) {
@@ -30,7 +30,7 @@ class LicenceActivationService(
   private val hdcService: HdcService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
-  private val remandAndSentencingApiClient: RemandAndSentencingApiClient,
+  private val remandDeterminationService: RemandDeterminationService,
   private val auditService: AuditService,
   private val telemetryService: TelemetryService,
   @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
@@ -113,18 +113,11 @@ class LicenceActivationService(
     val (iS91OutcomeBookingIds, nonIs91OutcomeBookingIds) = nonImmigrationBookingIds
       .partition { it in is91CourtEventOutcomeBookingIds }
 
-    val nonIs91PrisonerNumbersByBookingId = nonImmigrationDetainees
-      .mapNotNull { prisoner ->
-        val bookingId = prisoner.bookingId?.toLong() ?: return@mapNotNull null
-        bookingId to prisoner.prisonerNumber
-      }
-      .filter { (bookingId, _) -> bookingId in nonIs91OutcomeBookingIds }
-      .toMap()
+    val nonIs91Prisoners = nonImmigrationDetainees
+      .filter { prisoner -> prisoner.bookingId?.toLong() in nonIs91OutcomeBookingIds }
 
     val remandOutcomeBookingIds = if (remandEnabled) {
-      nonIs91PrisonerNumbersByBookingId
-        .filterValues { prisonerNumber -> remandAndSentencingApiClient.getRemandOutcome(prisonerNumber).isOnRemand }
-        .keys
+      remandDeterminationService.getRemandBookingIds(nonIs91Prisoners).toSet()
     } else {
       emptySet()
     }
