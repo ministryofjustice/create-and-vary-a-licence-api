@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetrySe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.RemandCourtEvents
 import java.time.LocalDate
 
 data class LicenceWithPrisoner(val licence: Licence, val prisoner: PrisonerSearchPrisoner) {
@@ -119,7 +120,10 @@ class LicenceActivationService(
     val remandOutcomeBookingIds = if (remandEnabled) {
       remandDeterminationService.getRemandBookingIds(nonIs91Prisoners).toSet()
     } else {
-      emptySet()
+      prisonApiClient.getCourtEventOutcomes(nonIs91OutcomeBookingIds, RemandCourtEvents.getCodes())
+        .filter { it.outcomeReasonCode in RemandCourtEvents.getCodes() }
+        .map { it.bookingId }
+        .toSet()
     }
 
     val iS91BookingIds = immigrationDetaineeBookingIds + iS91OutcomeBookingIds
