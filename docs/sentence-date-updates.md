@@ -114,15 +114,12 @@ naturally reached the hard stop period.
 If a licence was previously in its hard stop period, but the date change means it's now
 **no longer** in that period (e.g. the release date has moved further away again), the
 in-flight licence for that person may need to be scrapped so a fresh one can be created
-under normal (non-hard-stop) rules:
-
-- If this behaviour is switched on, the case is instead flagged as a **"potential hard
-  stop case"** and left alone for now. A separate scheduled check comes back **8 hours
-  later** and only deactivates the in-flight licences at that point if the case is
-  *still* not back in its hard stop period (this avoids reacting to a date change that
-  gets reversed shortly afterwards).
-- If that flagging behaviour is switched off, the in-flight licences are deactivated
-  **immediately**.
+under normal (non-hard-stop) rules. The licence is not deactivated straight away.
+Instead, the case is flagged as a **"potential hard stop case"** (unless one is already
+waiting to be checked) and left alone for now. A separate scheduled check comes back
+**8 hours later** and only deactivates the in-flight licences at that point if the case
+is *still* not back in its hard stop period (this avoids reacting to a date change that
+gets reversed shortly afterwards).
 
 ## A couple of important edge cases
 

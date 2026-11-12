@@ -28,14 +28,14 @@ entries:
     doc: docs/licence-start-date.md
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt
-    hash: 06b46f433d64c50da865423310435727
+    hash: 955836ed81104e71120036b5c4cf9ceb
 
   - id: update-sentence-date-service
     description: "How CVL reacts when a person's sentence/release dates change: date recalculation, materiality, COM notifications, and hard stop safeguards"
     doc: docs/sentence-date-updates.md
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/UpdateSentenceDateService.kt
-    hash: 19f195a3c902af96223e9d3186e245a2
+    hash: 9ceae7bf5f393a765efb5796b5e3e89f
 
   - id: scheduled-jobs
     description: "The scheduled background jobs (controllers + services) that keep licences up to date and notify probation automatically"

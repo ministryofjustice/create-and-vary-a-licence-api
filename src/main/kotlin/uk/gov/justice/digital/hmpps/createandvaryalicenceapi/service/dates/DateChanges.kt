@@ -9,7 +9,7 @@ val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
 data class DateChanges(
   private val dates: List<DateChange>,
-  val isMaterial: Boolean,
+  val requiresComNotification: Boolean,
 ) : Iterable<DateChange> {
   fun toChanges(kind: LicenceKind) = dates
     .filter { it.changed && (kind.isHdc() || !it.type.hdcOnly) }

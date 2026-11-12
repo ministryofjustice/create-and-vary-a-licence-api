@@ -2,7 +2,7 @@
   {
     "id": 1,
     "category": "Freedom of movement",
-    "type": "MULTIPLE_EXCLUSION_ZONE",
+    "type": "IMAGE_UPLOAD",
     "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
     "text": "c1t",
     "description": "Description",
@@ -11,7 +11,7 @@
   {
     "id": 2,
     "category": "restricted area",
-    "type": "MULTIPLE_UPLOADS",
+    "type": "IMAGE_UPLOAD",
     "code": "005d70e4-a247-4f82-b8b3-6d294a0f5051",
     "text": "c2t",
     "description": "Description",
@@ -20,7 +20,7 @@
   {
     "id": 3,
     "category": "Freedom of movement",
-    "type": "SINGLE_UPLOAD",
+    "type": "IMAGE_UPLOAD",
     "code": "99195049-f355-46fb-b7d8-aef87a1b19c5",
     "text": "c3t",
     "description": "Event exclusion zone",

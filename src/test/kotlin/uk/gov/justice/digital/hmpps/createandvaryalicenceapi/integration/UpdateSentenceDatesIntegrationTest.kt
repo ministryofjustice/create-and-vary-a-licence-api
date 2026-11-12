@@ -8,13 +8,11 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus.PENDING
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -22,13 +20,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceRe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
 
@@ -345,9 +342,9 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/seed-approved-licence-1.sql",
   )
-  fun `Update sentence dates should inactivate licence where licence was in hard stop period but is no longer in hard stop period`() {
+  fun `Update sentence dates should record possible case to deactivate where licence was in hard stop period but is no longer in hard stop period`() {
     prisonApiMockServer.stubGetHdcLatest()
     prisonApiMockServer.stubGetCourtOutcomes()
     mockPrisonerSearchResponse(
@@ -363,17 +360,17 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     )
 
     val result = webTestClient.put()
-      .uri("/licence/id/2/sentence-dates")
+      .uri("/licence/id/1/sentence-dates")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
 
     result.expectStatus().isOk
-    assertThat(auditEventRepository.count()).isEqualTo(1)
-    assertThat(licenceEventRepository.count()).isEqualTo(1)
+    assertThat(auditEventRepository.count()).isEqualTo(2)
+    assertThat(licenceEventRepository.count()).isEqualTo(0)
 
-    val previousLicence = licenceRepository.findById(2L).getOrNull()
-    assertThat(previousLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
+    val previousLicence = licenceRepository.findById(1L).getOrNull()
+    assertThat(previousLicence?.statusCode).isEqualTo(APPROVED)
     mockPrisonerSearchResponse(
       SentenceDetail(
         conditionalReleaseDate = LocalDate.now().plusWeeks(1),
@@ -387,24 +384,20 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     )
 
     webTestClient.put()
-      .uri("/licence/id/2/sentence-dates")
+      .uri("/licence/id/1/sentence-dates")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 
-    val currentLicence = licenceRepository.findById(2L).getOrNull()
+    val currentLicence = licenceRepository.findById(1L).getOrNull()
     assertThat(currentLicence).isNotNull
 
-    argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(1)).publishDomainEvent(capture())
-      assertThat(allValues).hasSize(1)
-      assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_INACTIVATED.value)
-    }
+    assertThat(testRepository.getPotentialHardstopCaseStatusByLicenceId(currentLicence?.id!!)).isEqualTo(PENDING)
 
     assertThat(auditEventRepository.count()).isEqualTo(3)
-    assertThat(licenceEventRepository.count()).isEqualTo(2)
-    assertThat(currentLicence?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceEventRepository.count()).isEqualTo(0)
+    assertThat(currentLicence?.statusCode).isEqualTo(APPROVED)
   }
 
   @Test
