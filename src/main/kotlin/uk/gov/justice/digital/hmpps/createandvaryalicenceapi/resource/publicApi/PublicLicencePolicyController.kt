@@ -24,7 +24,7 @@ import java.time.LocalDate
 
 @RestController
 @Tag(name = Tags.LICENCE_POLICY)
-@PreAuthorize("hasAnyRole('VIEW_LICENCES')")
+@PreAuthorize("hasAnyRole('VIEW_LICENCES', 'CVL__LICENCES__RO')")
 @RequestMapping("/public/policy", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicencePolicyController(private val publicLicencePolicyService: PublicLicencePolicyService) {
   @GetMapping(value = ["/{version}"])
@@ -32,8 +32,8 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
   @Operation(
     summary = "Get a policy by its version number",
     description = "Returns a policy by its version number. " +
-      "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+      "Requires ROLE_CVL__LICENCES__RO.",
+    security = [SecurityRequirement(name = "ROLE_CVL__LICENCES__RO")],
   )
   @ApiResponses(
     value = [
@@ -74,8 +74,8 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
   @Operation(
     summary = "Get latest policy.",
     description = "Returns latest policy. " +
-      "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+      "Requires ROLE_CVL__LICENCES__RO.",
+    security = [SecurityRequirement(name = "ROLE_CVL__LICENCES__RO")],
   )
   @ApiResponses(
     value = [

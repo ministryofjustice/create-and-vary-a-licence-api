@@ -32,7 +32,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
   fun `v2 exposes curfew condition times from v3 policy fields`() {
     // Given
     val request = webTestClient.get().uri("/public/v2/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val result = request.exchange()
@@ -60,7 +60,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
   fun `v2 exposes curfew condition times from v4 policy fields`() {
     // Given
     val request = webTestClient.get().uri("/public/v2/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val result = request.exchange()
@@ -97,7 +97,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
     // Given
     jdbcTemplate.update("update licence set version = ?, kind = ? where id = 1", policyVersion, kind)
     val request = webTestClient.get().uri("/public/v2/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val response = request.exchange()
@@ -125,7 +125,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
     jdbcTemplate.update("update licence set version = ? where id = 1", policyVersion)
     jdbcTemplate.update("delete from additional_condition_data where additional_condition_id = 1 and data_field = 'endDate'")
     val request = webTestClient.get().uri("/public/v2/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val response = request.exchange()
@@ -146,7 +146,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
     // Given
     jdbcTemplate.update("update additional_condition_data set data_value = ? where data_field = 'endDate'", endDate)
     val request = webTestClient.get().uri("/public/v2/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val response = request.exchange()
@@ -165,7 +165,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
     // Given
     jdbcTemplate.update("delete from additional_condition_data where data_field = 'endDate'")
     val request = webTestClient.get().uri("/public/v2/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val response = request.exchange()
@@ -183,7 +183,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
   fun `original public API retains its existing EM condition representation`() {
     // Given
     val request = webTestClient.get().uri("/public/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val response = request.exchange()
@@ -206,7 +206,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
       conditionId,
     )
     val request = webTestClient.get().uri("/public/v2/licences/id/1")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val response = request.exchange()
@@ -225,7 +225,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
   fun `v2 preserves non EM upload condition fields`() {
     // Given
     val request = webTestClient.get().uri("/public/v2/licences/id/2")
-      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
 
     // When
     val response = request.exchange()

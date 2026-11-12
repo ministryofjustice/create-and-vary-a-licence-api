@@ -26,7 +26,7 @@ import java.util.logging.Logger
 
 @RestController
 @Tag(name = Tags.LICENCES)
-@PreAuthorize("hasAnyRole('VIEW_LICENCES')")
+@PreAuthorize("hasAnyRole('VIEW_LICENCES', 'CVL__LICENCES__RO')")
 @RequestMapping("/public", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicenceController(private val publicLicenceService: PublicLicenceService) {
 
@@ -38,8 +38,8 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
   @Operation(
     summary = "Get a licence by its licence id, $baseApiVersion",
     description = "Returns a single licence detail by its unique identifier. " +
-      "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+      "Requires ROLE_CVL__LICENCES__RO.",
+    security = [SecurityRequirement(name = "ROLE_CVL__LICENCES__RO")],
   )
   @ApiResponses(
     value = [
@@ -85,8 +85,8 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
   @Operation(
     summary = "Get a list of in flight licences by prison number",
     description = "Returns a list of licence summaries by a person's prison number. " +
-      "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+      "Requires ROLE_CVL__LICENCES__RO.",
+    security = [SecurityRequirement(name = "ROLE_CVL__LICENCES__RO")],
   )
   @ApiResponses(
     value = [
@@ -127,8 +127,8 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
   @Operation(
     summary = "Get a list of in flight licences by CRN",
     description = "Returns a list of licence summaries by a person's CRN. " +
-      "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+      "Requires ROLE_CVL__LICENCES__RO.",
+    security = [SecurityRequirement(name = "ROLE_CVL__LICENCES__RO")],
   )
   @ApiResponses(
     value = [
@@ -172,10 +172,10 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
   @Operation(
     summary = "Get an associated image upload for a specific licence and condition",
     description = "Returns an associated image upload for a specified licence and condition. " +
-      "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES"), SecurityRequirement(name = "SAR_DATA_ACCESS")],
+      "Requires ROLE_CVL__LICENCES__RO.",
+    security = [SecurityRequirement(name = "ROLE_CVL__LICENCES__RO"), SecurityRequirement(name = "SAR_DATA_ACCESS")],
   )
-  @PreAuthorize("hasAnyRole('VIEW_LICENCES', 'SAR_DATA_ACCESS')")
+  @PreAuthorize("hasAnyRole('VIEW_LICENCES', 'CVL__LICENCES__RO', 'SAR_DATA_ACCESS')")
   @ApiResponses(
     value = [
       ApiResponse(
