@@ -21,12 +21,14 @@ import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 import org.hibernate.Hibernate
+import org.hibernate.annotations.ConcreteProxy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.time.LocalDateTime
 
 @Entity
+@ConcreteProxy
 @Table(name = "staff")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "kind", discriminatorType = DiscriminatorType.STRING)
