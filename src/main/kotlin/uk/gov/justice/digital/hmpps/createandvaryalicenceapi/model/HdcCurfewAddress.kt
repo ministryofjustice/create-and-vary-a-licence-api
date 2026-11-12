@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a curfew address on a HDC licence")
@@ -34,7 +34,7 @@ data class HdcCurfewAddress(
   val source: AddressSource,
 
   @field:Schema(description = "Accommodation types of the curfew address", example = "RESIDENTIAL")
-  val accommodationType: AccommodationType? = null,
+  val accommodationType: CvlAccommodationType? = null,
 
   @field:Schema(description = "Post release residential checks completed for this curfew address", example = "true")
   val postReleaseResidentialChecksCompleted: Boolean? = null,

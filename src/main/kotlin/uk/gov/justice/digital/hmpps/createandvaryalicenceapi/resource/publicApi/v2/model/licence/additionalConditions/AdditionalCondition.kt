@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.latestApiVersionPostFix
 
 object ConditionTypes {
+  const val CURFEW = "CURFEW"
   const val ELECTRONIC_MONITORING = "ELECTRONIC_MONITORING"
   const val ELECTRONIC_MONITORING_WITH_RESTRICTIONS = "ELECTRONIC_MONITORING_WITH_RESTRICTIONS"
   const val MULTIPLE_EXCLUSION_ZONE = "MULTIPLE_EXCLUSION_ZONE"
@@ -21,6 +22,7 @@ object ConditionTypes {
   description = "Describes each additional condition on the licence, $latestApiVersion",
   discriminatorProperty = "type",
   discriminatorMapping = [
+    DiscriminatorMapping(value = ConditionTypes.CURFEW, schema = CurfewAdditionalCondition::class),
     DiscriminatorMapping(value = ConditionTypes.STANDARD, schema = GenericAdditionalCondition::class),
     DiscriminatorMapping(
       value = ConditionTypes.ELECTRONIC_MONITORING,
@@ -40,6 +42,7 @@ object ConditionTypes {
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXISTING_PROPERTY)
 @JsonSubTypes(
+  JsonSubTypes.Type(value = CurfewAdditionalCondition::class, name = ConditionTypes.CURFEW),
   JsonSubTypes.Type(value = ElectronicMonitoringAdditionalCondition::class, name = ConditionTypes.ELECTRONIC_MONITORING),
   JsonSubTypes.Type(
     value = ElectronicMonitoringAdditionalConditionWithRestriction::class,
