@@ -29,14 +29,14 @@ class DateChangesTest {
     assertThat(
       DateChanges(
         listOf(DateChange(LicenceDateType.PRRD, null, aDate)),
-        isMaterial = true,
+        requiresComNotification = true,
       ).anyChanges,
     ).isTrue()
 
     assertThat(
       DateChanges(
         listOf(DateChange(LicenceDateType.PRRD, aDate, aDate)),
-        isMaterial = true,
+        requiresComNotification = true,
       ).anyChanges,
     ).isFalse()
   }

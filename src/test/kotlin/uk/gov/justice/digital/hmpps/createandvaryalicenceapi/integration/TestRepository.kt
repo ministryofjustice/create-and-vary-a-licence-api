@@ -23,6 +23,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLink
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
@@ -52,6 +54,11 @@ interface TestLicenceRepository : JpaRepository<Licence, Long> {
 interface TestAuditEventRepository : JpaRepository<AuditEvent, Long> {
   fun findAllByLicenceIdIn(licenceIds: List<Long>): List<AuditEvent>
   fun findAllByLicenceIdNull(): List<AuditEvent>
+}
+
+@Repository
+interface TestPotentialHardstopCaseRepository : JpaRepository<PotentialHardstopCase, Long> {
+  fun findByLicenceId(id: Long): PotentialHardstopCase?
 }
 
 @Repository
@@ -146,6 +153,7 @@ class TestRepository(
   private val hdcPostponementRepository: TestHdcPostponementRepository,
   private val licenceEventRepository: TestLicenceEventRepository,
   private val licenceLinkRepository: TestLicenceLinkRepository,
+  private val potentialHardstopCaseRepository: TestPotentialHardstopCaseRepository,
 ) {
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -199,6 +207,8 @@ class TestRepository(
     if (assertNotEmpty) assertThat(licences).isNotEmpty
     return licences
   }
+
+  fun getPotentialHardstopCaseStatusByLicenceId(toLicenceId: Long): PotentialHardstopCaseStatus? = potentialHardstopCaseRepository.findByLicenceId(toLicenceId)?.status
 
   fun countLicence(): Long = licenceRepository.count()
 

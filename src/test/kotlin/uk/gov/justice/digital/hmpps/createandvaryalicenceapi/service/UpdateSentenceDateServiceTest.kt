@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
@@ -412,6 +413,33 @@ class UpdateSentenceDateServiceTest {
         "HDC eligibility date has changed to 10 September 2023",
       ),
     )
+  }
+
+  @Test
+  fun `does not email COM of non-HDC licence when now approved for HDC and checks approval using the prison HDCED`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
+    whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(aCrdLicenceEntity)
+    whenever(hdcService.isApprovedForHdc(any(), anyOrNull())).thenReturn(true)
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          homeDetentionCurfewEligibilityDate = LocalDate.parse("2023-09-10"),
+        ),
+      ),
+    )
+    whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
+
+    service.updateSentenceDates(1L)
+
+    verify(hdcService).isApprovedForHdc(any(), eq(LocalDate.parse("2023-09-10")))
+    verifyNoInteractions(notifyService)
   }
 
   @Test
@@ -1005,7 +1033,7 @@ class UpdateSentenceDateServiceTest {
     }
 
     @Test
-    fun `should inactivate a licence if the licence was in hard stop period but is no longer in hard stop period and hardstop job is disabled`() {
+    fun `should save a new potential hardstop case if a licence was in hard stop period but is no longer`() {
       val inHardStopLicence = aCrdLicenceEntity.copy(
         statusCode = TIMED_OUT,
         conditionalReleaseDate = LocalDate.now(),
@@ -1055,80 +1083,6 @@ class UpdateSentenceDateServiceTest {
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
 
       service.updateSentenceDates(1L)
-
-      verify(licenceService, times(1)).inactivateLicences(
-        listOf(noLongerInHardStopLicence),
-        UpdateSentenceDateService.LICENCE_DEACTIVATION_HARD_STOP,
-      )
-
-      verify(licenceService, times(0)).timeout(any(), any())
-      verifyNoInteractions(potentialHardstopCaseRepository)
-    }
-
-    @Test
-    fun `should save a new potential hardstop case if a licence was in hard stop period but is no longer and hardstop job is enabled`() {
-      val jobEnabledService = UpdateSentenceDateService(
-        licenceRepository,
-        auditService,
-        notifyService,
-        prisonApiClient,
-        hdcService,
-        staffRepository,
-        releaseDateService,
-        licenceService,
-        cvlRecordService,
-        potentialHardstopCaseRepository,
-        hardstopJobEnabled = true,
-      )
-      val inHardStopLicence = aCrdLicenceEntity.copy(
-        statusCode = TIMED_OUT,
-        conditionalReleaseDate = LocalDate.now(),
-        actualReleaseDate = LocalDate.now(),
-        sentenceStartDate = LocalDate.now().minusYears(2),
-        sentenceEndDate = LocalDate.now().plusYears(1),
-        licenceStartDate = LocalDate.now(),
-        licenceExpiryDate = LocalDate.now().plusYears(1),
-        topupSupervisionStartDate = LocalDate.now().plusYears(1),
-        topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
-      )
-
-      val noLongerInHardStopLicence = inHardStopLicence.copy(
-        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
-        actualReleaseDate = LocalDate.now().plusWeeks(1),
-        licenceStartDate = LocalDate.now().plusWeeks(1),
-      )
-
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
-      whenever(licenceService.updateLicenceKind(any(), any(), any())).thenReturn(noLongerInHardStopLicence)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull(), anyOrNull())).thenReturn(true, false)
-      whenever(
-        licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
-          inHardStopLicence.bookingId!!,
-          listOf(
-            IN_PROGRESS,
-            SUBMITTED,
-            APPROVED,
-            TIMED_OUT,
-          ),
-          listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
-        ),
-      ).thenReturn(listOf(noLongerInHardStopLicence))
-      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
-        aPrisonApiPrisoner().copy(
-          sentenceDetail = SentenceDetail(
-            conditionalReleaseDate = LocalDate.now().plusWeeks(1),
-            confirmedReleaseDate = LocalDate.now().plusWeeks(1),
-            sentenceStartDate = LocalDate.now().minusYears(2),
-            sentenceExpiryDate = LocalDate.now().plusYears(1),
-            licenceExpiryDate = LocalDate.now().plusYears(1),
-            topupSupervisionStartDate = LocalDate.now().plusYears(1),
-            topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
-          ),
-        ),
-      )
-      whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord())
-
-      jobEnabledService.updateSentenceDates(1L)
 
       verify(licenceService, never()).inactivateLicences(any(), any(), any())
       verify(licenceService, times(0)).timeout(any(), any())

@@ -71,7 +71,7 @@ class LicenceDatesTest {
       licence.getDateChanges(testSentenceChanges.copy(licenceExpiryDate = fourDaysAgo), newLsd = fiveDaysAgo)
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(LED)
-    assertThat(sentenceChanges.isMaterial).isTrue
+    assertThat(sentenceChanges.requiresComNotification).isTrue
   }
 
   @Test
@@ -81,7 +81,7 @@ class LicenceDatesTest {
     val sentenceChanges = licence.getDateChanges(testSentenceChanges, newLsd = fourDaysAgo)
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(LSD)
-    assertThat(sentenceChanges.isMaterial).isTrue
+    assertThat(sentenceChanges.requiresComNotification).isTrue
   }
 
   @Test
@@ -94,7 +94,7 @@ class LicenceDatesTest {
     )
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(HDCAD)
-    assertThat(sentenceChanges.isMaterial).isTrue
+    assertThat(sentenceChanges.requiresComNotification).isTrue
   }
 
   @Test
@@ -107,7 +107,7 @@ class LicenceDatesTest {
     )
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(HDCENDDATE)
-    assertThat(sentenceChanges.isMaterial).isTrue
+    assertThat(sentenceChanges.requiresComNotification).isTrue
   }
 
   @Test
@@ -120,7 +120,7 @@ class LicenceDatesTest {
     )
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(HDCED)
-    assertThat(sentenceChanges.isMaterial).isTrue
+    assertThat(sentenceChanges.requiresComNotification).isTrue
   }
 
   @Test
@@ -131,7 +131,7 @@ class LicenceDatesTest {
       licence.getDateChanges(testSentenceChanges.copy(sentenceEndDate = fourDaysAgo), newLsd = fiveDaysAgo)
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(SED)
-    assertThat(sentenceChanges.isMaterial).isFalse
+    assertThat(sentenceChanges.requiresComNotification).isFalse
   }
 
   @Test
@@ -144,7 +144,7 @@ class LicenceDatesTest {
     )
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(SED)
-    assertThat(sentenceChanges.isMaterial).isTrue
+    assertThat(sentenceChanges.requiresComNotification).isTrue
   }
 
   @Test
@@ -155,7 +155,7 @@ class LicenceDatesTest {
       licence.getDateChanges(testSentenceChanges.copy(postRecallReleaseDate = fourDaysAgo), newLsd = fiveDaysAgo)
 
     assertThat(sentenceChanges.changedTypes()).containsExactly(PRRD)
-    assertThat(sentenceChanges.isMaterial).isTrue
+    assertThat(sentenceChanges.requiresComNotification).isTrue
   }
 
   private fun DateChanges.changedTypes(): List<LicenceDateType> = this.filter { it.changed }.map { it.type }
