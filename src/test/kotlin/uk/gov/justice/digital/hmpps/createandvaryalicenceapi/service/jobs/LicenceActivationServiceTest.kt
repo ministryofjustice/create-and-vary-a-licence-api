@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.REMAND_LICENCE_ACTIVATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.REMAND_LICENCE_ACTIVATION_LEGACY_CHECK
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -562,6 +563,33 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
     verify(telemetryService).recordActivateLicencesJobEvent(0, 1, 0, 0)
+  }
+
+  @Test
+  fun `licence activation job activates licences via the legacy court event check when the remand feature is disabled`() {
+    val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
+    val remandPrisoner = nonHdcPrisoner
+    val aRemandCourtEventOutcome = aIS91CourtEventOutcome.copy(
+      bookingId = remandLicence.bookingId!!,
+      outcomeReasonCode = "4531",
+    )
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(remandLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(remandLicence.nomsId!!)))
+      .thenReturn(listOf(remandPrisoner))
+    whenever(prisonApiClient.getCourtEventOutcomes(any(), any(), any()))
+      .thenReturn(listOf(aRemandCourtEventOutcome))
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()))
+      .thenReturn(HdcStatuses(emptyList()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(listOf(remandLicence), REMAND_LICENCE_ACTIVATION_LEGACY_CHECK)
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(telemetryService).recordActivateLicencesJobEvent(0, 1, 0, 0)
+    verifyNoInteractions(remandDeterminationService)
   }
 
   @Test

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -15,7 +16,7 @@ class RemandAndSentencingApiMockServer :
       .options(wireMockConfig().port(8102)),
   ) {
 
-  private val objectMapper = ObjectMapper()
+  private val objectMapper = ObjectMapper().registerKotlinModule()
 
   fun stubRemandStatuses(remandPrisonerNumbers: Set<String>) {
     val peopleStatus =

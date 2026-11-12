@@ -88,12 +88,14 @@ For each one, it checks the person's current HDC (Home Detention Curfew) status,
       warrant (identified by their recorded "most serious offence" description), or
       whose latest court appearance outcome is one of a fixed set of IS91/extradition
       result codes. These are activated as soon as their licence start date has passed.
-    - **Remand licences** — for anyone not already counted as IS91/extradition, this is
-      decided by asking a separate remand and sentencing service whether the person is
-      currently recorded as being on remand. These are also activated as soon as their
-      licence start date has passed. This group is only ever considered when a "remand"
-      feature toggle is switched on; while it's off, these cases are treated as standard
-      licences instead.
+    - **Remand licences** — for anyone not already counted as IS91/extradition. If the
+      "remand" feature toggle is switched on, this is decided by asking a separate remand
+      and sentencing service whether the person is currently recorded as being on remand.
+      If the toggle is off, it is instead decided by checking whether the person's latest
+      court appearance outcome is one of a fixed set of remand result codes. These are
+      activated as soon as their licence start date has passed. The reason recorded
+      against the activation differs depending on which of the two checks was used: it
+      is marked "(court outcome check)" when the toggle is off.
     - **Standard licences** — everyone else. These are only activated once their
       licence start date has passed *and* the prison's own records show them as
       released (rather than still in custody).

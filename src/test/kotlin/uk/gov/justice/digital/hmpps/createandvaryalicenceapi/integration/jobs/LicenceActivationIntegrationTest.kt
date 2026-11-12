@@ -267,7 +267,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         PrisonerSearchPrisoner(
           prisonerNumber = "A1234AG",
           bookingId = "901",
-          status = "INACTIVE",
+          status = "ACTIVE IN",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
           sentenceExpiryDate = LocalDate.now().plusYears(1),
