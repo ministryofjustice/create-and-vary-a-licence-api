@@ -1,0 +1,137 @@
+{
+  "id": "licences_with_restriction_zone_conditions",
+  "name": "Licences with Restriction Zone Conditions",
+  "description": "Data products for Create and Vary a licence ",
+  "metadata": {
+    "author": "Dave Virden",
+    "owner": "Dave Virden",
+    "version": "1.0.0",
+    "interactive": "true"
+  },
+  "datasource": [
+    {
+      "id": "cvl",
+      "name": "cvl"
+    }
+  ],
+  "dataset": [
+    {
+      "id": "licence-dataset",
+      "name": "licence-dataset",
+      "datasource": "cvl",
+      "query": "select * from (select concat(l.forename, ' ', l.surname) AS name, l.crn, l.licence_start_date, CASE WHEN BOOL_OR(ac.condition_code = '005d70e4-a247-4f82-b8b3-6d294a0f5051') THEN 'true' ELSE '' END AS restriction_zone, CASE WHEN bool_or(ac.condition_code = 'fd129172-bdd3-4d97-a4a0-efd7b47a49d4' AND acd.data_value = 'that you do not leave areas you must stay in (restriction zones)') THEN 'true' ELSE '' END AS em_restriction_zone from licence l LEFT JOIN additional_condition ac ON ac.licence_id = l.id AND ac.condition_code IN ('005d70e4-a247-4f82-b8b3-6d294a0f5051', 'fd129172-bdd3-4d97-a4a0-efd7b47a49d4') LEFT JOIN additional_condition_data acd ON acd.additional_condition_id = ac.id AND ac.condition_code = 'fd129172-bdd3-4d97-a4a0-efd7b47a49d4' WHERE l.licence_start_date > now() - interval '1 months' group by l.id) as all_data where restriction_zone = 'true'",
+      "schema": {
+        "field": [
+          {
+            "name": "name",
+            "type": "string",
+            "display": "Name"
+          },
+          {
+            "name": "crn",
+            "type": "string",
+            "display": "CRN"
+          },
+          {
+            "name": "licence_start_date",
+            "type": "date",
+            "display": "Licence Start Date"
+          },
+          {
+            "name": "restriction_zone",
+            "type": "string",
+            "display": "Restriction Zone"
+          },
+          {
+            "name": "em_restriction_zone",
+            "type": "string",
+            "display": "EM Condition 14a Sub Selection Restriction Zone"
+          }
+        ]
+      }
+    }
+  ],
+  "policy": [
+    {
+      "id": "access",
+      "type": "access",
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "match": [
+                "${role}",
+                "ROLE_NOMIS_BATCHLOAD",
+                "ROLE_CVL_REPORTS"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "report": [
+    {
+      "id": "licences_with_restriction_zone_conditions",
+      "name": "Licences with Restriction Zone Conditions",
+      "description": "Licences with restriction zone conditions",
+      "version": "1.0.0",
+      "render": "HTML",
+      "dataset": "$ref:licence-dataset",
+      "feature": [
+        {
+          "type": "print"
+        }
+      ],
+      "specification": {
+        "template": "list",
+        "field": [
+          {
+            "name": "$ref:name",
+            "display": "Name",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:crn",
+            "display": "CRN",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:licence_start_date",
+            "display": "Release date",
+            "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true,
+            "filter": {
+              "type": "daterange",
+              "interactive": true,
+              "default": "today(-7,days) - today()",
+              "mandatory": false
+            }
+          },
+          {
+            "name": "$ref:restriction_zone",
+            "display": "Restriction Zone",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:em_restriction_zone",
+            "display": "EM Condition 14a Sub Selection Restriction Zone",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          }
+        ]
+      },
+      "summary": []
+    }
+  ]
+}

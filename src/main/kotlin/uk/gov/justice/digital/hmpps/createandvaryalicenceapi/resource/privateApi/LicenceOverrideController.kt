@@ -31,14 +31,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.Lic
 @RequestMapping("/licence/id/{licenceId}/override", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicenceOverrideController(private val licenceOverrideService: LicenceOverrideService) {
   @PostMapping(value = ["/status"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN', 'CVL__LICENCES__STATUS__RW')")
   @ResponseBody
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(
     summary = "Override a licence status",
     description = "Override the status for an exising licence. Only to be used in exceptional circumstances." +
-      " Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      " Requires ROLE_CVL_ADMIN or CVL__LICENCES__STATUS__RW.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN"), SecurityRequirement(name = "CVL__LICENCES__STATUS__RW")],
   )
   @ApiResponses(
     value = [

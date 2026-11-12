@@ -19,6 +19,72 @@ servers:
     description: Production Environment
 
 channels:
+  create-and-vary-a-licence.licence.approved:
+    description: Standard CRD or hard-stop licence approved
+    publish:
+      operationId: create-and-vary-a-licence.licence.approved
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-approved.yml
+
+  create-and-vary-a-licence.prrd-licence.approved:
+    description: PRRD licence approved
+    publish:
+      operationId: create-and-vary-a-licence.prrd-licence.approved
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/prrd-licence-approved.yml
+
+  create-and-vary-a-licence.hdc-licence.approved:
+    description: HDC licence approved
+    publish:
+      operationId: create-and-vary-a-licence.hdc-licence.approved
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/hdc-licence-approved.yml
+
+  create-and-vary-a-licence.time-served-licence.approved:
+    description: Time-served licence approved
+    publish:
+      operationId: create-and-vary-a-licence.time-served-licence.approved
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/time-served-licence-approved.yml
+
+  create-and-vary-a-licence.variation.approved:
+    description: Licence variation approved
+    publish:
+      operationId: create-and-vary-a-licence.variation.approved
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-variation-approved.yml
+
+  create-and-vary-a-licence.hdc-variation.approved:
+    description: HDC licence variation approved
+    publish:
+      operationId: create-and-vary-a-licence.hdc-variation.approved
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/hdc-licence-variation-approved.yml
+
   create-and-vary-a-licence.licence.activated:
     description: Licence activated
     publish:

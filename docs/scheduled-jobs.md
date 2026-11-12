@@ -22,17 +22,16 @@ licences that are no longer needed, or sending a reminder email.
 
 ## At a glance
 
-| Job                                             | Runs                                | What it does, in a sentence                                                                                     |
-|--------------------------------------------------|---------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| Prompt licence creation                          | 9am every Monday                       | Emails probation practitioners about upcoming releases they need to create a licence for.                        |
-| Deactivate HDC licences                          | 3am every day                          | Cancels draft HDC licences for people who are no longer realistically going to be released on HDC.               |
-| Activate licences                                | 3am, 9am, 12pm, 3pm and 6pm every day  | Switches approved licences on when someone is actually released, and cancels the ones made redundant by HDC.      |
-| Deactivate licences past release date            | 2am, Monday to Friday                  | Cancels draft/in-progress licences for people who've already been released without one being finished in time.   |
-| Expire licences                                  | 4am every day                          | Switches off active licences once their licence (or top-up supervision) period has ended.                        |
-| Warn licence review overdue                      | 8am, Monday to Friday                  | Reminds probation practitioners to review certain licences that were activated without their usual involvement.  |
-| Time out licences                                | 1:30am, Monday to Friday               | Catches licences that have quietly entered their "hard stop" period and times them out.                          |
-| Notify probation of unapproved licences          | 2am every day                          | Reminds probation practitioners about approved licences that were edited but never re-approved before release.   |
-| Deactivate progression licences                  | 3:30am, once a year on 1 December      | Cancels old-policy-version licences that should now be recreated under the newer policy.                          |
+| Job                                     | Runs                                  | What it does, in a sentence                                                                                     |
+|-----------------------------------------|---------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| Prompt licence creation                 | 9am every Monday                      | Emails probation practitioners about upcoming releases they need to create a licence for.                       |
+| Deactivate HDC licences                 | 3am every day                         | Cancels draft HDC licences for people who are no longer realistically going to be released on HDC.              |
+| Activate licences                       | 3am, 9am, 12pm, 3pm and 6pm every day | Switches approved licences on when someone is actually released, and cancels the ones made redundant by HDC.    |
+| Deactivate licences past release date   | 2am, Monday to Friday                 | Cancels draft/in-progress licences for people who've already been released without one being finished in time.  |
+| Expire licences                         | 4am every day                         | Switches off active licences once their licence (or top-up supervision) period has ended.                       |
+| Warn licence review overdue             | 8am, Monday to Friday                 | Reminds probation practitioners to review certain licences that were activated without their usual involvement. |
+| Time out licences                       | 1:30am, Monday to Friday              | Catches licences that have quietly entered their "hard stop" period and times them out.                         |
+| Notify probation of unapproved licences | 2am every day                         | Reminds probation practitioners about approved licences that were edited but never re-approved before release.  |
 
 ## Prompt licence creation
 
@@ -166,30 +165,9 @@ due for release, this job sends the responsible probation practitioner a reminde
 This exists to make sure an edited-but-unapproved licence doesn't slip through
 unnoticed right up to release day.
 
-## Deactivate progression licences
-
-**Runs**: 3:30am, once a year, on 1 December.
-
-CVL introduced a newer version of its licence conditions ("policy version 4"), which
-applies from a configured go-live date onwards. This job looks for licences that are
-**still on an older policy version** (one of the four versions before policy version 4)
-and are **still in progress, submitted, approved, or timed out**, but whose **licence
-start date now falls on or after** the go-live date. Since these cases should really be
-recreated under the current policy version, the old-version licences are automatically
-deactivated. If the responsible probation practitioner is known, and the licence start
-date falls within a configured notification window, they're also emailed to explain that
-this has happened. (If the go-live date hasn't been configured at all, this job does
-nothing.)
-
-This is effectively the mirror image of the "policy version safeguard" described in
-`docs/sentence-date-updates.md` — that one catches newer-policy-version licences moving
-to start *before* the go-live date; this one catches older-policy-version licences that
-are still around once their start date has moved to *on or after* it.
-
 ## A note on other endpoints in the same part of the codebase
 
-Two further endpoints exist alongside these scheduled jobs but are **not** run on a
-timer — they're triggered on demand instead: one migrates standard licence conditions
-to a newer wording, and one manually recalculates licence start dates for a given set of
-cases. As they aren't part of the automatic schedule, they're out of scope for this
-document.
+A further endpoint exists alongside these scheduled jobs but is **not** run on a
+timer — it's triggered on demand instead, to manually recalculate licence start dates
+for a given set of cases. As it isn't part of the automatic schedule, it's out of scope
+for this document.

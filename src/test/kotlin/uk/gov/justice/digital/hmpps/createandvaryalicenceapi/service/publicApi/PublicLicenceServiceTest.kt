@@ -15,7 +15,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
@@ -25,10 +25,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicCurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PublicHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.PublicCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.PublicHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.PublicHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.UploadFileConditionsService
@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.El
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.CURFEW
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ElectronicMonitoringType.RESTRICTION_ZONE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.v2.PublicLicenceServiceV2
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceAdditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceBespoke
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceStandard
@@ -63,8 +64,8 @@ class PublicLicenceServiceTest {
     licenceRepository,
     licenceService,
     uploadFileConditionsService,
-    publicApiHdcDetailsEnabled = true,
   )
+  private val serviceV2 = PublicLicenceServiceV2(licenceService)
 
   @BeforeEach
   fun reset() {
@@ -269,47 +270,61 @@ class PublicLicenceServiceTest {
       assertThat(actualLicence).usingRecursiveComparison().isEqualTo(publicLicence)
     }
 
-    @Test
-    fun `service returns a hdc licence with out hdc detail when publicApiHdcDetailsEnabled is false`() {
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `original service returns HDC licences and variations without curfew details`(isVariation: Boolean) {
       // Given
-      val service = PublicLicenceService(
-        licenceRepository,
-        licenceService,
-        uploadFileConditionsService,
-        publicApiHdcDetailsEnabled = false,
-      )
       val licenceId: Long = 12345
-      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
+      val licence = if (isVariation) {
+        ModelHdcVariationLicence(
+          id = modelHdcLicence.id,
+          typeCode = modelHdcLicence.typeCode,
+          version = modelHdcLicence.version,
+          statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+          licenceVersion = modelHdcLicence.licenceVersion,
+          weeklyCurfewTimes = modelHdcLicence.weeklyCurfewTimes,
+          firstNightCurfewTimes = modelHdcLicence.firstNightCurfewTimes,
+          curfewAddress = modelHdcLicence.curfewAddress,
+        )
+      } else {
+        modelHdcLicence
+      }
+      whenever(licenceService.getLicenceById(any())).thenReturn(licence)
       // When
       val actualLicence = service.getLicenceById(licenceId)
 
       // Then
-      assertThat(actualLicence).isInstanceOf(PublicLicence::class.java)
-      assertThat(actualLicence).isNotInstanceOf(PublicHdcLicence::class.java)
+      assertThat(actualLicence).isExactlyInstanceOf(PublicLicence::class.java)
+      assertThat(actualLicence.kind).isEqualTo(if (isVariation) "HDC_VARIATION" else "HDC")
     }
 
     @Test
-    fun `service returns a hdc licence with hdc detail when publicApiHdcDetailsEnabled is true`() {
-      // Given
-      val service = PublicLicenceService(
-        licenceRepository,
-        licenceService,
-        uploadFileConditionsService,
-        publicApiHdcDetailsEnabled = true,
-      )
-      val licenceId: Long = 12345
-      whenever(licenceService.getLicenceById(any())).thenReturn(modelHdcLicence)
-      // When
-      val actualLicence = service.getLicenceById(licenceId)
+    fun `v2 service returns non HDC licences without curfew details`() {
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
 
-      // Then
-      assertThat(actualLicence).isInstanceOf(PublicLicence::class.java)
-      assertThat(actualLicence).isInstanceOf(PublicHdcLicence::class.java)
+      assertThat(serviceV2.getLicenceById(12345)).usingRecursiveComparison().isEqualTo(publicLicence)
+    }
+
+    @Test
+    fun `v2 service handles HDC licences without curfew details`() {
+      whenever(licenceService.getLicenceById(any())).thenReturn(
+        modelHdcLicence.copy(
+          curfewAddress = null,
+          firstNightCurfewTimes = null,
+          weeklyCurfewTimes = emptyList(),
+        ),
+      )
+
+      val actualLicence = serviceV2.getLicenceById(12345) as PublicHdcLicence
+
+      assertThat(actualLicence.curfewAddress).isNull()
+      assertThat(actualLicence.firstNightCurfewTimes).isNull()
+      assertThat(actualLicence.curfewTimes).isEmpty()
     }
 
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
-    fun `service returns HDC licence and variation with public curfew details`(isVariation: Boolean) {
+    fun `v2 service returns HDC licence and variation with public curfew details`(isVariation: Boolean) {
       // Given
 
       val licence = if (isVariation) {
@@ -329,7 +344,7 @@ class PublicLicenceServiceTest {
       whenever(licenceService.getLicenceById(12345)).thenReturn(licence)
 
       // When
-      val actualLicence = service.getLicenceById(12345) as PublicHdcLicence
+      val actualLicence = serviceV2.getLicenceById(12345) as PublicHdcLicence
 
       // Then
       assertThat(actualLicence.id).isEqualTo(modelHdcLicence.id)
@@ -542,7 +557,7 @@ class PublicLicenceServiceTest {
         county = "Test County",
         postcode = "AB1 2CD",
         source = AddressSource.MANUAL,
-        accommodationType = AccommodationType.RESIDENTIAL,
+        accommodationType = CvlAccommodationType.RESIDENTIAL,
         postReleaseResidentialChecksCompleted = false,
         postReleaseResidentialChecksNotCompletedReason = "Old reason",
         createdTimestamp = null,

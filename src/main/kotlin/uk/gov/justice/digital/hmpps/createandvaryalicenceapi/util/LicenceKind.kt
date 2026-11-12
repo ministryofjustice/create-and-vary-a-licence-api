@@ -11,6 +11,7 @@ enum class LicenceKind(
   val submittedEventType: () -> LicenceEventType,
   val activatedDomainEventType: () -> LicenceDomainEventType,
   val inactivatedDomainEventType: () -> LicenceDomainEventType,
+  val approvedDomainEventType: () -> LicenceDomainEventType,
 
 ) {
   PRRD(
@@ -20,6 +21,7 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.PRRD_LICENCE_ACTIVATED },
     { LicenceDomainEventType.PRRD_LICENCE_INACTIVATED },
+    { LicenceDomainEventType.PRRD_LICENCE_APPROVED },
   ),
 
   CRD(
@@ -29,6 +31,7 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
+    { LicenceDomainEventType.LICENCE_APPROVED },
   ),
 
   VARIATION(
@@ -38,6 +41,7 @@ enum class LicenceKind(
     { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED },
+    { LicenceDomainEventType.LICENCE_VARIATION_APPROVED },
   ) {
     override fun isVariation() = true
   },
@@ -49,6 +53,7 @@ enum class LicenceKind(
     { LicenceEventType.HARD_STOP_SUBMITTED },
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
+    { LicenceDomainEventType.LICENCE_APPROVED },
   ) {
     override fun isCreatedByPrison() = true
   },
@@ -60,6 +65,7 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
+    { LicenceDomainEventType.HDC_LICENCE_APPROVED },
 
   ) {
     override fun isHdc() = true
@@ -72,6 +78,7 @@ enum class LicenceKind(
     { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
+    { LicenceDomainEventType.HDC_LICENCE_VARIATION_APPROVED },
   ) {
     override fun isHdc() = true
     override fun isVariation() = true
@@ -84,6 +91,7 @@ enum class LicenceKind(
     { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.TIME_SERVED_LICENCE_ACTIVATED },
     { LicenceDomainEventType.TIME_SERVED_LICENCE_INACTIVATED },
+    { LicenceDomainEventType.TIME_SERVED_LICENCE_APPROVED },
   ) {
     override fun isCreatedByPrison() = true
   },

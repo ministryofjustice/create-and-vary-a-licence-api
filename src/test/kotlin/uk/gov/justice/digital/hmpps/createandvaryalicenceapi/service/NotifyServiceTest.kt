@@ -39,10 +39,8 @@ class NotifyServiceTest {
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     editedLicenceTimedOutTemplateId = TEMPLATE_ID,
     reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
-    policyVersionInactivatedTemplateId = TEMPLATE_ID,
     licenceReviewOverdueTemplateId = TEMPLATE_ID,
     initialComAllocationTemplateId = TEMPLATE_ID,
-    progressionLicenceDeactivatedTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
@@ -149,29 +147,6 @@ class NotifyServiceTest {
       "crn" to "X11111",
       "dateDescriptions" to listOf("Release date", "Licence end date"),
       "caseloadLink" to "http://somewhere/licence/create/caseload",
-    )
-
-    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
-  }
-
-  @Test
-  fun `send policy version inactivated email to the COM`() {
-    notifyService.sendPolicyVersionInactivatedEmail(
-      licenceId = "1",
-      emailAddress = EMAIL_ADDRESS,
-      comFirstName = "Joe",
-      comLastName = "Bloggs",
-      pipFirstName = "James",
-      pipLastName = "Jonas",
-      crn = "X11111",
-    )
-
-    val expectedMap = mapOf(
-      "comFirstName" to "Joe",
-      "comLastName" to "Bloggs",
-      "pipFirstName" to "James",
-      "pipLastName" to "Jonas",
-      "crn" to "X11111",
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -301,11 +276,9 @@ class NotifyServiceTest {
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
       releaseDateService = releaseDateService,
       editedLicenceTimedOutTemplateId = TEMPLATE_ID,
-      policyVersionInactivatedTemplateId = TEMPLATE_ID,
       reviewableLicenceApprovedTemplateId = TEMPLATE_ID,
       licenceReviewOverdueTemplateId = TEMPLATE_ID,
       initialComAllocationTemplateId = TEMPLATE_ID,
-      progressionLicenceDeactivatedTemplateId = TEMPLATE_ID,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)

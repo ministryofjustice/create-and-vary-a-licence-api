@@ -11,6 +11,23 @@ This service provides access to data stored in the licences database via API end
 The main client is the create-and-vary-a-licence (UI) service.
 It is built as docker image and deployed to the MOJ Cloud Platform.
 
+## Public licence API versions
+
+Both endpoints require `ROLE_CVL__LICENCES__RO`:
+
+* `GET /public/licences/id/{licenceId}` keeps the original response.
+* `GET /public/v2/licences/id/{licenceId}` adds HDC curfew details and EM end dates for conditions 14a, 14b and 14e.
+
+V2 controllers and DTOs live in `resource.publicApi.v2` and its `model.licence` package.
+Summaries, policies and image uploads retain their existing endpoints.
+
+Both versions are documented in the `public` Swagger group at `/v3/api-docs/public` when enabled.
+V2 DTO schema names use the `V2` postfix (for example, `LicenceV2`) to avoid collisions in combined Swagger documents.
+
+In v2, 14a uses `ELECTRONIC_MONITORING_WITH_RESTRICTIONS`; 14b and 14e use `ELECTRONIC_MONITORING`.
+All include `endDate` as `yyyy-MM-dd`, or `null` when missing or blank. Policies before 4.0 did not
+collect an end date for 14a.
+
 ## Building the project
 
 Tools required:
@@ -88,23 +105,23 @@ Unit tests mock all external dependencies and can be run with no dependent conta
 Integration tests use WireMock for upstream APIs, PostgreSQL for persistence, and LocalStack for SQS/SNS.
 Testcontainers starts PostgreSQL and LocalStack when local instances are not already running.
 Each test seeds its own database fixtures; a single `TRUNCATE ... RESTART IDENTITY CASCADE` clears the
-test tables afterwards (clear-all-datat.sql). Queue cleanup waits for purge requests to finish and checks immediately for an
+test tables afterwards (clear-all-datat.sql). Queue cleanup waits for purge requests to finish and checks immediately
+for an
 empty queue, polling only if necessary.
 
 `./gradlew integrationTest`
 
-The test profile sets `spring.reactor.netty.shutdown-quiet-period=0s` to avoid 
+The test profile sets `spring.reactor.netty.shutdown-quiet-period=0s` to avoid
 default two second quiet peroid when closing each context. Resources still shut down normally,
 the shutdown timeout and production configuration are unchanged.
 
 Spring caches application contexts between tests. Different `@TestPropertySource` values,
 `@DynamicPropertySource` methods, bean overrides, and imported configurations already produce separate
-contexts, they do not need `@DirtiesContext` just for isolation. 
+contexts, they do not need `@DirtiesContext` just for isolation.
 
 The event-listener integration test retain `@DirtiesContext(AFTER_CLASS)` to stop their SQS consumers.
 These contexts share LocalStack queues, so leaving them running could consume messages intended for
 another test class.
-
 
 ## Pre-commit hooks
 
@@ -170,6 +187,7 @@ from the API when running the SAR integration tests.
 To regenerate SAR snapshots - use the following command, which will run the SAR integration tests and update the
 snapshots with the actual responses received from the API. This is useful to do if you have made changes to the API that
 will affect the SAR responses, and you want to make sure the snapshots are up to date with the new expected responses.
+
 ```bash
 SAR_GENERATE_ACTUAL=true ./gradlew integrationTest --tests "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi.SubjectAccessRequestIntegrationTest"
 ```

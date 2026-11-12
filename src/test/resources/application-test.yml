@@ -130,8 +130,6 @@ feature:
       enabled: true
     hdcCreation:
       enabled: true
-    publicApiHdcDetails:
-      enabled: true
     standardRecalls:
       enabled: true
     restrictedPatients:
@@ -179,20 +177,16 @@ update:
       handler:
         enabled: false
 
-
-progression:
-  model:
-    policy-start-date: 2025-09-19
-    notification-window-end-date: 2025-12-31
-    use-policy-4-dot-1: true
+prisoner:
+  received:
+    handler:
+      enabled: true
+  merged:
+    handler:
+      enabled: true
 
 dpr:
   lib:
     manage-users:
       host: http://localhost:8096
 
-
-prisoner:
-  merged:
-    handler:
-      enabled: true
