@@ -37,8 +37,8 @@ class LicenceOverrideController(private val licenceOverrideService: LicenceOverr
   @Operation(
     summary = "Override a licence status",
     description = "Override the status for an exising licence. Only to be used in exceptional circumstances." +
-      " Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      " Requires ROLE_CVL_ADMIN or CVL__LICENCES__STATUS__RW.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN"), SecurityRequirement(name = "CVL__LICENCES__STATUS__RW")],
   )
   @ApiResponses(
     value = [
