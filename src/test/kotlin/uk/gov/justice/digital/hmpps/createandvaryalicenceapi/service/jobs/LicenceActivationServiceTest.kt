@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.REMAND_LICENCE_ACTIVATION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.REMAND_LICENCE_ACTIVATION_LEGACY_CHECK
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.REMAND_LICENCE_ACTIVATION_COURT_OUTCOME_CHECK
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -566,7 +566,7 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job activates licences via the legacy court event check when the remand feature is disabled`() {
+  fun `licence activation job activates licences via the court event check when the remand feature is disabled`() {
     val remandLicence = nonHdcLicence.copy(licenceStartDate = LocalDate.now().minusDays(1))
     val remandPrisoner = nonHdcPrisoner
     val aRemandCourtEventOutcome = aIS91CourtEventOutcome.copy(
@@ -584,7 +584,7 @@ class LicenceActivationServiceTest {
 
     service.licenceActivation()
 
-    verify(licenceService, times(1)).activateLicences(listOf(remandLicence), REMAND_LICENCE_ACTIVATION_LEGACY_CHECK)
+    verify(licenceService, times(1)).activateLicences(listOf(remandLicence), REMAND_LICENCE_ACTIVATION_COURT_OUTCOME_CHECK)
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
