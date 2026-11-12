@@ -23,7 +23,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
       webTestClient.get()
         .uri("/public/policy/1.0")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -36,7 +36,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
       webTestClient.get()
         .uri("/public/policy/2.0")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -49,7 +49,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
       webTestClient.get()
         .uri("/public/policy/2.1")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -62,7 +62,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
       webTestClient.get()
         .uri("/public/policy/3.0")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +75,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
       webTestClient.get()
         .uri("/public/policy/4.0")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -102,7 +102,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
       webTestClient.get()
         .uri("/public/policy/latest")
         .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL__LICENCES__RO")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)

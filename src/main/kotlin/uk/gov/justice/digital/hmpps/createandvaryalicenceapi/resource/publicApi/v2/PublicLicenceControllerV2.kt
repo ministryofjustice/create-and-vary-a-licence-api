@@ -27,7 +27,7 @@ import java.util.logging.Logger
 
 @RestController
 @Tag(name = Tags.LICENCES)
-@PreAuthorize("hasAnyRole('VIEW_LICENCES')")
+@PreAuthorize("hasAnyRole('VIEW_LICENCES', 'CVL__LICENCES__RO')")
 @RequestMapping("/public/v2", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicenceControllerV2(private val publicLicenceService: PublicLicenceServiceV2) {
 
@@ -38,8 +38,8 @@ class PublicLicenceControllerV2(private val publicLicenceService: PublicLicenceS
   @Operation(
     summary = "Get a licence by its licence id, $latestApiVersion",
     description = "Returns a single licence detail by its unique identifier, including curfew details for HDC licences. " +
-      "Requires ROLE_VIEW_LICENCES.",
-    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+      "Requires ROLE_CVL__LICENCES__RO.",
+    security = [SecurityRequirement(name = "ROLE_CVL__LICENCES__RO")],
     operationId = "getLicenceByIdV2",
   )
   @ApiResponses(

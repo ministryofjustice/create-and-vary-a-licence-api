@@ -246,7 +246,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     private val legacyUri = "/public/licences/2/conditions/1/image-upload"
 
     @ParameterizedTest
-    @CsvSource("ROLE_VIEW_LICENCES", "ROLE_SAR_DATA_ACCESS")
+    @CsvSource("ROLE_VIEW_LICENCES", "ROLE_CVL__LICENCES__RO", "ROLE_SAR_DATA_ACCESS")
     @Sql(
       "classpath:test_data/seed-licence-id-2.sql",
       "classpath:test_data/add-upload-to-licence-id-2.sql",
@@ -310,7 +310,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       // Given
       val request = buildGetRequest(
         uri = "/public/licences/id/2",
-        role = "ROLE_VIEW_LICENCES",
+        role = "ROLE_CVL__LICENCES__RO",
         acceptMediaTypes = listOf(MediaType.APPLICATION_JSON),
       )
 
@@ -362,7 +362,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       // Given
       val request = buildGetRequest(
         uri = "/public/licences/id/2",
-        role = "ROLE_VIEW_LICENCES",
+        role = "ROLE_CVL__LICENCES__RO",
         acceptMediaTypes = listOf(MediaType.APPLICATION_JSON),
       )
 
@@ -404,7 +404,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       }
       val request = buildGetRequest(
         uri = "/public/licences/id/2",
-        role = "ROLE_VIEW_LICENCES",
+        role = "ROLE_CVL__LICENCES__RO",
         acceptMediaTypes = listOf(MediaType.APPLICATION_JSON),
       )
 
@@ -500,7 +500,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
   private fun buildGetRequest(
     uri: String = "/public/licence/2/condition/1/supporting-document",
-    role: String = "ROLE_VIEW_LICENCES",
+    role: String = "ROLE_CVL__LICENCES__RO",
     acceptMediaTypes: List<MediaType> = listOf(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON),
   ): WebTestClient.RequestHeadersSpec<*> = webTestClient.get()
     .uri(uri)

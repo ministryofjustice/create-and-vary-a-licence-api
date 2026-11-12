@@ -30,13 +30,13 @@ Optionally select an environment (defaults to dev):
 ./smoke-dev.sh test2 123
 ```
 
-These checks reuse the same token as the SAR check. The system client must have `ROLE_VIEW_LICENCES`;
+These checks reuse the same token as the SAR check. The system client must have `ROLE_CVL__LICENCES__RO`;
 HTTP 403 fails the check, as does HTTP 404 if the selected licence does not exist.
 The licence response body is printed as formatted JSON; the token is not printed.
 
 ### export-additional-conditions.sh
 
-`export-conditions.sh` is a bash script that outputs the conditions for a given 
+`export-conditions.sh` is a bash script that outputs the conditions for a given
 policy version with v4 being the default policy if the version is not specified.
 
 It provides a CSV containing the following columns:
@@ -73,7 +73,8 @@ Files:
 - `utils/client.mjs` — HMPPS Auth token fetching and create-and-vary-a-licence-api HTTP client helpers.
 - `utils/prisonApi.mjs` — dependency-free client for the prison-api `transfer-in`, `transfer-out` and `release`
   endpoints, ported from
-  [`basm-move-generator/scripts/prison-api`](https://github.com/ministryofjustice/basm-move-generator/blob/main/scripts/prison-api).
+  [
+  `basm-move-generator/scripts/prison-api`](https://github.com/ministryofjustice/basm-move-generator/blob/main/scripts/prison-api).
   Exports `transferIn`, `transferOut` and `release`, each taking a bearer `token` and prisoner offender number
   (plus mode-specific parameters such as `toLocation`).
 
