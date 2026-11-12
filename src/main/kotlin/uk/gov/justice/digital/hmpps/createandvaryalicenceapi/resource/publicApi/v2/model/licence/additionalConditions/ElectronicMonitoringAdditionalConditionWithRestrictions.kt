@@ -12,7 +12,7 @@ import java.time.LocalDate
   name = "ElectronicMonitoringAdditionalConditionWithRestriction$latestApiVersionPostFix",
   description = "An electronic monitoring condition with restrictions and an end date, $latestApiVersion",
 )
-class ElectronicMonitoringAdditionalConditionWithRestriction(
+class ElectronicMonitoringAdditionalConditionWithRestrictions(
   id: Long,
   category: String,
   code: String,

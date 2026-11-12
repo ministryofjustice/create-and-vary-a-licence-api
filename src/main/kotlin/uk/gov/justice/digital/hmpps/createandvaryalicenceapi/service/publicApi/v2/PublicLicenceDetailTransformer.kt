@@ -8,11 +8,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.CurfewAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.CurfewTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestrictions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.GenericAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.MultipleUploadAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.SingleUploadAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ImageUploadAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.CURFEW_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
@@ -34,7 +32,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as Mo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.AdditionalCondition as PublicAdditionalCondition
 
 private val electronicMonitoringEndDateFormatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ENGLISH)
-private val curfewTimeFormatter = DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("h:mm[ ]a").toFormatter(Locale.ENGLISH)
+private val curfewTimeFormatter =
+  DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("h:mm[ ]a").toFormatter(Locale.ENGLISH)
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
 
 private val curfewTimeFields = listOf(
@@ -85,9 +84,7 @@ private fun AdditionalCondition.toPublicAdditionalCondition(): PublicAdditionalC
   CURFEW_COND_CODE -> transformCurfewCondition(this)
   ELECTRONIC_TAG_COND_CODE_14A -> transformElectronicMonitoringWithRestrictions(this)
   ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E -> transformElectronicMonitoring(this)
-  EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(this)
-  MULTIPLE_UPLOAD_COND_CODE -> transformMultipleUploadsCondition(this)
-  EVENT_EXCLUSION_COND_CODE -> transformSingleExclusionZoneCondition(this)
+  EVENT_EXCLUSION_COND_CODE, EXCLUSION_ZONE_COND_CODE, MULTIPLE_UPLOAD_COND_CODE -> transformImageUploadCondition(this)
   else -> transformGenericAdditionalCondition(this)
 }
 
@@ -121,7 +118,7 @@ private fun getCurfewTimes(
   }
 }
 
-fun transformElectronicMonitoringWithRestrictions(model: AdditionalCondition) = ElectronicMonitoringAdditionalConditionWithRestriction(
+fun transformElectronicMonitoringWithRestrictions(model: AdditionalCondition) = ElectronicMonitoringAdditionalConditionWithRestrictions(
   category = model.category.orEmpty(),
   id = model.id ?: 0,
   code = model.code.orEmpty(),
@@ -141,25 +138,7 @@ private fun transformElectronicMonitoring(model: AdditionalCondition) = Electron
   endDate = electronicMonitoringEndDate(model),
 )
 
-private fun transformMultipleExclusionZonesCondition(model: AdditionalCondition) = MultipleExclusionZoneAdditionalCondition(
-  category = model.category.orEmpty(),
-  id = model.id ?: 0,
-  code = model.code.orEmpty(),
-  text = model.expandedText.orEmpty(),
-  hasImageUpload = model.uploadSummary.isNotEmpty(),
-  description = model.uploadDescription(),
-)
-
-private fun transformMultipleUploadsCondition(model: AdditionalCondition) = MultipleUploadAdditionalCondition(
-  category = model.category.orEmpty(),
-  id = model.id ?: 0,
-  code = model.code.orEmpty(),
-  text = model.expandedText.orEmpty(),
-  hasImageUpload = model.uploadSummary.isNotEmpty(),
-  description = model.uploadDescription(),
-)
-
-private fun transformSingleExclusionZoneCondition(model: AdditionalCondition) = SingleUploadAdditionalCondition(
+private fun transformImageUploadCondition(model: AdditionalCondition) = ImageUploadAdditionalCondition(
   category = model.category.orEmpty(),
   id = model.id ?: 0,
   code = model.code.orEmpty(),
@@ -182,6 +161,7 @@ private fun electronicMonitoringEndDate(model: AdditionalCondition): LocalDate? 
       ?.value
       ?.takeIf { it.isNotBlank() }
       ?.let { LocalDate.parse(it, electronicMonitoringEndDateFormatter) }
+
   else -> null
 }
 

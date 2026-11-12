@@ -5,12 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.latestApiVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.latestApiVersionPostFix
 
-@JsonTypeName(ConditionTypes.MULTIPLE_UPLOADS)
+@JsonTypeName(ConditionTypes.IMAGE_UPLOAD)
 @Schema(
-  name = "MultipleUploadAdditionalCondition$latestApiVersionPostFix",
-  description = "Describes a multiple upload condition (restricted areas or other), $latestApiVersion",
+  name = "UploadAdditionalCondition$latestApiVersionPostFix",
+  description = "Describes a condition with an image upload (restricted areas or other), $latestApiVersion",
 )
-data class MultipleUploadAdditionalCondition(
+data class ImageUploadAdditionalCondition(
   @field:Schema(description = "The ID of the condition", example = "123456")
   override val id: Long,
 
@@ -29,5 +29,5 @@ data class MultipleUploadAdditionalCondition(
   @field:Schema(description = "Whether any image was uploaded")
   val hasImageUpload: Boolean,
 ) : AdditionalCondition {
-  override val type: String = ConditionTypes.MULTIPLE_UPLOADS
+  override val type: String = ConditionTypes.IMAGE_UPLOAD
 }

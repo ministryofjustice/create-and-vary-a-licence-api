@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.CurfewAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.CurfewTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.v2.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestrictions
 import java.time.LocalTime
 
 class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
@@ -108,7 +108,7 @@ class PublicElectronicMonitoringIntegrationTest : IntegrationTestBase() {
     assertThatJson(body).inPath("conditions.AP.additional").isEqualTo(expectedJson("em-conditions"))
     assertThatJson(body).inPath("conditions.PSS.additional").isEqualTo(expectedJson("pss-em-conditions"))
     val conditions = mapper.readValue(body, Licence::class.java).conditions.apConditions.additional
-    assertThat(conditions[0]).isInstanceOf(ElectronicMonitoringAdditionalConditionWithRestriction::class.java)
+    assertThat(conditions[0]).isInstanceOf(ElectronicMonitoringAdditionalConditionWithRestrictions::class.java)
       .isInstanceOf(ElectronicMonitoringAdditionalCondition::class.java)
     assertThat(conditions[1]).isExactlyInstanceOf(ElectronicMonitoringAdditionalCondition::class.java)
     assertThat(conditions[2]).isExactlyInstanceOf(ElectronicMonitoringAdditionalCondition::class.java)
