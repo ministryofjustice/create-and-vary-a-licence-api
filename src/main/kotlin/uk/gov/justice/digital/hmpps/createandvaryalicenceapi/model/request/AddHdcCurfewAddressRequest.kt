@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 
 @Schema(description = "Request to add HDC curfew address with post-release checks")
 data class AddHdcCurfewAddressRequest(
@@ -14,7 +14,7 @@ data class AddHdcCurfewAddressRequest(
 
   @field:NotNull(message = "Accommodation type must not be null")
   @field:Schema(description = "The type of accommodation for the HDC curfew address", example = "RESIDENTIAL", required = true)
-  val accommodationType: AccommodationType,
+  val accommodationType: CvlAccommodationType,
 
   @Schema(description = "Flag to indicate if post release residential checks have been completed", example = "true")
   val postReleaseResidentialChecksCompleted: Boolean? = null,

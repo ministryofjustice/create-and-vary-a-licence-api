@@ -18,8 +18,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.repository.MigrationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateFromHdcToCvlRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.request.MigrateLicenceDetails
@@ -311,6 +314,146 @@ class MigrationServiceTest {
       assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
       assertThat(savedLicence.approvedByUsername).isNull()
     }
+
+    @Test
+    fun `migrate should map CAS to CAS`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val approvedByName = "approvedFirstName approvedLastName"
+      val curfewAddress = MigrateAddress(
+        addressLine1 = "line1",
+        addressLine2 = "line2",
+        townOrCity = "town",
+        postcode = "PO1 2ST",
+        addressType = AccommodationType.CAS,
+      )
+
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        approvedByName = approvedByName,
+        curfewAddress = curfewAddress,
+      )
+
+      mockGetOffenderManager(staffId)
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
+      assertThat(savedLicence.approvedByUsername).isNull()
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.CAS)
+    }
+
+    @Test
+    fun `migrate should map CAS_1_APPROVED_PREMISES to CAS`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val approvedByName = "approvedFirstName approvedLastName"
+      val curfewAddress = MigrateAddress(
+        addressLine1 = "line1",
+        addressLine2 = "line2",
+        townOrCity = "town",
+        postcode = "PO1 2ST",
+        addressType = AccommodationType.CAS_1_APPROVED_PREMISES,
+      )
+
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        approvedByName = approvedByName,
+        curfewAddress = curfewAddress,
+      )
+
+      mockGetOffenderManager(staffId)
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
+      assertThat(savedLicence.approvedByUsername).isNull()
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.CAS)
+    }
+
+    @Test
+    fun `migrate should map CAS_2 to CAS`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val approvedByName = "approvedFirstName approvedLastName"
+      val curfewAddress = MigrateAddress(
+        addressLine1 = "line1",
+        addressLine2 = "line2",
+        townOrCity = "town",
+        postcode = "PO1 2ST",
+        addressType = AccommodationType.CAS_2,
+      )
+
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        approvedByName = approvedByName,
+        curfewAddress = curfewAddress,
+      )
+
+      mockGetOffenderManager(staffId)
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
+      assertThat(savedLicence.approvedByUsername).isNull()
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.CAS)
+    }
+
+    @Test
+    fun `migrate should map RESIDENTIAL to RESIDENTIAL`() {
+      // Given
+      val prisonerNumber = "A1234AA"
+      val staffId = 1L
+      val approvedByName = "approvedFirstName approvedLastName"
+      val curfewAddress = MigrateAddress(
+        addressLine1 = "line1",
+        addressLine2 = "line2",
+        townOrCity = "town",
+        postcode = "PO1 2ST",
+        addressType = AccommodationType.RESIDENTIAL,
+      )
+
+      val request = migrateRequest(
+        prisonerNumber = prisonerNumber,
+        approvedByName = approvedByName,
+        curfewAddress = curfewAddress,
+      )
+
+      mockGetOffenderManager(staffId)
+      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
+
+      // When
+      service.migrate(request)
+
+      // Then
+      val licenceCaptor = argumentCaptor<HdcLicence>()
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+      val savedLicence = licenceCaptor.firstValue
+      assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
+      assertThat(savedLicence.approvedByUsername).isNull()
+      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.RESIDENTIAL)
+    }
   }
 
   @Nested
@@ -345,6 +488,7 @@ class MigrationServiceTest {
     approvedByUsername: String? = null,
     approvedByName: String? = null,
     additionalConditions: List<MigrateAdditionalCondition> = emptyList(),
+    curfewAddress: MigrateAddress? = null,
   ): MigrateFromHdcToCvlRequest = MigrateFromHdcToCvlRequest(
     bookingNo = "BOOK1",
     bookingId = 1L,
@@ -391,7 +535,7 @@ class MigrationServiceTest {
       bespoke = emptyList(),
       additional = additionalConditions,
     ),
-    curfewAddress = null,
+    curfewAddress = curfewAddress,
     curfew = null,
     appointment = null,
   )

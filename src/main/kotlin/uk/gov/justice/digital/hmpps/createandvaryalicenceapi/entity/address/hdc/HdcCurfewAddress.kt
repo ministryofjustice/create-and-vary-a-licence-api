@@ -26,7 +26,7 @@ class HdcCurfewAddress(
 
   @Column(name = "accommodation_type")
   @Enumerated(EnumType.STRING)
-  var accommodationType: AccommodationType? = null,
+  var accommodationType: CvlAccommodationType? = null,
 
   @Column(name = "post_release_residential_checks_completed")
   var postReleaseResidentialChecksCompleted: Boolean? = null,
