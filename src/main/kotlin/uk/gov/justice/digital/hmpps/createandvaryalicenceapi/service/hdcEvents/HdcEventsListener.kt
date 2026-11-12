@@ -7,6 +7,7 @@ import org.springframework.messaging.Message
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.ADDRESS_WITHDRAWN
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.COM_COMPLETES_ADDRESS_CHECKS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.POSTPONE
@@ -44,6 +45,7 @@ class HdcEventsListener(
         OPT_IN -> hdcStatusChangedHandler.handleOptIn(rawMessage)
         ADDRESS_WITHDRAWN -> hdcStatusChangedHandler.handleAddressWithdrawn(rawMessage)
         RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES -> hdcStatusChangedHandler.handleAddressChangedToApprovedPremises(rawMessage, eventType)
+        COM_COMPLETES_ADDRESS_CHECKS -> hdcStatusChangedHandler.handleComCompletesAddressChecks(rawMessage)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
