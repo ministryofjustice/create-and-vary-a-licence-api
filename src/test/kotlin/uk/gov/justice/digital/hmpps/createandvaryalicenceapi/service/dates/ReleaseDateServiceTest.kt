@@ -11,9 +11,12 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RemandDeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createTimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
@@ -28,6 +31,7 @@ import java.time.ZoneId
 
 class ReleaseDateServiceTest {
   private val iS91DeterminationService = mock<IS91DeterminationService>()
+  private val remandDeterminationService = mock<RemandDeterminationService>()
   private val bankHolidayService = mock<BankHolidayService>()
   private val workingDaysService = WorkingDaysService(bankHolidayService)
 
@@ -36,6 +40,7 @@ class ReleaseDateServiceTest {
       clock,
       workingDaysService,
       iS91DeterminationService,
+      remandDeterminationService,
     )
 
   @BeforeEach
@@ -339,7 +344,7 @@ class ReleaseDateServiceTest {
     val thisClock = createClock("2024-04-22T00:00:00Z")
     val today = LocalDate.now(thisClock)
 
-    private val service = ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService)
+    private val service = ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService, remandDeterminationService)
 
     @Test
     fun `false if there is no release date`() {
@@ -836,6 +841,63 @@ class ReleaseDateServiceTest {
     }
 
     @Nested
+    inner class `Remand case` {
+      private val remandEnabledService = ReleaseDateService(
+        clock,
+        workingDaysService,
+        iS91DeterminationService,
+        remandDeterminationService,
+        remandEnabled = true,
+      )
+
+      @Test
+      fun `returns the alternative LSD when the prisoner is on remand and the feature is enabled`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        )
+
+        whenItsARemandCase(nomisRecord)
+
+        assertThat(remandEnabledService.getLicenceStartDate(nomisRecord, EligibleKind.CRD))
+          .isEqualTo(LocalDate.of(2021, 10, 21))
+      }
+
+      @Test
+      fun `ignores the remand booking ids when the feature is disabled`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord, EligibleKind.CRD))
+          .isEqualTo(LocalDate.of(2021, 10, 20))
+        verifyNoInteractions(remandDeterminationService)
+      }
+
+      @Test
+      fun `remand booking ids are only called for CRD cases`() {
+        val crdRecord = prisonerSearchResult().copy(
+          prisonerNumber = "CRD1234",
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        )
+        val hdcRecord = prisonerSearchResult().copy(
+          prisonerNumber = "HDC1234",
+          homeDetentionCurfewEligibilityDate = LocalDate.of(2021, 10, 21),
+        )
+        whenever(remandDeterminationService.getRemandBookingIds(any())).thenReturn(emptyList())
+
+        remandEnabledService.getLicenceStartDates(
+          listOf(crdRecord, hdcRecord),
+          mapOf(crdRecord.prisonerNumber to EligibleKind.CRD, hdcRecord.prisonerNumber to EligibleKind.HDC),
+        )
+
+        verify(remandDeterminationService).getRemandBookingIds(listOf(crdRecord))
+      }
+    }
+
+    @Nested
     inner class `Calculated PRRD licence start date` {
       @Test
       fun `returns null if PRRD is null`() {
@@ -1074,6 +1136,14 @@ class ReleaseDateServiceTest {
 
   private fun whenItsAnIS91Case(nomisRecord: PrisonerSearchPrisoner) {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(
+      listOf(
+        nomisRecord.bookingId!!.toLong(),
+      ),
+    )
+  }
+
+  private fun whenItsARemandCase(nomisRecord: PrisonerSearchPrisoner) {
+    whenever(remandDeterminationService.getRemandBookingIds(listOf(nomisRecord))).thenReturn(
       listOf(
         nomisRecord.bookingId!!.toLong(),
       ),
