@@ -27,7 +27,6 @@ generic-service:
     SELF_API_LINK: "https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
-    HMPPS_REMAND_API_ENABLED: true
     HMPPS_REMANDANDSENTENCING_API_URL: "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk"
 
 
