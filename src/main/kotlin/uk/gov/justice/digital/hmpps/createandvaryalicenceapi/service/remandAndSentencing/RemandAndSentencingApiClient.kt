@@ -8,11 +8,12 @@ import org.springframework.web.reactive.function.client.bodyToMono
 
 @Service
 class RemandAndSentencingApiClient(@param:Qualifier("oauthRemandAndSentencingApiClient") val remandAndSentencingApiClient: WebClient) {
-  fun getRemandOutcome(prisonNumber: String) = remandAndSentencingApiClient
-    .get()
-    .uri("/person/$prisonNumber/status")
+  fun getPersonStatuses(prisonNumbers: List<String>): PersonStatusesResponse? = remandAndSentencingApiClient
+    .post()
+    .uri("/person/statuses")
     .accept(MediaType.APPLICATION_JSON)
+    .bodyValue(PersonStatusesRequest(prisonNumbers))
     .retrieve()
-    .bodyToMono<RemandOutcome>()
+    .bodyToMono<PersonStatusesResponse>()
     .block()
 }
