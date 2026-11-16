@@ -12,7 +12,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -53,7 +52,6 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
   fun `Update sentence dates should add an entry to potential hard stop cases when licence was in hard stop period but is no longer`() {
     prisonApiMockServer.stubGetHdcLatest()
     prisonApiMockServer.stubGetCourtOutcomes()
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
     mockPrisonerSearchResponse(
       SentenceDetail(
         conditionalReleaseDate = LocalDate.now(),
@@ -92,7 +90,6 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
   fun `If we move a timed out licence and in in progress hard stop licence out of hard stop we should only create one hard stop case for each licence`() {
     prisonApiMockServer.stubGetHdcLatest()
     prisonApiMockServer.stubGetCourtOutcomes()
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // move the timed out licence out of the hard stop period
     moveLicenceOutofHardStop(2L)
@@ -150,9 +147,6 @@ class UpdateSentenceDatesHardStopJobIntegrationTest : IntegrationTestBase() {
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
-
-    @RegisterExtension
-    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
 
     @BeforeEach
     fun startMocks() {

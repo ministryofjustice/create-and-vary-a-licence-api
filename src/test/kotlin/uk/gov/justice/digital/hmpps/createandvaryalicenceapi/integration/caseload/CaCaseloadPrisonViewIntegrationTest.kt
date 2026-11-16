@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
@@ -54,7 +53,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
     deliusMockServer.stubGetManagersWithoutUserDetails()
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = webTestClient.post()
@@ -261,7 +259,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
     deliusMockServer.stubGetManagersWithoutUserDetails()
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = webTestClient.post()
@@ -359,7 +356,6 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
     deliusMockServer.stubGetManagers(managers, excludeUserInfo = true)
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
   }
 
   private companion object {
@@ -371,8 +367,5 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
-
-    @RegisterExtension
-    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }
