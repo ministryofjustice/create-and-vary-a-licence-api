@@ -59,13 +59,18 @@ There is a script to help, which sets local profiles, port and DB connection pro
 values required.
 
 ```shell
-./run-local.sh`
+make run
 ```
 
-To run start up the application without pulling / restarting local containers:
+Any missing containers are started automatically; running containers are left alone.
 
 ```shell
-./run-local.sh --skip-docker
+make run-skip-docker   # don't touch containers
+make stop              # stop containers (service not started)
+make clean             # gradle clean, remove containers and volumes (keeps images)
+make update            # latest gradle wrapper + ./gradlew useLatestVersions
+make prune             # remove containers, volumes and images (service not started)
+make run DEBUG=1       # enable jvm debugging
 ```
 
 ### Running application inside the IDE
