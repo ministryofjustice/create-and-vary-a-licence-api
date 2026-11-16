@@ -21,8 +21,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
@@ -46,7 +46,7 @@ class HdcLifecycleServiceTest {
 
   private val licenceRepository = mock<LicenceRepository>()
   private val hdcLicenceRepository = mock<HdcLicenceRepository>()
-  private val hdcPostponementRepository = mock<HdcPostponementRepository>()
+  private val hdcApplicationRepository = mock<HdcApplicationRepository>()
   private val auditService = mock<AuditService>()
   private val crdLicenceFactory = mock<CrdLicenceFactory>()
   private val hdcLicenceFactory = mock<HdcLicenceFactory>()
@@ -58,7 +58,7 @@ class HdcLifecycleServiceTest {
     HdcLifecycleService(
       licenceRepository,
       hdcLicenceRepository,
-      hdcPostponementRepository,
+      hdcApplicationRepository,
       auditService,
       crdLicenceFactory,
       hdcLicenceFactory,
@@ -79,7 +79,7 @@ class HdcLifecycleServiceTest {
     reset(
       licenceRepository,
       hdcLicenceRepository,
-      hdcPostponementRepository,
+      hdcApplicationRepository,
       auditService,
       crdLicenceFactory,
       hdcLicenceFactory,
@@ -348,7 +348,7 @@ class HdcLifecycleServiceTest {
 
     service.postponeLicence("A1234BC")
 
-    verify(hdcPostponementRepository, times(1)).save(any())
+    verify(hdcApplicationRepository, times(1)).save(any())
     verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
   }
 
@@ -360,7 +360,7 @@ class HdcLifecycleServiceTest {
     service.postponeLicence("A1234BC")
 
     assertThat(approvedLicence.statusCode).isEqualTo(IN_PROGRESS)
-    verify(hdcPostponementRepository, times(1)).save(any())
+    verify(hdcApplicationRepository, times(1)).save(any())
     verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(approvedLicence, true)
     verify(auditService).recordAuditEventHdcLicencePostponed(approvedLicence, APPROVED)
   }
@@ -401,7 +401,7 @@ class HdcLifecycleServiceTest {
 
     service.resumeHdcPostponement("A1234BC")
 
-    verify(hdcPostponementRepository).save(any())
+    verify(hdcApplicationRepository).save(any())
     verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, false)
   }
 
@@ -426,7 +426,7 @@ class HdcLifecycleServiceTest {
       editLicence.approvedDate = LocalDateTime.of(2024, 1, 11, 9, 0)
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
+      whenever(hdcApplicationRepository.findByLicenceId(editLicence.id)).thenReturn(null)
       whenever(
         licenceService.inactivateLicences(
           listOf(approvedLicence),
@@ -450,7 +450,7 @@ class HdcLifecycleServiceTest {
       assertThat(editLicence.supersededDate).isNull()
       verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
       verify(auditService).recordAuditEventHdcLicencePostponed(editLicence, SUBMITTED)
-      verify(hdcPostponementRepository, times(2)).save(any())
+      verify(hdcApplicationRepository, times(2)).save(any())
     }
 
     @Test
@@ -465,8 +465,8 @@ class HdcLifecycleServiceTest {
       editLicence.nomsId = "A1234BC"
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
-      whenever(hdcPostponementRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
+      whenever(hdcApplicationRepository.findByLicenceId(editLicence.id)).thenReturn(null)
+      whenever(hdcApplicationRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
       whenever(
         licenceService.inactivateLicences(
           listOf(approvedLicence),
@@ -486,7 +486,7 @@ class HdcLifecycleServiceTest {
       assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
       verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
       verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
-      verify(hdcPostponementRepository, times(2)).save(any())
+      verify(hdcApplicationRepository, times(2)).save(any())
     }
 
     @Test
@@ -499,7 +499,7 @@ class HdcLifecycleServiceTest {
       hdcLicence.approvedByName = "Approver Name"
       hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
+      whenever(hdcApplicationRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
       service.postponeLicence("A1234BC")
@@ -508,7 +508,7 @@ class HdcLifecycleServiceTest {
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
       verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
       verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
-      verify(hdcPostponementRepository).save(any())
+      verify(hdcApplicationRepository).save(any())
     }
 
     @Test
@@ -536,7 +536,7 @@ class HdcLifecycleServiceTest {
       val originalUpdatedAt = hdcLicence.dateLastUpdated
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
+      whenever(hdcApplicationRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
       service.postponeLicence("A1234BC")
@@ -549,7 +549,7 @@ class HdcLifecycleServiceTest {
       assertThat(hdcLicence.dateLastUpdated).isEqualTo(originalUpdatedAt)
       verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
       verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
-      verify(hdcPostponementRepository).save(any())
+      verify(hdcApplicationRepository).save(any())
     }
   }
 

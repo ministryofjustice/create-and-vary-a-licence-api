@@ -11,10 +11,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Creator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -33,6 +36,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import java.util.UUID
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence as HdcLicenceEntity
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 @Service
@@ -52,6 +57,8 @@ class LicenceCreationService(
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
+  private val hdcService: HdcService,
+  private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -144,6 +151,25 @@ class LicenceCreationService(
     standardConditionRepository.saveAllAndFlush(standardConditions)
 
     recordLicenceCreation(createdBy, createdLicence, nomisRecord)
+
+    if (createdLicence is HdcLicenceEntity) {
+      val curfewAddress = hdcService.getHdcLicenceDataByBookingId(createdLicence.bookingId!!).curfewAddress
+
+      if (curfewAddress != null) {
+        val curfewAddressEntity = HdcCurfewAddress(
+          licence = createdLicence,
+          accommodationType = curfewAddress.curfewAddressType.cvlAccommodationType,
+          firstLine = curfewAddress.addressLine1!!,
+          secondLine = curfewAddress.addressLine2,
+          townOrCity = curfewAddress.townOrCity!!,
+          postcode = curfewAddress.postcode!!,
+          source = AddressSource.HDC_CREATION,
+          reference = UUID.randomUUID().toString(),
+        )
+
+        hdcCurfewAddressRepository.saveAndFlush(curfewAddressEntity)
+      }
+    }
 
     return CreateLicenceResponse(createdLicence.id)
   }

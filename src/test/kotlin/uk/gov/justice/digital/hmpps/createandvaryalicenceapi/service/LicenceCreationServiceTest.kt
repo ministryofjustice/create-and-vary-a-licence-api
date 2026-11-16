@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -90,6 +91,8 @@ class LicenceCreationServiceTest {
   private val telemetryService = mock<TelemetryService>()
   private val timeServedExternalRecordsService = mock<TimeServedExternalRecordService>()
   private val caseService = mock<CaseService>()
+  private val hdcService = mock<HdcService>()
+  private val hdcCurfewAddressRepository = mock<HdcCurfewAddressRepository>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -107,6 +110,8 @@ class LicenceCreationServiceTest {
     telemetryService,
     timeServedExternalRecordsService,
     caseService,
+    hdcService,
+    hdcCurfewAddressRepository,
   )
 
   @Nested

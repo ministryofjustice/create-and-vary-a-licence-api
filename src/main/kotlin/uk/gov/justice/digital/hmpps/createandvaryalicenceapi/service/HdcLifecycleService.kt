@@ -7,8 +7,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
@@ -34,7 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence a
 class HdcLifecycleService(
   private val licenceRepository: LicenceRepository,
   private val hdcLicenceRepository: HdcLicenceRepository,
-  private val hdcPostponementRepository: HdcPostponementRepository,
+  private val hdcApplicationRepository: HdcApplicationRepository,
   private val auditService: AuditService,
   private val crdLicenceFactory: CrdLicenceFactory,
   private val hdcLicenceFactory: HdcLicenceFactory,
@@ -141,13 +141,13 @@ class HdcLifecycleService(
   private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
     val operation = if (isPostponed) "Postponing" else "Resuming"
     log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
-    val existing = hdcPostponementRepository.findByLicenceId(licence.id)
+    val existing = hdcApplicationRepository.findByLicenceId(licence.id)
 
     if (existing != null) {
       existing.isPostponed = isPostponed
       existing.dateLastUpdated = LocalDateTime.now()
     } else {
-      hdcPostponementRepository.save(
+      hdcApplicationRepository.save(
         HdcPostponement(
           licence = licence,
           isPostponed = isPostponed,
