@@ -12,6 +12,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import java.time.Duration
 
@@ -83,6 +84,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
     prisonMockServer.stubGetSentenceAndRecallTypes(124)
     deliusMockServer.stubGetManagersForPromptComJob()
     prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false, includeRecall = true)
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
   }
 
   private companion object {
@@ -94,5 +96,8 @@ class PromptComIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val prisonMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }

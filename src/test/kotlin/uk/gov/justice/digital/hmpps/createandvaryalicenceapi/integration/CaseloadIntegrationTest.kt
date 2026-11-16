@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -26,6 +28,11 @@ private const val GET_PRISONER = "/prisoner-search/nomisid/A1234AA"
 private const val GET_PROBATION_CASE = "/caseload/probation-case/A1234AA"
 
 class CaseloadIntegrationTest : IntegrationTestBase() {
+  @BeforeEach
+  fun beforeEach() {
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
+  }
+
   @Nested
   inner class GetPrisoner {
     @Test
@@ -180,5 +187,8 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }

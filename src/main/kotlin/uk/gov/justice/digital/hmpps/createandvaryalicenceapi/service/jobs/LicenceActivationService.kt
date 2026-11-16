@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.IS91Constants.IMMIGRATION_OFFENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.Is91CourtEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RemandDeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TelemetryService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -30,6 +31,7 @@ class LicenceActivationService(
   private val hdcService: HdcService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
+  private val remandDeterminationService: RemandDeterminationService,
   private val auditService: AuditService,
   private val telemetryService: TelemetryService,
   @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
@@ -64,7 +66,7 @@ class LicenceActivationService(
     )
 
     licenceService.activateLicences(licencesToActivate.iS91Licences.map { it.licence }, IS91_LICENCE_ACTIVATION)
-    licenceService.activateLicences(licencesToActivate.remandLicences.map { it.licence }, REMAND_LICENCE_ACTIVATION)
+    licenceService.activateLicences(licencesToActivate.remandLicences.map { it.licence }, remandActivationReason())
     licenceService.activateLicences(licencesToActivate.standardLicences.map { it.licence }, LICENCE_ACTIVATION)
     licenceService.inactivateLicences(ineligibleLicences.map { it.licence }, LICENCE_DEACTIVATION)
 
@@ -102,18 +104,27 @@ class LicenceActivationService(
     val immigrationDetaineeBookingIds = immigrationDetainees.mapNotNull { it.bookingId?.toLong() }
     val nonImmigrationBookingIds = nonImmigrationDetainees.mapNotNull { it.bookingId?.toLong() }
 
-    val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(
+    val is91CourtEventOutcomeBookingIds = prisonApiClient.getCourtEventOutcomes(
       nonImmigrationBookingIds,
-      if (remandEnabled) Is91CourtEvents.getCodes() + RemandCourtEvents.getCodes() else Is91CourtEvents.getCodes(),
+      Is91CourtEvents.getCodes(),
     )
-
-    val iS91OutcomeBookingIds = courtEventOutcomes
       .filter { it.outcomeReasonCode in Is91CourtEvents.getCodes() }
       .map { it.bookingId }
 
-    val remandOutcomeBookingIds = courtEventOutcomes
-      .filter { it.outcomeReasonCode in RemandCourtEvents.getCodes() }
-      .map { it.bookingId }
+    val (iS91OutcomeBookingIds, nonIs91OutcomeBookingIds) = nonImmigrationBookingIds
+      .partition { it in is91CourtEventOutcomeBookingIds }
+
+    val nonIs91Prisoners = nonImmigrationDetainees
+      .filter { prisoner -> prisoner.bookingId?.toLong() in nonIs91OutcomeBookingIds }
+
+    val remandOutcomeBookingIds = if (remandEnabled) {
+      remandDeterminationService.getRemandBookingIds(nonIs91Prisoners).toSet()
+    } else {
+      prisonApiClient.getCourtEventOutcomes(nonIs91OutcomeBookingIds, RemandCourtEvents.getCodes())
+        .filter { it.outcomeReasonCode in RemandCourtEvents.getCodes() }
+        .map { it.bookingId }
+        .toSet()
+    }
 
     val iS91BookingIds = immigrationDetaineeBookingIds + iS91OutcomeBookingIds
     val (iS91Licences, nonIs91Licences) = licences.partition { it.bookingId in iS91BookingIds }
@@ -128,6 +139,8 @@ class LicenceActivationService(
     )
 
   private fun isPassedLicenceStartDate(licenceStartDate: LocalDate?): Boolean = licenceStartDate != null && licenceStartDate <= LocalDate.now()
+
+  private fun remandActivationReason(): String = if (remandEnabled) REMAND_LICENCE_ACTIVATION else REMAND_LICENCE_ACTIVATION_COURT_OUTCOME_CHECK
 
   private fun updateChangedBookings(licences: List<LicenceWithPrisoner>) {
     val licencesWithChangedBooking = licences.filter { it.licence.bookingId != it.bookingId }
@@ -156,6 +169,7 @@ class LicenceActivationService(
     private val log = LoggerFactory.getLogger(this::class.java)
     const val IS91_LICENCE_ACTIVATION = "IS91 licence automatically activated via repeating job"
     const val REMAND_LICENCE_ACTIVATION = "Remand licence automatically activated via repeating job"
+    const val REMAND_LICENCE_ACTIVATION_COURT_OUTCOME_CHECK = "Remand licence automatically activated via repeating job (court outcome check)"
     const val LICENCE_ACTIVATION = "Licence automatically activated via repeating job"
     const val LICENCE_DEACTIVATION = "Licence automatically deactivated as booking ID has approved HDC licence"
   }
