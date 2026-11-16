@@ -63,11 +63,6 @@ class HdcStatusChangedHandler(
     logEventProcessed(HdcCvlEventType.ADDRESS_WITHDRAWN, event)
   }
 
-  fun handleAddressChangedToApprovedPremises(message: String, eventType: HdcCvlEventType) {
-    val event = parseEvent(message)
-    logEventProcessed(eventType, event)
-  }
-
   fun handleComCompletesAddressChecks(message: String) {
     val event = parseEvent(message)
     logEventProcessed(HdcCvlEventType.COM_COMPLETES_ADDRESS_CHECKS, event)
