@@ -5,8 +5,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
-import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
@@ -37,27 +36,21 @@ class RemandAndSentencingApiClientTest {
   }
 
   @Test
-  fun `get the person statuses for a list of prison numbers`() {
+  fun `get the remand outcome for a prison number`() {
     val prisonNumber = "A1234AA"
-    val personStatus = PersonStatus(isOnRemand = true, isCurrentlyOnRecall = false)
+    val remandOutcome = RemandOutcome(isOnRemand = true)
 
     wiremock.stubFor(
-      post(urlEqualTo("/person/statuses"))
-        .withRequestBody(equalToJson(objectMapper.writeValueAsString(PersonStatusesRequest(listOf(prisonNumber)))))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-              objectMapper.writeValueAsString(
-                PersonStatusesResponse(mapOf(prisonNumber to personStatus)),
-              ),
-            )
-            .withStatus(200),
-        ),
+      get(urlEqualTo("/person/$prisonNumber/status")).willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(objectMapper.writeValueAsString(remandOutcome))
+          .withStatus(200),
+      ),
     )
 
-    val response = remandAndSentencingApiClient.getPersonStatuses(listOf(prisonNumber))
+    val response = remandAndSentencingApiClient.getRemandOutcome(prisonNumber)
 
-    assertThat(response).isEqualTo(PersonStatusesResponse(mapOf(prisonNumber to personStatus)))
+    assertThat(response).isEqualTo(remandOutcome)
   }
 }
