@@ -63,8 +63,8 @@ class HdcStatusChangedHandler(
     logEventProcessed(HdcCvlEventType.ADDRESS_WITHDRAWN, event)
   }
 
-  fun handleComCompletesAddressChecks(message: String) {
+  fun handleRiskChecksSubmitted(message: String) {
     val event = parseEvent(message)
-    logEventProcessed(HdcCvlEventType.COM_COMPLETES_ADDRESS_CHECKS, event)
+    logEventProcessed(HdcCvlEventType.RISK_CHECKS_SUBMITTED, event)
   }
 }

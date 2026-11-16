@@ -39,24 +39,24 @@ class HdcEventsListenerTest {
   }
 
   @Test
-  fun `onMessage processes COM_COMPLETES_ADDRESS_CHECKS event successfully`() {
+  fun `onMessage processes RISK_CHECKS_SUBMITTED event successfully`() {
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),
       licenceId = 123L,
       bookingId = 456L,
       nomsNumber = "A1234BC",
       triggeredBy = "test.user",
-      reason = "COM completed address checks",
+      reason = "Risk checks submitted",
     )
     val eventJson = mapper.writeValueAsString(event)
     val message = GenericMessage(
       eventJson,
-      mapOf("eventType" to "COM_COMPLETES_ADDRESS_CHECKS"),
+      mapOf("eventType" to "RISK_CHECKS_SUBMITTED"),
     )
 
     listener.onMessage(message)
 
-    verify(handler).handleComCompletesAddressChecks(eventJson)
+    verify(handler).handleRiskChecksSubmitted(eventJson)
   }
 
   @Test

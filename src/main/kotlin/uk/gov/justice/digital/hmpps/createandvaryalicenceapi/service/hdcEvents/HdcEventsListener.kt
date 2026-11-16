@@ -7,12 +7,12 @@ import org.springframework.messaging.Message
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.ADDRESS_WITHDRAWN
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.COM_COMPLETES_ADDRESS_CHECKS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.POSTPONE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.RESUME
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.RISK_CHECKS_SUBMITTED
 
 @ConditionalOnProperty(name = ["hdc.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service
@@ -43,7 +43,7 @@ class HdcEventsListener(
         RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
         OPT_IN -> hdcStatusChangedHandler.handleOptIn(rawMessage)
         ADDRESS_WITHDRAWN -> hdcStatusChangedHandler.handleAddressWithdrawn(rawMessage)
-        COM_COMPLETES_ADDRESS_CHECKS -> hdcStatusChangedHandler.handleComCompletesAddressChecks(rawMessage)
+        RISK_CHECKS_SUBMITTED -> hdcStatusChangedHandler.handleRiskChecksSubmitted(rawMessage)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)

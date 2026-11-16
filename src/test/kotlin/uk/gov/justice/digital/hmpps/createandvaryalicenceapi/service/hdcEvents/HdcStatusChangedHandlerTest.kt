@@ -103,8 +103,8 @@ class HdcStatusChangedHandlerTest {
   }
 
   @Test
-  fun `handleComCompletesAddressChecks processes event without changing the licence`() {
-    handler.handleComCompletesAddressChecks(eventJson)
+  fun `handleRiskChecksSubmitted processes event without changing the licence`() {
+    handler.handleRiskChecksSubmitted(eventJson)
 
     verifyNoInteractions(hdcLifecycleService)
   }
