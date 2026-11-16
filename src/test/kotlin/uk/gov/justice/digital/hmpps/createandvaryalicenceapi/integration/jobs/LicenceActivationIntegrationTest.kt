@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -124,7 +123,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         CurrentPrisonerHdcStatus(345, HdcStatus.APPROVED),
       ),
     )
-    remandAndSentencingApiMockServer.stubRemandStatuses(setOf("A1234AG"))
   }
 
   private companion object {
@@ -136,9 +134,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @RegisterExtension
-    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
 
     private val mapper: ObjectMapper = createTestMapper()
     val mockPrisoners = mapper.writeValueAsString(
@@ -267,7 +262,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         PrisonerSearchPrisoner(
           prisonerNumber = "A1234AG",
           bookingId = "901",
-          status = "ACTIVE IN",
+          status = "INACTIVE",
           mostSeriousOffence = "Robbery",
           licenceExpiryDate = LocalDate.now().plusYears(1),
           sentenceExpiryDate = LocalDate.now().plusYears(1),
