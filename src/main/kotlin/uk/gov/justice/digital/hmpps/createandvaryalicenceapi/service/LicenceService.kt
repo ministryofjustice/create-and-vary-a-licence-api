@@ -184,7 +184,8 @@ class LicenceService(
 
     is HdcLicence -> {
       val linkTypes = licenceLinkingService.getLinkTypesToLicence(licence.id)
-      val bookingIdsToHdcStatus = hdcService.getHdcStatus(listOf(licence), { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
+      val bookingIdsToHdcStatus =
+        hdcService.getHdcStatus(listOf(licence), { it.bookingId }, { it.homeDetentionCurfewEligibilityDate })
       toHdc(
         licence = licence,
         earliestReleaseDate = earliestReleaseDate,
