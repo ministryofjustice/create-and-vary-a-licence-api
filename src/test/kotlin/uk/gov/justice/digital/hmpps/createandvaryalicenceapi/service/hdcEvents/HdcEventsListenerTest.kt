@@ -39,24 +39,24 @@ class HdcEventsListenerTest {
   }
 
   @Test
-  fun `onMessage processes RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES event successfully`() {
+  fun `onMessage processes RISK_CHECKS_SUBMITTED event successfully`() {
     val event = HdcStatusChangedEvent(
       occurredAt = LocalDateTime.now(),
       licenceId = 123L,
       bookingId = 456L,
       nomsNumber = "A1234BC",
       triggeredBy = "test.user",
-      reason = "Residential address changed to approved premises",
+      reason = "Risk checks submitted",
     )
     val eventJson = mapper.writeValueAsString(event)
     val message = GenericMessage(
       eventJson,
-      mapOf("eventType" to "RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES"),
+      mapOf("eventType" to "RISK_CHECKS_SUBMITTED"),
     )
 
     listener.onMessage(message)
 
-    verify(handler).handleAddressChangedToApprovedPremises(eventJson, HdcCvlEventType.RESIDENTIAL_ADDRESS_CHANGED_TO_APPROVED_PREMISES)
+    verify(handler).handleRiskChecksSubmitted(eventJson)
   }
 
   @Test
