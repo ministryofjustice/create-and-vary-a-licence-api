@@ -16,7 +16,6 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -209,7 +208,6 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
 
     prisonerSearchApiClient.stubSearchPrisonersByNomisIds()
     prisonApiClient.stubGetCourtOutcomes()
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     webTestClient.put()
       .uri("/licence/id/1/override/dates")
@@ -253,8 +251,5 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val prisonerSearchApiClient = PrisonerSearchMockServer()
-
-    @RegisterExtension
-    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }
