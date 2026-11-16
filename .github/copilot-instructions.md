@@ -20,7 +20,8 @@ Docker image to the MoJ Cloud Platform. Main client is the `create-and-vary-a-li
 - Static analysis: `./gradlew detekt` (baseline in `detekt-baseline.xml`/`detekt-baseline-main.xml`; regenerate with
   `./gradlew detektBaseline`)
 - `./gradlew check` runs both `ktlintCheck` and `detekt`.
-- Run locally with local DB/wiremock containers: `./run-local.sh` (add `--skip-docker` to skip restarting containers).
+- Run locally with local DB/wiremock containers: `make run` (starts any missing containers; `make run-skip-docker`
+  skips container handling, `make stop` stops them, `make clean` also runs gradle clean and removes containers/volumes, `make update` upgrades the gradle wrapper and runs `useLatestVersions`, `make prune` additionally removes images; the stop/clean/prune targets don't start the service)
 - Install pre-commit hooks (ktlint + detekt): `./gradlew installLocalGitHook`.
 
 ### Subject Access Request (SAR)

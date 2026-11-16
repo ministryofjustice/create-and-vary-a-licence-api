@@ -33,7 +33,7 @@ dependencies {
   // END of CVE-2025-67735 - Remove when fixed
 
   // Fix for CVE-2025-48924
-  implementation("org.apache.commons:commons-lang3:3.21.0")
+  implementation("org.apache.commons:commons-lang3:3.22.0")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -60,7 +60,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
 
   // Digital prison reporting
-  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:18.2.5")
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:18.6.2")
 
   // To help override SAR
   implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.1")
