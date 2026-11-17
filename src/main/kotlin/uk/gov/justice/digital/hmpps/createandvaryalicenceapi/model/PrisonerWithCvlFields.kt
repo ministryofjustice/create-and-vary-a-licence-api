@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -59,6 +60,9 @@ data class CvlFields(
 
   @field:Schema(description = "A boolean flag denoting whether the licence is for a time served case")
   val isTimeServed: Boolean = creationKind == LicenceKind.TIME_SERVED,
+
+  @field:Schema(description = "The prisoners current HDC status", example = "APPROVED")
+  val hdcStatus: HdcStatus,
 )
 
 @Schema(description = "A combination of the NOMIS prisoner record and additional CVL fields")
