@@ -408,8 +408,29 @@ class HdcLifecycleServiceTest {
 
     service.postponeLicence("A1234BC")
 
-    verify(hdcApplicationRepository, times(1)).save(any())
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository, times(1)).save(capture())
+      assertThat(firstValue.licence).isSameAs(hdcLicence)
+      assertThat(firstValue.isPostponed).isTrue()
+      assertThat(firstValue.proposedAccommodationType).isNull()
+    }
     verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
+  }
+
+  @Test
+  fun `postpone updates the existing application without changing its accommodation type`() {
+    val licence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = IN_PROGRESS)
+    val application = HdcApplication(licence = licence, isPostponed = false, proposedAccommodationType = AccommodationType.CAS_2)
+    licence.application = application
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(licence))
+
+    service.postponeLicence("A1234BC")
+
+    assertThat(application.isPostponed).isTrue()
+    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+    assertThat(application.dateLastUpdated).isNotNull()
+    verify(hdcApplicationRepository, never()).save(any())
+    verify(auditService).recordAuditEventHdcLicencePostponementChange(licence, true)
   }
 
   @Test
@@ -486,7 +507,6 @@ class HdcLifecycleServiceTest {
       editLicence.approvedDate = LocalDateTime.of(2024, 1, 11, 9, 0)
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcApplicationRepository.findByLicenceId(editLicence.id)).thenReturn(null)
       whenever(
         licenceService.inactivateLicences(
           listOf(approvedLicence),
@@ -525,8 +545,6 @@ class HdcLifecycleServiceTest {
       editLicence.nomsId = "A1234BC"
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcApplicationRepository.findByLicenceId(editLicence.id)).thenReturn(null)
-      whenever(hdcApplicationRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
       whenever(
         licenceService.inactivateLicences(
           listOf(approvedLicence),
@@ -559,7 +577,6 @@ class HdcLifecycleServiceTest {
       hdcLicence.approvedByName = "Approver Name"
       hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcApplicationRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
       service.postponeLicence("A1234BC")
@@ -596,7 +613,6 @@ class HdcLifecycleServiceTest {
       val originalUpdatedAt = hdcLicence.dateLastUpdated
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcApplicationRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
       service.postponeLicence("A1234BC")

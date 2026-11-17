@@ -181,7 +181,7 @@ class HdcLifecycleService(
   private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
     val operation = if (isPostponed) "Postponing" else "Resuming"
     log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
-    val existing = hdcApplicationRepository.findByLicenceId(licence.id)
+    val existing = licence.application
 
     if (existing != null) {
       existing.isPostponed = isPostponed
