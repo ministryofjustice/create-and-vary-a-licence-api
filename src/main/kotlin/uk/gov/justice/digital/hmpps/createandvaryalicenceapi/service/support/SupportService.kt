@@ -40,6 +40,7 @@ class SupportService(
       remandSupportInfo = getRemandInfo(bookingId),
       is91SupportInfo = is91SupportInfo,
       nomisHdcSupportInfo = hdcService.getNomisHdcStatus(bookingId)?.let { HdcSupportInfo(it) },
+      eligibilityAssessment = getIneligibilityReasons(prisonerNumber),
     )
   }
 

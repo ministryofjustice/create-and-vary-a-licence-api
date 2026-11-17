@@ -82,6 +82,11 @@ class SupportControllerTest {
   fun `get support info`() {
     whenever(supportService.getSupportInfo("A1234AA")).thenReturn(
       SupportInfo(
+        isIS91Case = null,
+        remandSupportInfo = null,
+        is91SupportInfo = null,
+        nomisHdcSupportInfo = null,
+        eligibilityAssessment = null,
         recallSupportInfo = RecallSupportInfo(
           recallType = RecallType.STANDARD,
           recallName = "Standard Recall",
