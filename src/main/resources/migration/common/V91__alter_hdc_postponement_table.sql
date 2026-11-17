@@ -2,7 +2,9 @@ ALTER TABLE hdc_postponement
     RENAME TO hdc_application;
 
 ALTER TABLE hdc_application
-    ADD COLUMN proposed_accommodation_type TEXT;
+    ADD COLUMN proposed_accommodation_type TEXT,
+    ADD CONSTRAINT chk_hdc_application_proposed_accommodation_type_valid
+        CHECK (proposed_accommodation_type IN ('RESIDENTIAL', 'CAS_1_APPROVED_PREMISES', 'CAS_2'));
 
 ALTER TABLE hdc_application
     ALTER COLUMN is_postponed SET DEFAULT false;
