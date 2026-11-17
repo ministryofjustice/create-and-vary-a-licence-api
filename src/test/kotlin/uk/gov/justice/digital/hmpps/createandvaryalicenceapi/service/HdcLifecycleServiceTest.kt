@@ -24,11 +24,16 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
@@ -89,6 +94,70 @@ class HdcLifecycleServiceTest {
       licenceService,
       licenceLinkingService,
     )
+  }
+
+  @Test
+  fun `populateOnCreation stores proposed type and curfew address`() {
+    val licence = createHdcLicence()
+    val address = CurfewAddress("123 Test Street", null, "Test Town", "AB1 2CD", AccommodationType.RESIDENTIAL)
+    whenever(hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, curfewAddress = address, proposeAddressType = AccommodationType.RESIDENTIAL),
+    )
+
+    service.populateOnCreation(licence)
+
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+      assertThat(firstValue.isPostponed).isFalse()
+    }
+    argumentCaptor<HdcCurfewAddress>().apply {
+      verify(hdcCurfewAddressRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.accommodationType).isEqualTo(RESIDENTIAL)
+      assertThat(firstValue.firstLine).isEqualTo(address.addressLine1)
+      assertThat(firstValue.townOrCity).isEqualTo(address.townOrCity)
+      assertThat(firstValue.postcode).isEqualTo(address.postcode)
+      assertThat(firstValue.source).isEqualTo(HDC_CREATION)
+    }
+  }
+
+  @Test
+  fun `populateOnCreation stores CAS2 proposed type without curfew address`() {
+    val licence = createHdcLicence()
+    whenever(hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.RISK_CHECKS_COMPLETE, proposeAddressType = AccommodationType.CAS_2),
+    )
+
+    service.populateOnCreation(licence)
+
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+      assertThat(firstValue.isPostponed).isFalse()
+    }
+    verifyNoInteractions(hdcCurfewAddressRepository)
+  }
+
+  @Test
+  fun `populateApplicationOnEdit stores the proposed type without adding a curfew address`() {
+    val licence = createHdcLicence()
+    val address = CurfewAddress("123 Test Street", null, "Test Town", "AB1 2CD", AccommodationType.RESIDENTIAL)
+    whenever(hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, curfewAddress = address, proposeAddressType = AccommodationType.RESIDENTIAL),
+    )
+
+    service.populateApplicationOnEdit(licence)
+
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.isPostponed).isFalse()
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    }
+    verifyNoInteractions(hdcCurfewAddressRepository)
   }
 
   @ParameterizedTest
@@ -231,6 +300,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
     whenever(hdcLicenceFactory.createFromCrd(crdLicence, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     // When
     service.convertToHdcLicence("A1234AA")
@@ -288,6 +360,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
     whenever(hdcLicenceFactory.createFromCrd(edit, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(edit, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     // When
     service.convertToHdcLicence("A1234AA")
@@ -336,6 +411,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
     whenever(hdcLicenceFactory.createFromCrd(crdLicence, null, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     service.convertToHdcLicence("A1234AA")
 
