@@ -289,6 +289,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
     whenever(hdcLicenceFactory.createFromCrd(crdLicence, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     // When
     service.convertToHdcLicence("A1234AA")
@@ -324,6 +327,13 @@ class HdcLifecycleServiceTest {
       eventDescription = "This HDC licence was converted from CRD licence on OPT_IN",
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(crdLicence.id, populatedHdc.id)
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(populatedHdc)
+      assertThat(firstValue.isPostponed).isFalse()
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+    }
+    verifyNoInteractions(hdcCurfewAddressRepository)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
@@ -345,6 +355,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
     whenever(hdcLicenceFactory.createFromCrd(edit, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(edit, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     // When
     service.convertToHdcLicence("A1234AA")
@@ -393,6 +406,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
     whenever(hdcLicenceFactory.createFromCrd(crdLicence, null, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     service.convertToHdcLicence("A1234AA")
 

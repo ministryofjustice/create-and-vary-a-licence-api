@@ -230,11 +230,12 @@ class HdcLifecycleService(
       val newLicence = licenceService.populateCopy(
         original = licenceToConvert,
         copy = hdcCopy,
-      )
+      ) as HdcLicenceEntity
 
       addConversionAudits(licenceToConvert, newLicence, OPT_IN)
       addLicenceConversionEvents(licenceToConvert, newLicence, OPT_IN)
       addLicenceLinking(OPT_IN, licenceToConvert, newLicence)
+      populateOnCreation(newLicence)
     }
   }
 
