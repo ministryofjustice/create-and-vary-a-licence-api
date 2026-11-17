@@ -444,7 +444,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
     assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
-      .containsExactlyInAnyOrder(tuple(2L, true))
+      .containsExactlyInAnyOrder(tuple(1L, false), tuple(2L, true))
   }
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
@@ -472,7 +472,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(updatedSubmittedLicence.approvedDate).isNull()
     assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
-      .containsExactly(tuple(2L, true))
+      .containsExactlyInAnyOrder(tuple(1L, false), tuple(2L, true))
 
     assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }

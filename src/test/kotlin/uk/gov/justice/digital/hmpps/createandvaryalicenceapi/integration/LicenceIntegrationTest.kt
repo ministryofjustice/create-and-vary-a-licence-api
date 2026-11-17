@@ -27,8 +27,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DocumentApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
@@ -751,6 +753,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-approved-hdc-licence-id-1.sql",
+    "classpath:test_data/seed-hdc-curfew-address.sql",
   )
   fun `Edit an approved HDC licence`() {
     // Given
@@ -759,12 +762,22 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
     prisonApiMockServer.stubGetCourtOutcomes()
+    hdcApiMockServer.stubGetHdcLicenceData(12345L)
 
     // When
     val result = postRequest(uri, roles)
 
     // Then
     assertEdit(result, LicenceKind.HDC)
+    val application = testRepository.findAllHdcApplications().single()
+    assertThat(application.licence.id).isNotEqualTo(1L)
+    assertThat(application.isPostponed).isFalse()
+    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    val addresses = testRepository.findAllHdcCurfewAddresses()
+    assertThat(addresses).hasSize(2)
+    val copiedAddress = addresses.single { it.licence.id == application.licence.id }
+    assertThat(copiedAddress.firstLine).isEqualTo("1 Some Address")
+    assertThat(copiedAddress.source).isEqualTo(AddressSource.MANUAL)
   }
 
   @Test
@@ -1355,5 +1368,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
+    val hdcApiMockServer = HdcApiMockServer()
   }
 }

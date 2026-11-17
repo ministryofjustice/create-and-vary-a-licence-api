@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.core.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -101,6 +102,7 @@ class LicenceService(
   private val licenceConditionService: LicenceConditionService,
   private val licenceLinkingService: LicenceLinkingService,
   private val hdcService: HdcService,
+  @param:Lazy private val hdcLifecycleService: HdcLifecycleService,
 ) {
 
   @Transactional(readOnly = true)
@@ -679,6 +681,9 @@ class LicenceService(
     }
 
     val licenceCopy = populateCopy(licence, copyToEdit)
+    if (licenceCopy is HdcLicence) {
+      hdcLifecycleService.populateApplicationOnEdit(licenceCopy)
+    }
     createLicenceEventForCopy(licence, licenceCopy, creator)
     createAuditEventForCopy(licence, licenceCopy, creator)
 

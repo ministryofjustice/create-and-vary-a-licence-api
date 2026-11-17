@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
@@ -56,13 +57,7 @@ class HdcLifecycleService(
     val hdcLicenceData = hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)
     val curfewAddress = hdcLicenceData.curfewAddress
 
-    hdcApplicationRepository.saveAndFlush(
-      HdcApplication(
-        licence = licence,
-        isPostponed = false,
-        proposedAccommodationType = hdcLicenceData.proposeAddressType,
-      ),
-    )
+    saveApplication(licence, hdcLicenceData.proposeAddressType)
 
     if (curfewAddress != null) {
       val curfewAddressEntity = HdcCurfewAddress(
@@ -82,6 +77,21 @@ class HdcLifecycleService(
       licence.id,
       hdcLicenceData.proposeAddressType,
       curfewAddress != null,
+    )
+  }
+
+  fun populateApplicationOnEdit(licence: HdcLicenceEntity) {
+    val hdcLicenceData = hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)
+    saveApplication(licence, hdcLicenceData.proposeAddressType)
+  }
+
+  private fun saveApplication(licence: HdcLicenceEntity, proposedAccommodationType: AccommodationType?) {
+    hdcApplicationRepository.saveAndFlush(
+      HdcApplication(
+        licence = licence,
+        isPostponed = false,
+        proposedAccommodationType = proposedAccommodationType,
+      ),
     )
   }
 
@@ -181,20 +191,11 @@ class HdcLifecycleService(
   private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
     val operation = if (isPostponed) "Postponing" else "Resuming"
     log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
-    val existing = licence.application
-
-    if (existing != null) {
-      existing.isPostponed = isPostponed
-      existing.dateLastUpdated = LocalDateTime.now()
-    } else {
-      hdcApplicationRepository.save(
-        HdcApplication(
-          licence = licence,
-          isPostponed = isPostponed,
-          proposedAccommodationType = null,
-        ),
-      )
+    val application = requireNotNull(licence.application) {
+      "HDC application not found for licence ${licence.id}"
     }
+    application.isPostponed = isPostponed
+    application.dateLastUpdated = LocalDateTime.now()
 
     auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
   }
