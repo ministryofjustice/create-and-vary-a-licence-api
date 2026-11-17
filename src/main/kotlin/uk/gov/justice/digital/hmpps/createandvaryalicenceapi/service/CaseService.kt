@@ -44,6 +44,7 @@ class CaseService(
         eligibleKind = cvlRecord.eligibleKind,
         hardStopKind = cvlRecord.creationKind,
         creationKind = cvlRecord.creationKind,
+        hdcStatus = cvlRecord.hdcStatus,
       ),
     )
   }
