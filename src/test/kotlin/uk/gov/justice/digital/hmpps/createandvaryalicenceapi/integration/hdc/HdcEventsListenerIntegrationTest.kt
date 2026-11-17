@@ -405,7 +405,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.findLicence(2L).statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(tuple(2L, true))
   }
@@ -433,7 +433,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(updatedSubmittedLicence.approvedByUsername).isNull()
     assertThat(updatedSubmittedLicence.approvedByName).isNull()
     assertThat(updatedSubmittedLicence.approvedDate).isNull()
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
       .containsExactly(tuple(2L, true))
 
@@ -519,7 +519,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         assertThat(it.detail).contains("SUBMITTED").contains("IN_PROGRESS")
       }
 
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(
@@ -553,7 +553,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val inProgressEdit = testRepository.findLicence(2L)
     assertThat(inProgressEdit.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(tuple(1L, true), tuple(2L, true))
 
@@ -585,7 +585,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(hdcStatusChangedHandler).handlePostpone(postponeEventJson)
     verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
 
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(
@@ -600,7 +600,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertSqsProcessed(timesProcessed = 2)
     verify(hdcStatusChangedHandler).handleResume(resumeEventJson)
 
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(tuple(1L, true), tuple(2L, false))

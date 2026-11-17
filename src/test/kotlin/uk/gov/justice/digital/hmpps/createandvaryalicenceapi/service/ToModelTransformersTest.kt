@@ -60,7 +60,7 @@ class ToModelTransformersTest {
   @Test
   fun `toHdc maps the postponement state`() {
     val licence = TestData.createHdcLicence().apply {
-      postponement = HdcApplication(licence = this, isPostponed = true, proposedAccommodationType = null)
+      application = HdcApplication(licence = this, isPostponed = true, proposedAccommodationType = null)
     }
 
     val result = toHdc(

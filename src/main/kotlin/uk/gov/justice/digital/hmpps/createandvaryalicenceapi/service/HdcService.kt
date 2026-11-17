@@ -7,18 +7,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddHdcCurfewAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -42,46 +38,10 @@ class HdcService(
   private val staffRepository: StaffRepository,
   private val auditService: AuditService,
   private val clock: Clock,
-  private val hdcApplicationRepository: HdcApplicationRepository,
-  private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
   @param:Value("\${feature.toggle.hdcCreation.enabled}") private val useCurrentHdcStatus: Boolean = false,
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
-
-  fun populateOnCreation(licence: HdcLicenceEntity) {
-    log.debug("Fetching HDC data for licenceId={}, bookingId={}", licence.id, licence.bookingId)
-    val hdcLicenceData = getHdcLicenceDataByBookingId(licence.bookingId!!)
-    val curfewAddress = hdcLicenceData.curfewAddress
-
-    hdcApplicationRepository.saveAndFlush(
-      HdcApplication(
-        licence = licence,
-        isPostponed = false,
-        proposedAccommodationType = hdcLicenceData.proposeAddressType,
-      ),
-    )
-
-    if (curfewAddress != null) {
-      val curfewAddressEntity = HdcCurfewAddress(
-        licence = licence,
-        accommodationType = curfewAddress.curfewAddressType.cvlAccommodationType,
-        firstLine = curfewAddress.addressLine1!!,
-        secondLine = curfewAddress.addressLine2,
-        townOrCity = curfewAddress.townOrCity!!,
-        postcode = curfewAddress.postcode!!,
-        source = AddressSource.HDC_CREATION,
-        reference = UUID.randomUUID().toString(),
-      )
-      hdcCurfewAddressRepository.saveAndFlush(curfewAddressEntity)
-    }
-    log.debug(
-      "HDC data saved for licenceId={}, proposedAccommodationType={}, curfewAddressPresent={}",
-      licence.id,
-      hdcLicenceData.proposeAddressType,
-      curfewAddress != null,
-    )
-  }
 
   fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
 

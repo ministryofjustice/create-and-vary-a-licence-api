@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -53,7 +54,7 @@ class LicenceCreationService(
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
-  private val hdcService: HdcService,
+  @param:Lazy private val hdcLifecycleService: HdcLifecycleService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -148,7 +149,7 @@ class LicenceCreationService(
     recordLicenceCreation(createdBy, createdLicence, nomisRecord)
 
     if (createdLicence is HdcLicenceEntity) {
-      hdcService.populateOnCreation(createdLicence)
+      hdcLifecycleService.populateOnCreation(createdLicence)
     }
 
     return CreateLicenceResponse(createdLicence.id)

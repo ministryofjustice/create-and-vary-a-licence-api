@@ -230,10 +230,10 @@ class TestRepository(
     return addresses
   }
 
-  fun findAllHdcPostponements(): List<HdcApplication> {
-    val postponements = hdcApplicationRepository.findAll()
-    postponements.forEach { Hibernate.initialize(it.licence) }
-    return postponements
+  fun findAllHdcApplications(): List<HdcApplication> {
+    val applications = hdcApplicationRepository.findAll()
+    applications.forEach { Hibernate.initialize(it.licence) }
+    return applications
   }
 
   fun findWeeklyCurfewTimes(licenceId: Long): List<CurfewTimes> {

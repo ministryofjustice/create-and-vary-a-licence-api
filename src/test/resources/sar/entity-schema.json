@@ -237,6 +237,7 @@
   "HdcLicence": {
     "actualReleaseDate": "LocalDate",
     "additionalConditions": "List",
+    "application": "HdcApplication",
     "approvedByName": "String",
     "approvedByUsername": "String",
     "approvedDate": "LocalDateTime",
@@ -268,7 +269,6 @@
     "nomsId": "String",
     "pnc": "String",
     "postRecallReleaseDate": "LocalDate",
-    "postponement": "HdcApplication",
     "prisonCode": "String",
     "prisonDescription": "String",
     "prisonTelephone": "String",

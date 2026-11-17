@@ -66,7 +66,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody!!
 
-    val application = testRepository.findAllHdcPostponements().single()
+    val application = testRepository.findAllHdcApplications().single()
     assertThat(application.licence.id).isEqualTo(result.licenceId)
     assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
     assertThat(application.isPostponed).isFalse()
@@ -92,7 +92,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .expectBody(CreateLicenceResponse::class.java)
       .returnResult().responseBody!!
 
-    val application = testRepository.findAllHdcPostponements().single()
+    val application = testRepository.findAllHdcApplications().single()
     assertThat(application.licence.id).isEqualTo(result.licenceId)
     assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
     assertThat(application.isPostponed).isFalse()
