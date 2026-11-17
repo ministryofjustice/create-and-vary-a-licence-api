@@ -90,7 +90,7 @@ class LicenceCreationServiceTest {
   private val telemetryService = mock<TelemetryService>()
   private val timeServedExternalRecordsService = mock<TimeServedExternalRecordService>()
   private val caseService = mock<CaseService>()
-  private val hdcLifecycleService = mock<HdcLifecycleService>()
+  private val hdcApplicationService = mock<HdcApplicationService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -108,7 +108,7 @@ class LicenceCreationServiceTest {
     telemetryService,
     timeServedExternalRecordsService,
     caseService,
-    hdcLifecycleService,
+    hdcApplicationService,
   )
 
   @Nested
@@ -1860,7 +1860,7 @@ class LicenceCreationServiceTest {
       service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<HdcLicence>().apply {
-        verify(hdcLifecycleService).populateOnCreation(capture())
+        verify(hdcApplicationService).populateOnCreation(capture())
         assertThat(firstValue.nomsId).isEqualTo(prisonerSearchResult().prisonerNumber)
       }
     }

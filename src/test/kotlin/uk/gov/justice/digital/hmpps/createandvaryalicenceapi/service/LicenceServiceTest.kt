@@ -134,7 +134,7 @@ class LicenceServiceTest {
   private val licenceConditionService = mock<LicenceConditionService>()
   private val licenceLinkingService = mock<LicenceLinkingService>()
   private val hdcService = mock<HdcService>()
-  private val hdcLifecycleService = mock<HdcLifecycleService>()
+  private val hdcApplicationService = mock<HdcApplicationService>()
 
   private val service =
     LicenceService(
@@ -158,7 +158,7 @@ class LicenceServiceTest {
       licenceConditionService,
       licenceLinkingService,
       hdcService,
-      hdcLifecycleService,
+      hdcApplicationService,
     )
 
   @BeforeEach
@@ -3529,7 +3529,7 @@ class LicenceServiceTest {
           licenceConditionService,
           licenceLinkingService,
           hdcService,
-          hdcLifecycleService,
+          hdcApplicationService,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = SUBMITTED)
@@ -4079,7 +4079,7 @@ class LicenceServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       with(licenceCaptor.value as HdcLicence) {
-        verify(hdcLifecycleService).populateApplicationOnEdit(this)
+        verify(hdcApplicationService).populateApplicationOnEdit(this)
         assertThat(version).isEqualTo("2.1")
         assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
         assertThat(versionOfId).isEqualTo(1)
