@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
@@ -148,9 +148,10 @@ class HdcLifecycleService(
       existing.dateLastUpdated = LocalDateTime.now()
     } else {
       hdcApplicationRepository.save(
-        HdcPostponement(
+        HdcApplication(
           licence = licence,
           isPostponed = isPostponed,
+          proposedAccommodationType = null,
         ),
       )
     }

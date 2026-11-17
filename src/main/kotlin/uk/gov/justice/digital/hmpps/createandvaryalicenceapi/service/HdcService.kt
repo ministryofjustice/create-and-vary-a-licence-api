@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
@@ -55,8 +55,9 @@ class HdcService(
     val curfewAddress = hdcLicenceData.curfewAddress
 
     hdcApplicationRepository.saveAndFlush(
-      HdcPostponement(
+      HdcApplication(
         licence = licence,
+        isPostponed = false,
         proposedAccommodationType = hdcLicenceData.proposeAddressType,
       ),
     )

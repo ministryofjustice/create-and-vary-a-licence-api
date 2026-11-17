@@ -43,7 +43,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy
-            LEFT JOIN HdcPostponement hp ON hp.licence = l
+            LEFT JOIN HdcApplication hp ON hp.licence = l
         WHERE l.statusCode IN :statusCodes AND l.prisonCode IN :prisonCodes
         ORDER BY l.licenceStartDate ASC
     """,
@@ -81,7 +81,7 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy
-            LEFT JOIN HdcPostponement hp ON hp.licence = l
+            LEFT JOIN HdcApplication hp ON hp.licence = l
         WHERE l.statusCode IN :statusCodes AND l.crn IN :crns
         ORDER BY l.licenceStartDate ASC
     """,

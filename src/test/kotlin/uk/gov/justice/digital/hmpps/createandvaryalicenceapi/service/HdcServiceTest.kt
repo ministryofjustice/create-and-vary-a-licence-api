@@ -23,8 +23,8 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.HDC_CREATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL_MIGRATED
@@ -129,7 +129,7 @@ class HdcServiceTest {
 
     service.populateOnCreation(licence)
 
-    argumentCaptor<HdcPostponement>().apply {
+    argumentCaptor<HdcApplication>().apply {
       verify(hdcApplicationRepository).saveAndFlush(capture())
       assertThat(firstValue.licence).isSameAs(licence)
       assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
@@ -155,7 +155,7 @@ class HdcServiceTest {
 
     service.populateOnCreation(licence)
 
-    argumentCaptor<HdcPostponement>().apply {
+    argumentCaptor<HdcApplication>().apply {
       verify(hdcApplicationRepository).saveAndFlush(capture())
       assertThat(firstValue.licence).isSameAs(licence)
       assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)

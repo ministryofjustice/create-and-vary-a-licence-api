@@ -209,6 +209,14 @@
     "updatedByUsername": "String",
     "version": "String"
   },
+  "HdcApplication": {
+    "dateCreated": "LocalDateTime",
+    "dateLastUpdated": "LocalDateTime",
+    "idInternal": "Long",
+    "isPostponed": "boolean",
+    "licence": "HdcLicence",
+    "proposedAccommodationType": "AccommodationType"
+  },
   "HdcCurfewAddress": {
     "accommodationType": "CvlAccommodationType",
     "county": "String",
@@ -260,7 +268,7 @@
     "nomsId": "String",
     "pnc": "String",
     "postRecallReleaseDate": "LocalDate",
-    "postponement": "HdcPostponement",
+    "postponement": "HdcApplication",
     "prisonCode": "String",
     "prisonDescription": "String",
     "prisonTelephone": "String",
@@ -290,14 +298,6 @@
     "version": "String",
     "versionOfId": "Long",
     "weeklyCurfewTimes": "List"
-  },
-  "HdcPostponement": {
-    "dateCreated": "LocalDateTime",
-    "dateLastUpdated": "LocalDateTime",
-    "idInternal": "Long",
-    "isPostponed": "boolean",
-    "licence": "HdcLicence",
-    "proposedAccommodationType": "AccommodationType"
   },
   "HdcVariationLicence": {
     "actualReleaseDate": "LocalDate",
