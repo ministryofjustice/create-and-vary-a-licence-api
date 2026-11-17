@@ -120,6 +120,15 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence.isPostponed).isTrue()
   }
 
+  @Test
+  @Sql("classpath:test_data/seed-hdc-licence-id-1.sql")
+  @Sql(statements = ["INSERT INTO hdc_application (licence_id) VALUES (1)"])
+  fun `HDC application defaults to not postponed`() {
+    val postponement = testRepository.findAllHdcPostponements().single()
+
+    assertThat(postponement.isPostponed).isFalse()
+  }
+
   @ParameterizedTest(name = "Get a licence using {0}")
   @MethodSource("cvlRoles")
   @Sql("classpath:test_data/seed-licence-id-1.sql")

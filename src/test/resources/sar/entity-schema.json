@@ -296,7 +296,8 @@
     "dateLastUpdated": "LocalDateTime",
     "idInternal": "Long",
     "isPostponed": "boolean",
-    "licence": "HdcLicence"
+    "licence": "HdcLicence",
+    "proposedAccommodationType": "AccommodationType"
   },
   "HdcVariationLicence": {
     "actualReleaseDate": "LocalDate",

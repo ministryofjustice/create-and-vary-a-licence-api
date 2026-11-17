@@ -3,12 +3,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import java.time.LocalDateTime
 
 @Entity
@@ -23,6 +26,10 @@ class HdcPostponement(
 
   @Column(name = "is_postponed", nullable = false)
   var isPostponed: Boolean = false,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "proposed_accommodation_type")
+  var proposedAccommodationType: AccommodationType? = null,
 
   @CreationTimestamp
   @Column(name = "date_created", nullable = false, updatable = false)

@@ -18,11 +18,14 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.HDC_CREATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.MANUAL_MIGRATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.OS_PLACES
@@ -35,6 +38,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Curfe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.FirstNightCurfewTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateFirstNightCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateWeeklyCurfewTimesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.communityOffenderManager
@@ -75,6 +80,8 @@ class HdcServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val auditService = mock<AuditService>()
+  private val hdcApplicationRepository = mock<HdcApplicationRepository>()
+  private val hdcCurfewAddressRepository = mock<HdcCurfewAddressRepository>()
 
   private val testClock = Clock.fixed(
     Instant.parse("2024-04-22T00:00:00Z"),
@@ -91,6 +98,8 @@ class HdcServiceTest {
       staffRepository,
       auditService,
       clock,
+      hdcApplicationRepository,
+      hdcCurfewAddressRepository,
     )
 
   @BeforeEach
@@ -108,6 +117,51 @@ class HdcServiceTest {
       staffRepository,
       auditService,
     )
+  }
+
+  @Test
+  fun `populateOnCreation stores proposed type and curfew address`() {
+    val licence = createHdcLicence()
+    val address = CurfewAddress("123 Test Street", null, "Test Town", "AB1 2CD", AccommodationType.RESIDENTIAL)
+    whenever(hdcApiClient.getByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicenceFromClient(status = HdcStatus.APPROVED, curfewAddress = address, proposeAddressType = AccommodationType.RESIDENTIAL),
+    )
+
+    service.populateOnCreation(licence)
+
+    argumentCaptor<HdcPostponement>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+      assertThat(firstValue.isPostponed).isFalse()
+    }
+    argumentCaptor<EntityHdcCurfewAddress>().apply {
+      verify(hdcCurfewAddressRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.accommodationType).isEqualTo(RESIDENTIAL)
+      assertThat(firstValue.firstLine).isEqualTo(address.addressLine1)
+      assertThat(firstValue.townOrCity).isEqualTo(address.townOrCity)
+      assertThat(firstValue.postcode).isEqualTo(address.postcode)
+      assertThat(firstValue.source).isEqualTo(HDC_CREATION)
+    }
+  }
+
+  @Test
+  fun `populateOnCreation stores CAS2 proposed type without curfew address`() {
+    val licence = createHdcLicence()
+    whenever(hdcApiClient.getByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicenceFromClient(status = HdcStatus.RISK_CHECKS_COMPLETE, proposeAddressType = AccommodationType.CAS_2),
+    )
+
+    service.populateOnCreation(licence)
+
+    argumentCaptor<HdcPostponement>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+      assertThat(firstValue.isPostponed).isFalse()
+    }
+    verifyNoInteractions(hdcCurfewAddressRepository)
   }
 
   @Test
@@ -473,6 +527,8 @@ class HdcServiceTest {
         staffRepository,
         auditService,
         clock,
+        hdcApplicationRepository,
+        hdcCurfewAddressRepository,
         useCurrentHdcStatus = true,
       )
 

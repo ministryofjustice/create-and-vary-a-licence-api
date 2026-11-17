@@ -7,11 +7,14 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EntityAlreadyExistsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
@@ -22,11 +25,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
+@TestPropertySource(properties = ["feature.toggle.hdcCreation.enabled=true"])
 class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Autowired
@@ -40,6 +46,58 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var hdcCurfewAddressRepository: HdcCurfewAddressRepository
+
+  @Test
+  fun `Create an HDC licence with residential accommodation and curfew address`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPResult(conditionalReleaseDate = LocalDate.now().plusDays(30))
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.APPROVED)))
+    hdcApiMockServer.stubGetHdcLicenceData(123L, AccommodationType.RESIDENTIAL)
+
+    val result = webTestClient.post()
+      .uri("/licence/probation/nomisid/A1234AA")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody!!
+
+    val application = testRepository.findAllHdcPostponements().single()
+    assertThat(application.licence.id).isEqualTo(result.licenceId)
+    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    assertThat(application.isPostponed).isFalse()
+    assertThat(testRepository.findAllHdcCurfewAddresses().single().accommodationType).isEqualTo(CvlAccommodationType.RESIDENTIAL)
+  }
+
+  @Test
+  fun `Create an HDC licence with CAS2 proposed and no curfew address`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPResult(conditionalReleaseDate = LocalDate.now().plusDays(30))
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+    hdcApiMockServer.stubGetHdcStatuses(listOf(CurrentPrisonerHdcStatus(123L, HdcStatus.RISK_CHECKS_COMPLETE)))
+    hdcApiMockServer.stubGetHdcLicenceData(123L, AccommodationType.CAS_2, addressPresent = false)
+
+    val result = webTestClient.post()
+      .uri("/licence/probation/nomisid/A1234AA")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(CreateLicenceResponse::class.java)
+      .returnResult().responseBody!!
+
+    val application = testRepository.findAllHdcPostponements().single()
+    assertThat(application.licence.id).isEqualTo(result.licenceId)
+    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+    assertThat(application.isPostponed).isFalse()
+    assertThat(testRepository.findAllHdcCurfewAddresses()).isEmpty()
+  }
 
   @Test
   @Tag("deprecated")
