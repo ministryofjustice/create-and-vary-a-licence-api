@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support
 
 import io.swagger.v3.oas.annotations.media.Schema
 
@@ -13,4 +13,6 @@ data class SupportInfo(
   val remandSupportInfo: RemandSupportInfo? = null,
   @field:Schema(description = "Information about IS91 cases to inform support for a prisoner")
   val is91SupportInfo: Is91SupportInfo? = null,
+  @field:Schema(description = "Information about HDC case info in Nomis to inform support for a prisoner")
+  val nomisHdcSupportInfo: HdcSupportInfo? = null,
 )
