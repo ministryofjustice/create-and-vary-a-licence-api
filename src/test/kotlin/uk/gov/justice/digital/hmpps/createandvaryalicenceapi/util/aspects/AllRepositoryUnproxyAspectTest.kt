@@ -5,11 +5,14 @@ import org.hibernate.proxy.HibernateProxy
 import org.hibernate.proxy.LazyInitializer
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import java.util.*
+import java.util.Optional
 
 class AllRepositoryUnproxyAspectTest {
+
+  private val contextRunner = ApplicationContextRunner().withUserConfiguration(AllRepositoryUnproxyAspect::class.java)
 
   // Testing proxy objects without Hibernate
   private val aspect = object : AllRepositoryUnproxyAspect() {
@@ -20,6 +23,27 @@ class AllRepositoryUnproxyAspectTest {
   private val proxy = object : HibernateProxy {
     override fun writeReplace(): Any = mock()
     override fun getHibernateLazyInitializer(): LazyInitializer = mock()
+  }
+
+  @Test
+  fun `should disable aspect when property is absent`() {
+    contextRunner.run { context ->
+      assertThat(context).doesNotHaveBean(AllRepositoryUnproxyAspect::class.java)
+    }
+  }
+
+  @Test
+  fun `should disable aspect when property is false`() {
+    contextRunner.withPropertyValues("repository.unproxy.enabled=false").run { context ->
+      assertThat(context).doesNotHaveBean(AllRepositoryUnproxyAspect::class.java)
+    }
+  }
+
+  @Test
+  fun `should enable aspect when property is true`() {
+    contextRunner.withPropertyValues("repository.unproxy.enabled=true").run { context ->
+      assertThat(context).hasSingleBean(AllRepositoryUnproxyAspect::class.java)
+    }
   }
 
   @Test
