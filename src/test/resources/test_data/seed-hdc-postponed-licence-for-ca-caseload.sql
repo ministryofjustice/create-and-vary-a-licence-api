@@ -21,7 +21,7 @@ values (1, 'CRD', '1.0', '100', 'A1234AA', 'BAI', 1, 1, 1, 'APPROVED', 'Person',
         'AP','2022-03-25');
 
 
-INSERT INTO hdc_postponement (
+INSERT INTO hdc_application (
     licence_id,
     is_postponed
 )

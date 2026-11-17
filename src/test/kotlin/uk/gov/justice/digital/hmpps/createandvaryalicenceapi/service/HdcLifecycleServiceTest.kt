@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
@@ -20,13 +21,22 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource.HDC_CREATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType.RESIDENTIAL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
@@ -46,7 +56,9 @@ class HdcLifecycleServiceTest {
 
   private val licenceRepository = mock<LicenceRepository>()
   private val hdcLicenceRepository = mock<HdcLicenceRepository>()
-  private val hdcPostponementRepository = mock<HdcPostponementRepository>()
+  private val hdcApplicationRepository = mock<HdcApplicationRepository>()
+  private val hdcCurfewAddressRepository = mock<HdcCurfewAddressRepository>()
+  private val hdcService = mock<HdcService>()
   private val auditService = mock<AuditService>()
   private val crdLicenceFactory = mock<CrdLicenceFactory>()
   private val hdcLicenceFactory = mock<HdcLicenceFactory>()
@@ -58,7 +70,9 @@ class HdcLifecycleServiceTest {
     HdcLifecycleService(
       licenceRepository,
       hdcLicenceRepository,
-      hdcPostponementRepository,
+      hdcApplicationRepository,
+      hdcCurfewAddressRepository,
+      hdcService,
       auditService,
       crdLicenceFactory,
       hdcLicenceFactory,
@@ -79,7 +93,9 @@ class HdcLifecycleServiceTest {
     reset(
       licenceRepository,
       hdcLicenceRepository,
-      hdcPostponementRepository,
+      hdcApplicationRepository,
+      hdcCurfewAddressRepository,
+      hdcService,
       auditService,
       crdLicenceFactory,
       hdcLicenceFactory,
@@ -87,6 +103,70 @@ class HdcLifecycleServiceTest {
       licenceService,
       licenceLinkingService,
     )
+  }
+
+  @Test
+  fun `populateOnCreation stores proposed type and curfew address`() {
+    val licence = createHdcLicence()
+    val address = CurfewAddress("123 Test Street", null, "Test Town", "AB1 2CD", AccommodationType.RESIDENTIAL)
+    whenever(hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, curfewAddress = address, proposeAddressType = AccommodationType.RESIDENTIAL),
+    )
+
+    service.populateOnCreation(licence)
+
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+      assertThat(firstValue.isPostponed).isFalse()
+    }
+    argumentCaptor<HdcCurfewAddress>().apply {
+      verify(hdcCurfewAddressRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.accommodationType).isEqualTo(RESIDENTIAL)
+      assertThat(firstValue.firstLine).isEqualTo(address.addressLine1)
+      assertThat(firstValue.townOrCity).isEqualTo(address.townOrCity)
+      assertThat(firstValue.postcode).isEqualTo(address.postcode)
+      assertThat(firstValue.source).isEqualTo(HDC_CREATION)
+    }
+  }
+
+  @Test
+  fun `populateOnCreation stores CAS2 proposed type without curfew address`() {
+    val licence = createHdcLicence()
+    whenever(hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.RISK_CHECKS_COMPLETE, proposeAddressType = AccommodationType.CAS_2),
+    )
+
+    service.populateOnCreation(licence)
+
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+      assertThat(firstValue.isPostponed).isFalse()
+    }
+    verifyNoInteractions(hdcCurfewAddressRepository)
+  }
+
+  @Test
+  fun `populateApplicationOnEdit stores the proposed type without adding a curfew address`() {
+    val licence = createHdcLicence()
+    val address = CurfewAddress("123 Test Street", null, "Test Town", "AB1 2CD", AccommodationType.RESIDENTIAL)
+    whenever(hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, curfewAddress = address, proposeAddressType = AccommodationType.RESIDENTIAL),
+    )
+
+    service.populateApplicationOnEdit(licence)
+
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(licence)
+      assertThat(firstValue.isPostponed).isFalse()
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    }
+    verifyNoInteractions(hdcCurfewAddressRepository)
   }
 
   @ParameterizedTest
@@ -229,6 +309,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
     whenever(hdcLicenceFactory.createFromCrd(crdLicence, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     // When
     service.convertToHdcLicence("A1234AA")
@@ -264,6 +347,13 @@ class HdcLifecycleServiceTest {
       eventDescription = "This HDC licence was converted from CRD licence on OPT_IN",
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(crdLicence.id, populatedHdc.id)
+    argumentCaptor<HdcApplication>().apply {
+      verify(hdcApplicationRepository).saveAndFlush(capture())
+      assertThat(firstValue.licence).isSameAs(populatedHdc)
+      assertThat(firstValue.isPostponed).isFalse()
+      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+    }
+    verifyNoInteractions(hdcCurfewAddressRepository)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
@@ -285,6 +375,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
     whenever(hdcLicenceFactory.createFromCrd(edit, prisoner, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(edit, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     // When
     service.convertToHdcLicence("A1234AA")
@@ -333,6 +426,9 @@ class HdcLifecycleServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
     whenever(hdcLicenceFactory.createFromCrd(crdLicence, null, IN_PROGRESS)).thenReturn(hdcToPopulate)
     whenever(licenceService.populateCopy(crdLicence, hdcToPopulate)).thenReturn(populatedHdc)
+    whenever(hdcService.getHdcLicenceDataByBookingId(populatedHdc.bookingId!!)).thenReturn(
+      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.CAS_2),
+    )
 
     service.convertToHdcLicence("A1234AA")
 
@@ -342,25 +438,43 @@ class HdcLifecycleServiceTest {
   }
 
   @Test
-  fun `already IN_PROGRESS HDC postpone records current postponement state once`() {
+  fun `postpone fails when an HDC application is missing`() {
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = IN_PROGRESS)
     whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
 
+    val exception = assertThrows<IllegalArgumentException> {
+      service.postponeLicence("A1234BC")
+    }
+    assertThat(exception.message).isEqualTo("HDC application not found for licence 1")
+    verifyNoInteractions(hdcApplicationRepository, auditService)
+  }
+
+  @Test
+  fun `postpone updates the existing application without changing its accommodation type`() {
+    val licence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = IN_PROGRESS)
+    val application = HdcApplication(licence = licence, isPostponed = false, proposedAccommodationType = AccommodationType.CAS_2)
+    licence.application = application
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(licence))
+
     service.postponeLicence("A1234BC")
 
-    verify(hdcPostponementRepository, times(1)).save(any())
-    verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
+    assertThat(application.isPostponed).isTrue()
+    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+    assertThat(application.dateLastUpdated).isNotNull()
+    verify(hdcApplicationRepository, never()).save(any())
+    verify(auditService).recordAuditEventHdcLicencePostponementChange(licence, true)
   }
 
   @Test
   fun `records postponement when only an approved HDC licence exists`() {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
+    approvedLicence.application = HdcApplication(approvedLicence, false, null)
     whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence))
 
     service.postponeLicence("A1234BC")
 
     assertThat(approvedLicence.statusCode).isEqualTo(IN_PROGRESS)
-    verify(hdcPostponementRepository, times(1)).save(any())
+    assertThat(approvedLicence.application!!.isPostponed).isTrue()
     verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(approvedLicence, true)
     verify(auditService).recordAuditEventHdcLicencePostponed(approvedLicence, APPROVED)
   }
@@ -369,6 +483,8 @@ class HdcLifecycleServiceTest {
   fun `postpone with approved and submitted licences inactivates the approved licence and reverts the submitted edit`() {
     val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
     val submittedEdit = createHdcLicence(id = 2).copy(nomsId = "A1234BC", statusCode = SUBMITTED)
+    approvedLicence.application = HdcApplication(approvedLicence, false, null)
+    submittedEdit.application = HdcApplication(submittedEdit, false, null)
     whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(submittedEdit, approvedLicence))
     whenever(
       licenceService.inactivateLicences(
@@ -397,11 +513,12 @@ class HdcLifecycleServiceTest {
   @Test
   fun `resume HDC postponement clears the current postponed state`() {
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC")
+    hdcLicence.application = HdcApplication(hdcLicence, true, null)
     whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
 
     service.resumeHdcPostponement("A1234BC")
 
-    verify(hdcPostponementRepository).save(any())
+    assertThat(hdcLicence.application!!.isPostponed).isFalse()
     verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, false)
   }
 
@@ -417,6 +534,7 @@ class HdcLifecycleServiceTest {
       approvedLicence.approvedByUsername = "approver"
       approvedLicence.approvedByName = "Approver Name"
       approvedLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      approvedLicence.application = HdcApplication(approvedLicence, false, null)
 
       val editLicence = createHdcLicence(id = 456L)
       editLicence.statusCode = SUBMITTED
@@ -424,9 +542,9 @@ class HdcLifecycleServiceTest {
       editLicence.approvedByUsername = "approver"
       editLicence.approvedByName = "Approver Name"
       editLicence.approvedDate = LocalDateTime.of(2024, 1, 11, 9, 0)
+      editLicence.application = HdcApplication(editLicence, false, null)
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
       whenever(
         licenceService.inactivateLicences(
           listOf(approvedLicence),
@@ -450,7 +568,8 @@ class HdcLifecycleServiceTest {
       assertThat(editLicence.supersededDate).isNull()
       verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
       verify(auditService).recordAuditEventHdcLicencePostponed(editLicence, SUBMITTED)
-      verify(hdcPostponementRepository, times(2)).save(any())
+      assertThat(approvedLicence.application!!.isPostponed).isTrue()
+      assertThat(editLicence.application!!.isPostponed).isTrue()
     }
 
     @Test
@@ -459,14 +578,14 @@ class HdcLifecycleServiceTest {
       val approvedLicence = createHdcLicence(id = 123L)
       approvedLicence.statusCode = APPROVED
       approvedLicence.nomsId = "A1234BC"
+      approvedLicence.application = HdcApplication(approvedLicence, false, null)
 
       val editLicence = createHdcLicence(id = 456L)
       editLicence.statusCode = IN_PROGRESS
       editLicence.nomsId = "A1234BC"
+      editLicence.application = HdcApplication(editLicence, false, null)
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(approvedLicence, editLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(editLicence.id)).thenReturn(null)
-      whenever(hdcPostponementRepository.findByLicenceId(approvedLicence.id)).thenReturn(null)
       whenever(
         licenceService.inactivateLicences(
           listOf(approvedLicence),
@@ -486,7 +605,8 @@ class HdcLifecycleServiceTest {
       assertThat(editLicence.statusCode).isEqualTo(IN_PROGRESS)
       verify(auditService, times(2)).recordAuditEventHdcLicencePostponementChange(any(), any())
       verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
-      verify(hdcPostponementRepository, times(2)).save(any())
+      assertThat(approvedLicence.application!!.isPostponed).isTrue()
+      assertThat(editLicence.application!!.isPostponed).isTrue()
     }
 
     @Test
@@ -498,8 +618,8 @@ class HdcLifecycleServiceTest {
       hdcLicence.approvedByUsername = "approver"
       hdcLicence.approvedByName = "Approver Name"
       hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      hdcLicence.application = HdcApplication(hdcLicence, false, null)
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
       service.postponeLicence("A1234BC")
@@ -508,7 +628,7 @@ class HdcLifecycleServiceTest {
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
       verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
       verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
-      verify(hdcPostponementRepository).save(any())
+      assertThat(hdcLicence.application!!.isPostponed).isTrue()
     }
 
     @Test
@@ -533,10 +653,10 @@ class HdcLifecycleServiceTest {
       hdcLicence.approvedByUsername = "approver"
       hdcLicence.approvedByName = "Approver Name"
       hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      hdcLicence.application = HdcApplication(hdcLicence, false, null)
       val originalUpdatedAt = hdcLicence.dateLastUpdated
 
       whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(hdcLicence))
-      whenever(hdcPostponementRepository.findByLicenceId(hdcLicence.id)).thenReturn(null)
 
       // When
       service.postponeLicence("A1234BC")
@@ -549,7 +669,7 @@ class HdcLifecycleServiceTest {
       assertThat(hdcLicence.dateLastUpdated).isEqualTo(originalUpdatedAt)
       verify(auditService, times(1)).recordAuditEventHdcLicencePostponementChange(hdcLicence, true)
       verify(auditService, never()).recordAuditEventHdcLicencePostponed(any(), any())
-      verify(hdcPostponementRepository).save(any())
+      assertThat(hdcLicence.application!!.isPostponed).isTrue()
     }
   }
 

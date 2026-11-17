@@ -496,7 +496,7 @@ class MigrationControllerIntegrationTest : IntegrationTestBase() {
       addressLine2 = "Flat 1",
       townOrCity = "Newport",
       postcode = "SA42 1DQ",
-      addressType = AccommodationType.CAS,
+      addressType = AccommodationType.CAS_1_APPROVED_PREMISES,
     ),
     curfew = MigrateCurfewDetails(
       curfewTimes = listOf(
