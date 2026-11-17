@@ -12,7 +12,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "hdc_postponement")
+@Table(name = "hdc_application")
 class HdcPostponement(
   @OneToOne(
     cascade = [CascadeType.DETACH],
@@ -22,7 +22,7 @@ class HdcPostponement(
   val licence: HdcLicence,
 
   @Column(name = "is_postponed", nullable = false)
-  var isPostponed: Boolean,
+  var isPostponed: Boolean = false,
 
   @CreationTimestamp
   @Column(name = "date_created", nullable = false, updatable = false)
