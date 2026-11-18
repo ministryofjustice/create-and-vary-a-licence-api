@@ -476,6 +476,19 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql("classpath:test_data/seed-licence-id-1.sql")
+  fun `rejects internal HDC creation source for appointment address`() {
+    val result = putRequest(
+      "/licence/id/1/appointment/address",
+      buildAddAddressRequest(source = AddressSource.HDC_CREATION),
+    )
+
+    val errorResponse = getErrorResponse(result)
+    assertThat(errorResponse.developerMessage).contains("Source HDC_CREATION is reserved for internal HDC licence creation")
+    assertThat(testRepository.findLicence(1).probationContact?.address).isNull()
+  }
+
+  @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1-with-address.sql",
   )

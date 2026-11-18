@@ -94,6 +94,21 @@ class HdcCurfewAddressIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql("classpath:test_data/seed-hdc-variation-licence-id-1.sql")
+  fun `rejects internal HDC creation source for submitted curfew address`() {
+    val result = putRequest(
+      "/licence/id/1/hdc/curfew/address",
+      buildAddHdcCurfewAddressRequest(source = AddressSource.HDC_CREATION),
+    )
+
+    val error = result.expectStatus().isBadRequest
+      .expectBody(ErrorResponse::class.java)
+      .returnResult().responseBody
+    assertThat(error?.developerMessage).contains("Source HDC_CREATION is reserved for internal HDC licence creation")
+    assertThat(testRepository.findAllHdcCurfewAddresses()).isEmpty()
+  }
+
+  @Test
   @Sql(
     "classpath:test_data/seed-hdc-licence-id-1-with-curfew-address.sql",
   )
