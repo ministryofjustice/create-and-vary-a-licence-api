@@ -327,7 +327,10 @@ class PrisonerSearchMockServer :
     )
   }
 
-  fun stubSearchPrisonersByNomisIdsHDCAPResult(prisonerSearchResponse: String? = null) {
+  fun stubSearchPrisonersByNomisIdsHDCAPResult(
+    prisonerSearchResponse: String? = null,
+    conditionalReleaseDate: LocalDate = nextWorkingDate(),
+  ) {
     val json = prisonerSearchResponse ?: """[
             {
               "prisonerNumber": "A1234AA",
@@ -340,7 +343,7 @@ class PrisonerSearchMockServer :
               "homeDetentionCurfewActualDate": "${LocalDate.now().plusDays(1)}",
               "releaseDate": "${LocalDate.now().plusDays(1)}",
               "confirmedReleaseDate": "${nextWorkingDate()}",
-              "conditionalReleaseDate": "${nextWorkingDate()}",
+              "conditionalReleaseDate": "$conditionalReleaseDate",
               "paroleEligibilityDate": null,
               "actualParoleDate" : null,
               "postRecallReleaseDate": null,

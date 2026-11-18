@@ -672,7 +672,7 @@ fun toHdc(
   },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
   isHdcMigration = isHdcMigration,
-  isPostponed = licence.postponement?.isPostponed ?: false,
+  isPostponed = licence.application?.isPostponed ?: false,
 )
 
 fun toHdcVariation(
