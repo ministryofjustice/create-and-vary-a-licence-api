@@ -22,4 +22,6 @@ COPY --from=builder --chown=appuser:appgroup /builder/extracted/spring-boot-load
 COPY --from=builder --chown=appuser:appgroup /builder/extracted/snapshot-dependencies/ ./
 COPY --from=builder --chown=appuser:appgroup /builder/extracted/application/ ./
 
+ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0 -XX:-UseBASE64Intrinsics"
+
 ENTRYPOINT ["java", "-XX:+ExitOnOutOfMemoryError", "-XX:+AlwaysActAsServerClassMachine", "-javaagent:agent.jar", "-jar", "app.jar"]
