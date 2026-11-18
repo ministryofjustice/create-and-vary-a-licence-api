@@ -161,3 +161,6 @@ values ((select max(id) from licence), 'attendMeetings', 3, 'Attend meetings', '
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES ((select max(id) from licence), true, 'Submitted Programme');
+
+insert into hdc_application (licence_id, is_postponed)
+select id, false from licence where kind = 'HDC' and noms_id = 'A1234AA';

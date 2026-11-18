@@ -22,6 +22,7 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
 
     // Then
     assertOneConversion()
+    assertThat(testRepository.findAllHdcApplications()).hasSize(1)
   }
 
   @Sql("classpath:test_data/seed-completed-hdc-licence-1.sql")
@@ -61,7 +62,7 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
 
     // Then
     assertThat(testRepository.findAllLicence()).hasSize(2)
-    assertThat(testRepository.findAllHdcPostponements()).hasSize(2)
+    assertThat(testRepository.findAllHdcApplications().filter { it.isPostponed }).hasSize(2)
     assertThat(testRepository.findAllAuditEvents()).hasSize(4)
     verify(eventsPublisher).publishDomainEvent(anyOrNull())
   }
@@ -79,7 +80,7 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
     sendEventTwice(event, HdcCvlEventType.RESUME)
 
     // Then
-    assertThat(testRepository.findAllHdcPostponements()).hasSize(1)
+    assertThat(testRepository.findAllHdcApplications()).hasSize(1).allMatch { !it.isPostponed }
     assertThat(testRepository.findAllAuditEvents()).hasSize(1)
     verifyNoInteractions(eventsPublisher)
   }
@@ -128,7 +129,7 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
   private fun assertNoSideEffects() {
     assertThat(testRepository.findAllLicence()).hasSize(2)
     assertThat(testRepository.findAllLicenceLinks()).isEmpty()
-    assertThat(testRepository.findAllHdcPostponements()).isEmpty()
+    assertThat(testRepository.findAllHdcApplications()).isEmpty()
     assertThat(testRepository.findAllAuditEvents()).isEmpty()
     verifyNoInteractions(eventsPublisher)
   }

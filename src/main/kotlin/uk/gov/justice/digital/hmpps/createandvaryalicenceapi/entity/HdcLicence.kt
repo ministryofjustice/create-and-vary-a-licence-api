@@ -182,7 +182,7 @@ class HdcLicence(
   AlwaysHasCom {
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY)
-  var postponement: HdcPostponement? = null
+  var application: HdcApplication? = null
 
   fun copy(
     id: Long? = this.id,

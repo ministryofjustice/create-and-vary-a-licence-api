@@ -90,6 +90,7 @@ class LicenceCreationServiceTest {
   private val telemetryService = mock<TelemetryService>()
   private val timeServedExternalRecordsService = mock<TimeServedExternalRecordService>()
   private val caseService = mock<CaseService>()
+  private val hdcLifecycleService = mock<HdcLifecycleService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -107,6 +108,7 @@ class LicenceCreationServiceTest {
     telemetryService,
     timeServedExternalRecordsService,
     caseService,
+    hdcLifecycleService,
   )
 
   @Nested
@@ -1848,6 +1850,19 @@ class LicenceCreationServiceTest {
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any<EntityLicence>())).thenAnswer { it.arguments[0] }
       whenever(cvlRecordService.getCvlRecord(any())).thenReturn(aCvlRecord(eligibleKind = EligibleKind.HDC))
+    }
+
+    @Test
+    fun `populates HDC data after licence creation`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
+      whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
+
+      service.createLicence(PRISON_NUMBER)
+
+      argumentCaptor<HdcLicence>().apply {
+        verify(hdcLifecycleService).populateOnCreation(capture())
+        assertThat(firstValue.nomsId).isEqualTo(prisonerSearchResult().prisonerNumber)
+      }
     }
 
     @Test

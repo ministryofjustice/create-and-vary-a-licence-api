@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremo
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
 
 class HdcApiMockServer :
@@ -10,19 +11,29 @@ class HdcApiMockServer :
     extensionOptions()
       .options(wireMockConfig().port(8100)),
   ) {
-  fun stubGetHdcLicenceData(bookingId: Long = 54321) {
+  fun stubGetHdcLicenceData(
+    bookingId: Long = 54321,
+    accommodationType: AccommodationType = AccommodationType.RESIDENTIAL,
+    addressPresent: Boolean = true,
+  ) {
+    val curfewAddress = if (addressPresent) {
+      """{
+              "addressLine1": "123 Test Street",
+              "addressLine2": null,
+              "townOrCity": "Test Area",
+              "postcode": "AB1 2CD",
+              "curfewAddressType": "${accommodationType.name}"
+            }"""
+    } else {
+      "null"
+    }
     stubFor(
       WireMock.get(WireMock.urlEqualTo("/licence/hdc/$bookingId")).willReturn(
         WireMock.aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
             "licenceId": "1",
-            "curfewAddress": {
-              "addressLine1": "123 Test Street",
-              "addressLine2": null,
-              "townOrCity": "Test Area",
-              "postcode": "AB1 2CD",
-              "curfewAddressType": "RESIDENTIAL"
-            },
+            "curfewAddress": $curfewAddress,
+            "proposeAddressType": "${accommodationType.name}",
             "firstNightCurfewHours": {
               "firstNightFrom": "15:00",
               "firstNightUntil": "07:00"

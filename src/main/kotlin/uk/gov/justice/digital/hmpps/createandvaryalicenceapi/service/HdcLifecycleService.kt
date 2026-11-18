@@ -4,11 +4,15 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
@@ -27,13 +31,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.LocalDateTime
+import java.util.UUID
+import kotlin.collections.isNotEmpty
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence as HdcLicenceEntity
 
 @Service
 class HdcLifecycleService(
   private val licenceRepository: LicenceRepository,
   private val hdcLicenceRepository: HdcLicenceRepository,
-  private val hdcPostponementRepository: HdcPostponementRepository,
+  private val hdcApplicationRepository: HdcApplicationRepository,
+  private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
+  private val hdcService: HdcService,
   private val auditService: AuditService,
   private val crdLicenceFactory: CrdLicenceFactory,
   private val hdcLicenceFactory: HdcLicenceFactory,
@@ -43,6 +51,49 @@ class HdcLifecycleService(
 ) {
 
   private val log = LoggerFactory.getLogger(this::class.java)
+
+  fun populateOnCreation(licence: HdcLicenceEntity) {
+    log.debug("Fetching HDC data for licenceId={}, bookingId={}", licence.id, licence.bookingId)
+    val hdcLicenceData = hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)
+    val curfewAddress = hdcLicenceData.curfewAddress
+
+    saveApplication(licence, hdcLicenceData.proposeAddressType)
+
+    if (curfewAddress != null) {
+      val curfewAddressEntity = HdcCurfewAddress(
+        licence = licence,
+        accommodationType = curfewAddress.curfewAddressType.cvlAccommodationType,
+        firstLine = curfewAddress.addressLine1!!,
+        secondLine = curfewAddress.addressLine2,
+        townOrCity = curfewAddress.townOrCity!!,
+        postcode = curfewAddress.postcode!!,
+        source = AddressSource.HDC_CREATION,
+        reference = UUID.randomUUID().toString(),
+      )
+      hdcCurfewAddressRepository.saveAndFlush(curfewAddressEntity)
+    }
+    log.debug(
+      "HDC data saved for licenceId={}, proposedAccommodationType={}, curfewAddressPresent={}",
+      licence.id,
+      hdcLicenceData.proposeAddressType,
+      curfewAddress != null,
+    )
+  }
+
+  fun populateApplicationOnEdit(licence: HdcLicenceEntity) {
+    val hdcLicenceData = hdcService.getHdcLicenceDataByBookingId(licence.bookingId!!)
+    saveApplication(licence, hdcLicenceData.proposeAddressType)
+  }
+
+  private fun saveApplication(licence: HdcLicenceEntity, proposedAccommodationType: AccommodationType?) {
+    hdcApplicationRepository.saveAndFlush(
+      HdcApplication(
+        licence = licence,
+        isPostponed = false,
+        proposedAccommodationType = proposedAccommodationType,
+      ),
+    )
+  }
 
   private fun getHdcLicencesByInflightStatusMap(nomsNumber: String): Map<LicenceStatus, HdcLicenceEntity> {
     val licences = hdcLicenceRepository.findInFlightHdcLicences(nomsNumber)
@@ -138,25 +189,17 @@ class HdcLifecycleService(
   }
 
   private fun updatePostponement(licence: HdcLicenceEntity, isPostponed: Boolean): Boolean {
-    val existing = hdcPostponementRepository.findByLicenceId(licence.id)
-    if (existing?.isPostponed == isPostponed) {
+    if (licence.application?.isPostponed == isPostponed) {
       return false
     }
 
     val operation = if (isPostponed) "Postponing" else "Resuming"
     log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
-
-    if (existing != null) {
-      existing.isPostponed = isPostponed
-      existing.dateLastUpdated = LocalDateTime.now()
-    } else {
-      hdcPostponementRepository.save(
-        HdcPostponement(
-          licence = licence,
-          isPostponed = isPostponed,
-        ),
-      )
+    val application = requireNotNull(licence.application) {
+      "HDC application not found for licence ${licence.id}"
     }
+    application.isPostponed = isPostponed
+    application.dateLastUpdated = LocalDateTime.now()
 
     auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
     return true
@@ -184,21 +227,22 @@ class HdcLifecycleService(
   @Transactional
   fun convertToHdcLicence(nomsNumber: String) {
     val licencesByStatus = getCrdLicencesByInflightStatusMap(nomsNumber)
-    if (licencesByStatus.isEmpty()) return
+    if (licencesByStatus.isNotEmpty()) {
+      val licenceToConvert = getLicenceToConvert(licencesByStatus)
+      inactivateConversionLicence(OPT_IN, licencesByStatus)
 
-    val licenceToConvert = getLicenceToConvert(licencesByStatus)
-    inactivateConversionLicence(OPT_IN, licencesByStatus)
+      val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsNumber)).firstOrNull()
+      val hdcCopy = hdcLicenceFactory.createFromCrd(licenceToConvert, prisoner, IN_PROGRESS)
+      val newLicence = licenceService.populateCopy(
+        original = licenceToConvert,
+        copy = hdcCopy,
+      ) as HdcLicenceEntity
 
-    val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsNumber)).firstOrNull()
-    val hdcCopy = hdcLicenceFactory.createFromCrd(licenceToConvert, prisoner, IN_PROGRESS)
-    val newLicence = licenceService.populateCopy(
-      original = licenceToConvert,
-      copy = hdcCopy,
-    )
-
-    addConversionAudits(licenceToConvert, newLicence, OPT_IN)
-    addLicenceConversionEvents(licenceToConvert, newLicence, OPT_IN)
-    addLicenceLinking(OPT_IN, licenceToConvert, newLicence)
+      addConversionAudits(licenceToConvert, newLicence, OPT_IN)
+      addLicenceConversionEvents(licenceToConvert, newLicence, OPT_IN)
+      addLicenceLinking(OPT_IN, licenceToConvert, newLicence)
+      populateOnCreation(newLicence)
+    }
   }
 
   @Transactional
