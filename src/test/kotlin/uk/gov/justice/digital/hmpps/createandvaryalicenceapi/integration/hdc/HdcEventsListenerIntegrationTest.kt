@@ -3,12 +3,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.hdc
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
-import org.awaitility.kotlin.await
-import org.awaitility.kotlin.untilAsserted
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
@@ -18,13 +14,9 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.SqlGroup
-import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -33,14 +25,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
@@ -52,33 +39,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.Duration
-import java.time.LocalDateTime
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["hdc.event.listener.enabled=true"])
-class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var hdcLifecycleService: HdcLifecycleService
-
-  @MockitoSpyBean
-  lateinit var hdcEventsListener: HdcEventsListener
+class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var hdcStatusChangedHandler: HdcStatusChangedHandler
 
-  @MockitoSpyBean
-  lateinit var eventsPublisher: OutboundEventsPublisher
-
-  private val awaitAtMost30Secs
-    get() = await.atMost(Duration.ofSeconds(30))
-
-  @BeforeEach
-  fun setupClient() {
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIdsNoResult()
-    hdcApiMockServer.stubGetHdcLicenceData(123L)
-  }
+  @Autowired
+  lateinit var hdcLifecycleService: HdcLifecycleService
 
   @Test
   fun `An HDC opt out event is processed`() {
@@ -717,54 +685,10 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(links[0].dateCreated).isNotNull
   }
 
-  private fun sendMessage(messageBody: String, eventType: String) {
-    hdcCvlEventsSqsClient.sendMessage(
-      SendMessageRequest.builder()
-        .queueUrl(hdcCvlEventsQueueUrl)
-        .messageBody(messageBody)
-        .messageAttributes(
-          mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
-          ),
-        )
-        .build(),
-    )
-  }
-
-  private fun assertSqsProcessed(timesProcessed: Int = 1) {
-    awaitAtMost30Secs untilAsserted {
-      verify(hdcEventsListener, times(timesProcessed)).finishedEventProcessing(anyOrNull())
-    }
-    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
-  }
-
   private fun sendConversionEvent(event: HdcStatusChangedEvent, eventType: HdcCvlEventType): String {
     val eventJson = mapper.writeValueAsString(event)
     sendMessage(eventJson, eventType.toString())
     assertSqsProcessed()
     return eventJson
-  }
-  private fun createHdcStatusChangedEvent(
-    licenceId: Long = 1L,
-    bookingId: Long = 12347L,
-    nomsNumber: String = "C1234CC",
-    reason: String = "Offender opted out",
-    triggeredBy: String = "test.user",
-    occurredAt: LocalDateTime = LocalDateTime.now(),
-  ) = HdcStatusChangedEvent(
-    occurredAt = occurredAt,
-    licenceId = licenceId,
-    bookingId = bookingId,
-    nomsNumber = nomsNumber,
-    triggeredBy = triggeredBy,
-    reason = reason,
-  )
-
-  private companion object {
-    @RegisterExtension
-    val prisonerSearchMockServer = PrisonerSearchMockServer()
-
-    @RegisterExtension
-    val hdcApiMockServer = HdcApiMockServer()
   }
 }
