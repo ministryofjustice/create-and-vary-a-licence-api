@@ -2,14 +2,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Is91SupportInfo
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo.RemandCourtEventOutcome
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.HdcSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.Is91SupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.Is91SupportInfo.Is91CourtEventOutcome
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.RecallSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.RemandSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.RemandSupportInfo.RemandCourtEventOutcome
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.Is91CourtEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -21,13 +22,26 @@ class SupportService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonService: PrisonService,
   private val eligibilityService: EligibilityService,
-  private val iS91DeterminationService: IS91DeterminationService,
   private val hdcService: HdcService,
 ) {
   fun getIneligibilityReasons(prisonNumber: String): EligibilityAssessment {
     val prisoner = getPrisonerByPrisonNumber(prisonNumber)
     val hdcStatus = hdcService.getHdcStatus(listOf(prisoner))
     return eligibilityService.getEligibilityAssessment(prisoner, hdcStatus)
+  }
+
+  fun getSupportInfo(prisonerNumber: String): SupportInfo {
+    val bookingId = getBookingIdFromPrisonId(prisonerNumber)
+    val is91SupportInfo = getIs91Info(bookingId)
+
+    return SupportInfo(
+      isIS91Case = is91SupportInfo.isIs91Case,
+      recallSupportInfo = getRecallInfo(bookingId),
+      remandSupportInfo = getRemandInfo(bookingId),
+      is91SupportInfo = is91SupportInfo,
+      nomisHdcSupportInfo = hdcService.getNomisHdcStatus(bookingId)?.let { HdcSupportInfo(it) },
+      eligibilityAssessment = getIneligibilityReasons(prisonerNumber),
+    )
   }
 
   fun getRecallInfo(bookingId: Long): RecallSupportInfo {
@@ -66,23 +80,11 @@ class SupportService(
 
     return Is91SupportInfo(
       is91CourtEventOutcomes.map {
-        Is91SupportInfo.Is91CourtEventOutcome(
+        Is91CourtEventOutcome(
           it.outcomeReasonCode,
           Is91CourtEvents.getCourtEventDescriptionByCode(it.outcomeReasonCode!!),
         )
       },
-    )
-  }
-
-  fun getSupportInfo(prisonerNumber: String): SupportInfo {
-    val bookingId = getBookingIdFromPrisonId(prisonerNumber)
-    val is91SupportInfo = getIs91Info(bookingId)
-
-    return SupportInfo(
-      isIS91Case = is91SupportInfo.isIs91Case,
-      recallSupportInfo = getRecallInfo(bookingId),
-      remandSupportInfo = getRemandInfo(bookingId),
-      is91SupportInfo = is91SupportInfo,
     )
   }
 
