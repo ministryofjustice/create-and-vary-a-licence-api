@@ -45,6 +45,7 @@
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallCase: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
+    <ID>ReturnCount:HdcLifecycleService.kt:HdcLifecycleService$@Transactional fun postponeLicence</ID>
     <ID>ReturnCount:LicenceCreationService.kt:LicenceCreationService$fun getOrCreateCom: CommunityOffenderManager?</ID>
     <ID>ReturnCount:LsdRecalculationService.kt:LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate: Long</ID>
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
@@ -73,7 +74,6 @@
     <ID>TooManyFunctions:LicenceService.kt:LicenceService</ID>
     <ID>TooManyFunctions:MigrationService.kt:MigrationService</ID>
     <ID>TooManyFunctions:NotifyService.kt:NotifyService</ID>
-    <ID>TooManyFunctions:PublicLicenceDetailTransformer.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.v2.PublicLicenceDetailTransformer.kt</ID>
     <ID>TooManyFunctions:ReleaseDateService.kt:ReleaseDateService</ID>
     <ID>TooManyFunctions:TelemetryService.kt:TelemetryService</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
