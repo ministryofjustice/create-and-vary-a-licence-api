@@ -6,6 +6,8 @@ import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.reflect.MethodSignature
 import org.hibernate.Hibernate
 import org.hibernate.proxy.HibernateProxy
+import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import java.lang.reflect.Modifier
@@ -32,7 +34,13 @@ import java.util.Optional
  */
 @Aspect
 @Component
+@ConditionalOnProperty(name = ["repository.unproxy.enabled"], havingValue = "true")
 class AllRepositoryUnproxyAspect {
+  private val log = LoggerFactory.getLogger(AllRepositoryUnproxyAspect::class.java)
+
+  init {
+    log.info("AllRepositoryUnproxyAspect is enabled")
+  }
 
   @Around("execution(* org.springframework.data.repository.Repository+.*(..))")
   fun unProxyRepositoryResult(joinPoint: ProceedingJoinPoint): Any? {
