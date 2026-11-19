@@ -66,8 +66,12 @@ class HdcLifecycleServiceTest {
   }
 
   @Test
-  fun `populateApplicationOnEdit stores the proposed type without adding a curfew address`() {
-    val licence = createHdcLicence()
+  fun `populateApplicationOnEdit creates an application for the new edit licence`() {
+    val original = createHdcLicence()
+    val originalApplication = HdcApplication(original, isPostponed = true, proposedAccommodationType = AccommodationType.CAS_2)
+    original.application = originalApplication
+    val licence = original.copy(id = 2L)
+    assertThat(licence.application).isNull()
     val address = CurfewAddress("123 Test Street", null, "Test Town", "AB1 2CD", AccommodationType.RESIDENTIAL)
     whenever(hdcApiClient.getByBookingId(licence.bookingId!!)).thenReturn(
       HdcLicence(status = HdcStatus.APPROVED, curfewAddress = address, proposeAddressType = AccommodationType.RESIDENTIAL),
@@ -79,23 +83,9 @@ class HdcLifecycleServiceTest {
     assertThat(licence.application!!.licence).isSameAs(licence)
     assertThat(licence.application!!.isPostponed).isFalse()
     assertThat(licence.application!!.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
-  }
-
-  @Test
-  fun `populateApplicationOnEdit updates an existing application without resetting postponement`() {
-    val licence = createHdcLicence()
-    val application = HdcApplication(licence, isPostponed = true, proposedAccommodationType = AccommodationType.CAS_2)
-    licence.application = application
-    whenever(hdcApiClient.getByBookingId(licence.bookingId!!)).thenReturn(
-      HdcLicence(status = HdcStatus.APPROVED, proposeAddressType = AccommodationType.RESIDENTIAL),
-    )
-
-    service.populateApplicationOnEdit(licence)
-
-    assertThat(licence.application).isSameAs(application)
-    assertThat(application.isPostponed).isTrue()
-    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
-    assertThat(application.dateLastUpdated).isNotNull()
+    assertThat(original.application).isSameAs(originalApplication)
+    assertThat(originalApplication.isPostponed).isTrue()
+    assertThat(originalApplication.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
   }
 
   @Test

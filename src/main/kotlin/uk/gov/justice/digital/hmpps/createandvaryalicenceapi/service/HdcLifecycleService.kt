@@ -55,17 +55,11 @@ class HdcLifecycleService(
   @Transactional
   fun populateApplicationOnEdit(licence: HdcLicence) {
     val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
-    val application = licence.application
-    if (application == null) {
-      licence.application = HdcApplication(
-        licence = licence,
-        isPostponed = false,
-        proposedAccommodationType = hdcLicenceData.proposeAddressType,
-      )
-    } else {
-      application.proposedAccommodationType = hdcLicenceData.proposeAddressType
-      application.dateLastUpdated = LocalDateTime.now()
-    }
+    licence.application = HdcApplication(
+      licence = licence,
+      isPostponed = false,
+      proposedAccommodationType = hdcLicenceData.proposeAddressType,
+    )
   }
 
   @Transactional
