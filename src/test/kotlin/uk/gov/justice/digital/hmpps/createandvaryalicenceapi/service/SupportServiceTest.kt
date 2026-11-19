@@ -9,16 +9,14 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.HdcSupportInfo
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.Is91SupportInfo.Is91CourtEventOutcome
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.RemandSupportInfo.RemandCourtEventOutcome
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Is91SupportInfo.Is91CourtEventOutcome
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RemandSupportInfo.RemandCourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService.Is91CourtEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.BookingSentenceAndRecallTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
@@ -32,12 +30,14 @@ class SupportServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonService = mock<PrisonService>()
   private val eligibilityService = mock<EligibilityService>()
+  private val iS91DeterminationService = mock<IS91DeterminationService>()
   private val hdcService = mock<HdcService>()
 
   private val service = SupportService(
     prisonerSearchApiClient,
     prisonService,
     eligibilityService,
+    iS91DeterminationService,
     hdcService,
   )
 
@@ -47,6 +47,7 @@ class SupportServiceTest {
       prisonerSearchApiClient,
       prisonService,
       eligibilityService,
+      iS91DeterminationService,
       hdcService,
     )
   }
@@ -252,17 +253,6 @@ class SupportServiceTest {
         ),
       )
 
-    whenever(hdcService.getNomisHdcStatus(123456L)).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatus = "APPROVED",
-        bookingId = 1,
-        passed = true,
-        refusedReason = "NONE",
-        checksPassedDate = "2024-02-30",
-        approvalStatusDate = "2023-01-23",
-      ),
-    )
-
     whenever(
       prisonService.getCourtOutcomeEvents(
         listOf(123456L),
@@ -284,15 +274,6 @@ class SupportServiceTest {
     assertThat(result.recallSupportInfo?.recallType).isEqualTo(RecallType.NONE)
     assertThat(result.remandSupportInfo?.isRemand).isTrue()
     assertThat(result.is91SupportInfo?.isIs91Case).isTrue()
-    assertThat(result.nomisHdcSupportInfo).isEqualTo(
-      HdcSupportInfo(
-        approvalStatus = "APPROVED",
-        passed = true,
-        refusedReason = "NONE",
-        checksPassedDate = "2024-02-30",
-        approvalStatusDate = "2023-01-23",
-      ),
-    )
   }
 
   private companion object {

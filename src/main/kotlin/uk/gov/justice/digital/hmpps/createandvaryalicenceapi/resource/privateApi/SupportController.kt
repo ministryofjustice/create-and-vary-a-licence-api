@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MergeOffendersRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler

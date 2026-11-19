@@ -18,8 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.NotSecuredWebMvcTest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EligibilityAssessment
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.RecallSupportInfo
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support.SupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.RecallSupportInfo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SupportInfo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PrisonerMergedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType
@@ -82,11 +82,6 @@ class SupportControllerTest {
   fun `get support info`() {
     whenever(supportService.getSupportInfo("A1234AA")).thenReturn(
       SupportInfo(
-        isIS91Case = null,
-        remandSupportInfo = null,
-        is91SupportInfo = null,
-        nomisHdcSupportInfo = null,
-        eligibilityAssessment = null,
         recallSupportInfo = RecallSupportInfo(
           recallType = RecallType.STANDARD,
           recallName = "Standard Recall",

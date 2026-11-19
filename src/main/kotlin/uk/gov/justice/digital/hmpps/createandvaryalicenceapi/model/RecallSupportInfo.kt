@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.support
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.RecallType

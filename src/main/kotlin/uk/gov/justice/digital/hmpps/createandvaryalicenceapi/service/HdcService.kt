@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
 import java.time.LocalDate
@@ -59,8 +58,6 @@ class HdcService(
     }
     return HdcStatuses(hdcStatuses)
   }
-
-  fun getNomisHdcStatus(bookingId: Long): PrisonerHdcStatus? = prisonApiClient.getHdcStatuses(listOf(bookingId)).firstOrNull()
 
   fun isApprovedForHdc(bookingId: Long, dateToCheck: LocalDate?) = if (dateToCheck == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 
