@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verifyNoInteractions
@@ -123,6 +124,7 @@ class HdcApplicationServiceTest {
   @Test
   fun `refreshCurfewAddress creates an HDC sourced address when one does not exist`() {
     val licence = createHdcLicence().copy(curfewAddress = null)
+    licence.application = HdcApplication(licence, false, null)
     val address = CurfewAddress("123 Test Street", null, "Test Town", "AB1 2CD", AccommodationType.RESIDENTIAL)
     whenever(hdcApiClient.getByBookingId(licence.bookingId!!)).thenReturn(
       HdcLicence(status = HdcStatus.RISK_CHECKS_COMPLETE, curfewAddress = address),
@@ -134,6 +136,16 @@ class HdcApplicationServiceTest {
     assertThat(licence.curfewAddress!!.source).isEqualTo(HDC_CREATION)
     assertThat(licence.curfewAddress!!.firstLine).isEqualTo("123 Test Street")
     verifyNoInteractions(hdcCurfewAddressRepository)
+  }
+
+  @Test
+  fun `refreshCurfewAddress fails when application is missing`() {
+    val licence = createHdcLicence(id = 123L)
+
+    assertThatThrownBy { service.refreshCurfewAddress(licence) }
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("HDC application not found for licence 123")
+    verifyNoInteractions(hdcApiClient)
   }
 
   @Test

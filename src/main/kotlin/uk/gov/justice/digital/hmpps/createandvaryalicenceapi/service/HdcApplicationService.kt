@@ -61,11 +61,12 @@ class HdcApplicationService(
 
   @Transactional
   fun refreshCurfewAddress(licence: HdcLicence) {
-    val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
-    licence.application?.let { application ->
-      application.proposedAccommodationType = hdcLicenceData.proposeAddressType
-      application.dateLastUpdated = LocalDateTime.now()
+    val application = requireNotNull(licence.application) {
+      "HDC application not found for licence ${licence.id}"
     }
+    val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
+    application.proposedAccommodationType = hdcLicenceData.proposeAddressType
+    application.dateLastUpdated = LocalDateTime.now()
 
     val curfewAddress = hdcLicenceData.curfewAddress ?: run {
       log.info("No HDC curfew address to refresh for licenceId={}", licence.id)
