@@ -4,11 +4,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcPostponementRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
@@ -34,7 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence a
 class HdcLifecycleService(
   private val licenceRepository: LicenceRepository,
   private val hdcLicenceRepository: HdcLicenceRepository,
-  private val hdcPostponementRepository: HdcPostponementRepository,
+  private val hdcApplicationService: HdcApplicationService,
   private val auditService: AuditService,
   private val crdLicenceFactory: CrdLicenceFactory,
   private val hdcLicenceFactory: HdcLicenceFactory,
@@ -138,43 +136,40 @@ class HdcLifecycleService(
     return licences.associateBy { it.statusCode }
   }
 
-  private fun recordPostponement(licence: HdcLicenceEntity, isPostponed: Boolean) {
-    val operation = if (isPostponed) "Postponing" else "Resuming"
-    log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
-    val existing = hdcPostponementRepository.findByLicenceId(licence.id)
-
-    if (existing != null) {
-      existing.isPostponed = isPostponed
-      existing.dateLastUpdated = LocalDateTime.now()
-    } else {
-      hdcPostponementRepository.save(
-        HdcPostponement(
-          licence = licence,
-          isPostponed = isPostponed,
-        ),
-      )
+  private fun updatePostponement(licence: HdcLicenceEntity, isPostponed: Boolean): Boolean {
+    if (licence.application?.isPostponed == isPostponed) {
+      return false
     }
 
+    val operation = if (isPostponed) "Postponing" else "Resuming"
+    log.info("{} HDC licence, id: '{}', status: '{}', for prisoner: '{}'", operation, licence.id, licence.statusCode, licence.nomsId)
+    val application = requireNotNull(licence.application) {
+      "HDC application not found for licence ${licence.id}"
+    }
+    application.isPostponed = isPostponed
+    application.dateLastUpdated = LocalDateTime.now()
+
     auditService.recordAuditEventHdcLicencePostponementChange(licence, isPostponed)
+    return true
   }
 
   @Transactional
   fun convertToCrdLicence(nomsNumber: String, eventType: HdcCvlEventType) {
     val licencesByStatus = getHdcLicencesByInflightStatusMap(nomsNumber)
-    if (licencesByStatus.isNotEmpty()) {
-      val licenceToConvert = getLicenceToConvert(licencesByStatus)
-      inactivateConversionLicence(eventType, licencesByStatus)
-      val crdCopy = crdLicenceFactory.createFromHdc(licenceToConvert, IN_PROGRESS)
+    if (licencesByStatus.isEmpty()) return
 
-      val newLicence = licenceService.populateCopy(
-        original = licenceToConvert,
-        copy = crdCopy,
-      )
+    val licenceToConvert = getLicenceToConvert(licencesByStatus)
+    inactivateConversionLicence(eventType, licencesByStatus)
+    val crdCopy = crdLicenceFactory.createFromHdc(licenceToConvert, IN_PROGRESS)
 
-      addConversionAudits(licenceToConvert, newLicence, eventType)
-      addLicenceConversionEvents(licenceToConvert, newLicence, eventType)
-      addLicenceLinking(eventType, licenceToConvert, newLicence)
-    }
+    val newLicence = licenceService.populateCopy(
+      original = licenceToConvert,
+      copy = crdCopy,
+    )
+
+    addConversionAudits(licenceToConvert, newLicence, eventType)
+    addLicenceConversionEvents(licenceToConvert, newLicence, eventType)
+    addLicenceLinking(eventType, licenceToConvert, newLicence)
   }
 
   @Transactional
@@ -189,11 +184,12 @@ class HdcLifecycleService(
       val newLicence = licenceService.populateCopy(
         original = licenceToConvert,
         copy = hdcCopy,
-      )
+      ) as HdcLicenceEntity
 
       addConversionAudits(licenceToConvert, newLicence, OPT_IN)
       addLicenceConversionEvents(licenceToConvert, newLicence, OPT_IN)
       addLicenceLinking(OPT_IN, licenceToConvert, newLicence)
+      hdcApplicationService.populateOnCreation(newLicence)
     }
   }
 
@@ -206,7 +202,8 @@ class HdcLifecycleService(
       return
     }
 
-    licencesByStatus.values.forEach { recordPostponement(it, isPostponed = true) }
+    val noPostponementsChanged = licencesByStatus.values.count { updatePostponement(it, isPostponed = true) } == 0
+    if (noPostponementsChanged) return
 
     val approvedLicence = licencesByStatus[APPROVED]
     val editableLicence = licencesByStatus[SUBMITTED] ?: licencesByStatus[IN_PROGRESS]
@@ -234,7 +231,9 @@ class HdcLifecycleService(
       return
     }
 
-    licencesByStatus.values.forEach { recordPostponement(it, isPostponed = false) }
+    val noPostponementsChanged = licencesByStatus.values.count { updatePostponement(it, isPostponed = false) } == 0
+    if (noPostponementsChanged) return
+
     log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
   }
 

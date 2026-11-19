@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.caseload
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -17,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCreateCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComVaryCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
@@ -39,11 +37,6 @@ private const val GET_STAFF_VARY_CASELOAD = "/caseload/com/staff/$DELIUS_STAFF_I
 private const val GET_TEAM_VARY_CASELOAD = "/caseload/com/team/vary-case-load"
 
 class ComCaseloadIntegrationTest : IntegrationTestBase() {
-
-  @BeforeEach
-  fun stubClients() {
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
-  }
 
   fun readFile(filename: String): String = this.javaClass.getResourceAsStream("/test_data/integration/caseload/$filename.json")!!.bufferedReader(UTF_8)
     .readText()
@@ -750,8 +743,5 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
-
-    @RegisterExtension
-    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }

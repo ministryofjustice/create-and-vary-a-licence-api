@@ -1,12 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.hdc
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
-import org.awaitility.kotlin.await
-import org.awaitility.kotlin.untilAsserted
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.RegisterExtension
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
@@ -15,25 +13,21 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.TestPropertySource
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.SqlGroup
-import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventsListener
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
@@ -45,29 +39,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.Duration
-import java.time.LocalDateTime
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = ["hdc.event.listener.enabled=true"])
-class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  lateinit var hdcEventsListener: HdcEventsListener
+class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var hdcStatusChangedHandler: HdcStatusChangedHandler
 
-  @MockitoSpyBean
-  lateinit var eventsPublisher: OutboundEventsPublisher
-
-  private val awaitAtMost30Secs
-    get() = await.atMost(Duration.ofSeconds(30))
-
-  @BeforeEach
-  fun setupClient() {
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIdsNoResult()
-  }
+  @Autowired
+  lateinit var hdcLifecycleService: HdcLifecycleService
 
   @Test
   fun `An HDC opt out event is processed`() {
@@ -159,6 +138,13 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(hdcLicence.bespokeConditions).hasSize(1)
     assertThat(hdcLicence.bespokeConditions.single().conditionText).isEqualTo("Do not contact Person A")
     assertThat(hdcLicence.standardConditions).hasSize(8)
+    val application = testRepository.findAllHdcApplications().single()
+    assertThat(application.licence.id).isEqualTo(hdcLicence.id)
+    assertThat(application.isPostponed).isFalse()
+    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    val curfewAddress = testRepository.findAllHdcCurfewAddresses().single()
+    assertThat(curfewAddress.licence.id).isEqualTo(hdcLicence.id)
+    assertThat(curfewAddress.accommodationType).isEqualTo(CvlAccommodationType.RESIDENTIAL)
 
     webTestClient.get()
       .uri("/licence/id/${hdcLicence.id}")
@@ -225,6 +211,25 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
       .extracting("fromLicenceId", "toLicenceId", "linkType")
       .containsExactly(tuple(crdLicence.id, hdcLicence.id, HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE))
     verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
+  }
+
+  @SqlGroup(
+    Sql("classpath:test_data/seed-licence-id-1.sql"),
+    Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
+  )
+  @Test
+  fun `CRD to HDC conversion rolls back when HDC data is unavailable`() {
+    hdcApiMockServer.stubGetHdcLicenceDataNotFound(123L)
+
+    assertThrows<EntityNotFoundException> {
+      hdcLifecycleService.convertToHdcLicence("A1234AA")
+    }
+
+    val licences = testRepository.findAllLicence()
+    assertThat(licences).hasSize(1)
+    assertThat(licences.single().statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(testRepository.findAllHdcApplications()).isEmpty()
+    assertThat(testRepository.findAllHdcCurfewAddresses()).isEmpty()
   }
 
   @Test
@@ -405,9 +410,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     assertThat(testRepository.findLicence(2L).statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
-      .containsExactlyInAnyOrder(tuple(2L, true))
+      .containsExactlyInAnyOrder(tuple(1L, false), tuple(2L, true))
   }
 
   @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
@@ -433,9 +438,9 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(updatedSubmittedLicence.approvedByUsername).isNull()
     assertThat(updatedSubmittedLicence.approvedByName).isNull()
     assertThat(updatedSubmittedLicence.approvedDate).isNull()
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
-      .containsExactly(tuple(2L, true))
+      .containsExactlyInAnyOrder(tuple(1L, false), tuple(2L, true))
 
     assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
@@ -519,7 +524,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
         assertThat(it.detail).contains("SUBMITTED").contains("IN_PROGRESS")
       }
 
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(
@@ -553,7 +558,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
 
     val inProgressEdit = testRepository.findLicence(2L)
     assertThat(inProgressEdit.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(tuple(1L, true), tuple(2L, true))
 
@@ -585,7 +590,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(hdcStatusChangedHandler).handlePostpone(postponeEventJson)
     verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
 
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(
@@ -600,7 +605,7 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertSqsProcessed(timesProcessed = 2)
     verify(hdcStatusChangedHandler).handleResume(resumeEventJson)
 
-    assertThat(testRepository.findAllHdcPostponements())
+    assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
       .extracting("licence.id", "isPostponed")
       .containsExactlyInAnyOrder(tuple(1L, true), tuple(2L, false))
@@ -680,51 +685,10 @@ class HdcEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(links[0].dateCreated).isNotNull
   }
 
-  private fun sendMessage(messageBody: String, eventType: String) {
-    hdcCvlEventsSqsClient.sendMessage(
-      SendMessageRequest.builder()
-        .queueUrl(hdcCvlEventsQueueUrl)
-        .messageBody(messageBody)
-        .messageAttributes(
-          mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
-          ),
-        )
-        .build(),
-    )
-  }
-
-  private fun assertSqsProcessed(timesProcessed: Int = 1) {
-    awaitAtMost30Secs untilAsserted {
-      verify(hdcEventsListener, times(timesProcessed)).finishedEventProcessing(anyOrNull())
-    }
-    assertThat(getNumberOfMessagesCurrentlyOnHdcQueue()).isEqualTo(0)
-  }
-
   private fun sendConversionEvent(event: HdcStatusChangedEvent, eventType: HdcCvlEventType): String {
     val eventJson = mapper.writeValueAsString(event)
     sendMessage(eventJson, eventType.toString())
     assertSqsProcessed()
     return eventJson
-  }
-  private fun createHdcStatusChangedEvent(
-    licenceId: Long = 1L,
-    bookingId: Long = 12347L,
-    nomsNumber: String = "C1234CC",
-    reason: String = "Offender opted out",
-    triggeredBy: String = "test.user",
-    occurredAt: LocalDateTime = LocalDateTime.now(),
-  ) = HdcStatusChangedEvent(
-    occurredAt = occurredAt,
-    licenceId = licenceId,
-    bookingId = bookingId,
-    nomsNumber = nomsNumber,
-    triggeredBy = triggeredBy,
-    reason = reason,
-  )
-
-  private companion object {
-    @RegisterExtension
-    val prisonerSearchMockServer = PrisonerSearchMockServer()
   }
 }

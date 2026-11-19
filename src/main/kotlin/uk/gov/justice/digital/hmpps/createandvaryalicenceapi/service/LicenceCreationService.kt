@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence as HdcLicenceEntity
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 @Service
@@ -52,6 +53,7 @@ class LicenceCreationService(
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
+  private val hdcApplicationService: HdcApplicationService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -144,6 +146,10 @@ class LicenceCreationService(
     standardConditionRepository.saveAllAndFlush(standardConditions)
 
     recordLicenceCreation(createdBy, createdLicence, nomisRecord)
+
+    if (createdLicence is HdcLicenceEntity) {
+      hdcApplicationService.populateOnCreation(createdLicence)
+    }
 
     return CreateLicenceResponse(createdLicence.id)
   }

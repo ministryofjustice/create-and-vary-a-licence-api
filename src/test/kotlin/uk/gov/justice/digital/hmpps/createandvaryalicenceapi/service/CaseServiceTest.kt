@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.corePersonRecord.CorePersonRecordApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
@@ -64,6 +65,7 @@ class CaseServiceTest {
         isInHardStopPeriod = true,
         isEligibleForEarlyRelease = true,
         isDueToBeReleasedInTheNextTwoWorkingDays = true,
+        hdcStatus = HdcStatus.APPROVED,
       ),
     )
 
@@ -79,9 +81,10 @@ class CaseServiceTest {
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
           licenceStartDate = LocalDate.of(2021, 10, 22),
           licenceKind = LicenceKind.CRD,
-          hardStopKind = LicenceKind.HARD_STOP,
           eligibleKind = EligibleKind.CRD,
+          hardStopKind = LicenceKind.HARD_STOP,
           creationKind = LicenceKind.HARD_STOP,
+          hdcStatus = HdcStatus.APPROVED,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",

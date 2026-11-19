@@ -47,7 +47,12 @@ data class AddAddressRequest(
   val postcode: String,
 
   @field:NotNull(message = "Source must not be null")
-  @field:Schema(example = "MANUAL", description = "Source of the address", required = true)
+  @field:Schema(
+    example = "MANUAL",
+    description = "Source of the address",
+    allowableValues = ["MANUAL", "OS_PLACES", "MANUAL_MIGRATED"],
+    required = true,
+  )
   val source: AddressSource,
 
   @field:Schema(
@@ -83,5 +88,12 @@ class AddressWithUprnMustBeFromOsPlacesValidator : ConstraintValidator<AddressWi
     AddressSource.OS_PLACES -> !value.uprn.isNullOrBlank()
     AddressSource.MANUAL -> value.uprn.isNullOrBlank()
     AddressSource.MANUAL_MIGRATED -> value.uprn.isNullOrBlank()
+    AddressSource.HDC_CREATION -> {
+      context.disableDefaultConstraintViolation()
+      context.buildConstraintViolationWithTemplate("Source HDC_CREATION is reserved for internal HDC licence creation")
+        .addPropertyNode("source")
+        .addConstraintViolation()
+      false
+    }
   }
 }

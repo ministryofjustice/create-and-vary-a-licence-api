@@ -101,6 +101,7 @@ class LicenceService(
   private val licenceConditionService: LicenceConditionService,
   private val licenceLinkingService: LicenceLinkingService,
   private val hdcService: HdcService,
+  private val hdcApplicationService: HdcApplicationService,
 ) {
 
   @Transactional(readOnly = true)
@@ -184,7 +185,8 @@ class LicenceService(
 
     is HdcLicence -> {
       val linkTypes = licenceLinkingService.getLinkTypesToLicence(licence.id)
-      val bookingIdsToHdcStatus = hdcService.getHdcStatus(listOf(licence), { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
+      val bookingIdsToHdcStatus =
+        hdcService.getHdcStatus(listOf(licence), { it.bookingId }, { it.homeDetentionCurfewEligibilityDate })
       toHdc(
         licence = licence,
         earliestReleaseDate = earliestReleaseDate,
@@ -678,6 +680,9 @@ class LicenceService(
     }
 
     val licenceCopy = populateCopy(licence, copyToEdit)
+    if (licenceCopy is HdcLicence) {
+      hdcApplicationService.populateApplicationOnEdit(licenceCopy)
+    }
     createLicenceEventForCopy(licence, licenceCopy, creator)
     createAuditEventForCopy(licence, licenceCopy, creator)
 

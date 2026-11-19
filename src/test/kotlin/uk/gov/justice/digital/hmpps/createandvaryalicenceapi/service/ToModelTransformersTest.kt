@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner.Companion.restrictedView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.FoundComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
@@ -60,7 +60,7 @@ class ToModelTransformersTest {
   @Test
   fun `toHdc maps the postponement state`() {
     val licence = TestData.createHdcLicence().apply {
-      postponement = HdcPostponement(licence = this, isPostponed = true)
+      application = HdcApplication(licence = this, isPostponed = true, proposedAccommodationType = null)
     }
 
     val result = toHdc(

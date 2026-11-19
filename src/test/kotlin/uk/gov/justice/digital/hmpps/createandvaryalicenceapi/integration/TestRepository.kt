@@ -15,9 +15,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcPostponement
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
@@ -73,7 +73,7 @@ interface TestLicenceEventRepository : JpaRepository<LicenceEvent, Long>
 interface TestHdcCurfewAddressRepository : JpaRepository<HdcCurfewAddress, Long>
 
 @Repository
-interface TestHdcPostponementRepository : JpaRepository<HdcPostponement, Long>
+interface TestHdcApplicationRepository : JpaRepository<HdcApplication, Long>
 
 @Repository
 interface TestStaffRepository : JpaRepository<Staff, Long> {
@@ -150,7 +150,7 @@ class TestRepository(
   private val testAdditionalConditionUploadRepository: TestAdditionalConditionUploadRepository,
   private val migrationRepository: TestMigrationRepository,
   private val hdcCurfewAddressRepository: TestHdcCurfewAddressRepository,
-  private val hdcPostponementRepository: TestHdcPostponementRepository,
+  private val hdcApplicationRepository: TestHdcApplicationRepository,
   private val licenceEventRepository: TestLicenceEventRepository,
   private val licenceLinkRepository: TestLicenceLinkRepository,
   private val potentialHardstopCaseRepository: TestPotentialHardstopCaseRepository,
@@ -230,10 +230,10 @@ class TestRepository(
     return addresses
   }
 
-  fun findAllHdcPostponements(): List<HdcPostponement> {
-    val postponements = hdcPostponementRepository.findAll()
-    postponements.forEach { Hibernate.initialize(it.licence) }
-    return postponements
+  fun findAllHdcApplications(): List<HdcApplication> {
+    val applications = hdcApplicationRepository.findAll()
+    applications.forEach { Hibernate.initialize(it.licence) }
+    return applications
   }
 
   fun findWeeklyCurfewTimes(licenceId: Long): List<CurfewTimes> {

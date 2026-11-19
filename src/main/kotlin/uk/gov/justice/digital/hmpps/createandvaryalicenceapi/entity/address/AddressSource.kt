@@ -4,4 +4,5 @@ enum class AddressSource {
   MANUAL,
   OS_PLACES,
   MANUAL_MIGRATED,
+  HDC_CREATION,
 }

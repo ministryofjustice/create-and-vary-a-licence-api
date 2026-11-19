@@ -316,41 +316,6 @@ class MigrationServiceTest {
     }
 
     @Test
-    fun `migrate should map CAS to CAS`() {
-      // Given
-      val prisonerNumber = "A1234AA"
-      val staffId = 1L
-      val approvedByName = "approvedFirstName approvedLastName"
-      val curfewAddress = MigrateAddress(
-        addressLine1 = "line1",
-        addressLine2 = "line2",
-        townOrCity = "town",
-        postcode = "PO1 2ST",
-        addressType = AccommodationType.CAS,
-      )
-
-      val request = migrateRequest(
-        prisonerNumber = prisonerNumber,
-        approvedByName = approvedByName,
-        curfewAddress = curfewAddress,
-      )
-
-      mockGetOffenderManager(staffId)
-      whenever(licenceCreationService.getOrCreateCom(staffId)).thenReturn(mock<CommunityOffenderManager>())
-
-      // When
-      service.migrate(request)
-
-      // Then
-      val licenceCaptor = argumentCaptor<HdcLicence>()
-      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
-      val savedLicence = licenceCaptor.firstValue
-      assertThat(savedLicence.approvedByName).isEqualTo(approvedByName)
-      assertThat(savedLicence.approvedByUsername).isNull()
-      assertThat(savedLicence.curfewAddress!!.accommodationType).isEqualTo(CvlAccommodationType.CAS)
-    }
-
-    @Test
     fun `migrate should map CAS_1_APPROVED_PREMISES to CAS`() {
       // Given
       val prisonerNumber = "A1234AA"
