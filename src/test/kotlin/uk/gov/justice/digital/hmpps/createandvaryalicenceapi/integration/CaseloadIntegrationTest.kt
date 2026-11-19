@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -28,11 +27,6 @@ private const val GET_PRISONER = "/prisoner-search/nomisid/A1234AA"
 private const val GET_PROBATION_CASE = "/caseload/probation-case/A1234AA"
 
 class CaseloadIntegrationTest : IntegrationTestBase() {
-  @BeforeEach
-  fun beforeEach() {
-    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
-  }
-
   @Nested
   inner class GetPrisoner {
     @Test
@@ -63,6 +57,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     fun `not present`() {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
       prisonApiMockServer.stubGetCourtOutcomes()
+      remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
       webTestClient.get()
         .uri(GET_PRISONER)
@@ -79,6 +74,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         sentenceStartDate = LocalDate.now().plusDays(1),
       )
       prisonApiMockServer.stubGetCourtOutcomes()
+      remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
       hdcApiMockServer.stubGetHdcStatuses(
         listOf(
           CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
@@ -115,6 +111,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         sentenceStartDate = LocalDate.now().plusDays(1),
       )
       prisonApiMockServer.stubGetCourtOutcomes()
+      remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
       deliusMockServer.stubGetOffenderManagerWithNomsId()
 
       webTestClient.get()
