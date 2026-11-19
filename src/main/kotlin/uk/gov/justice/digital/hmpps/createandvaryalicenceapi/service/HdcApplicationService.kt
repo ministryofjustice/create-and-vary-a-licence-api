@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
@@ -21,6 +22,7 @@ class HdcApplicationService(
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
+  @Transactional
   fun populateOnCreation(licence: HdcLicence) {
     log.debug("Fetching HDC data for licenceId={}, bookingId={}", licence.id, licence.bookingId)
     val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
@@ -39,7 +41,7 @@ class HdcApplicationService(
         source = AddressSource.HDC_CREATION,
         reference = UUID.randomUUID().toString(),
       )
-      hdcCurfewAddressRepository.saveAndFlush(curfewAddressEntity)
+      licence.curfewAddress = curfewAddressEntity
     }
     log.debug(
       "HDC data saved for licenceId={}, proposedAccommodationType={}, curfewAddressPresent={}",
@@ -54,6 +56,7 @@ class HdcApplicationService(
     saveApplication(licence, hdcLicenceData.proposeAddressType)
   }
 
+  @Transactional
   fun refreshCurfewAddress(licence: HdcLicence) {
     val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
     licence.application?.let { application ->
@@ -79,7 +82,6 @@ class HdcApplicationService(
         reference = UUID.randomUUID().toString(),
       )
       licence.curfewAddress = newAddress
-      hdcCurfewAddressRepository.saveAndFlush(newAddress)
     } else {
       existingAddress.accommodationType = curfewAddress.curfewAddressType.cvlAccommodationType
       existingAddress.firstLine = curfewAddress.addressLine1!!
@@ -87,7 +89,6 @@ class HdcApplicationService(
       existingAddress.townOrCity = curfewAddress.townOrCity!!
       existingAddress.postcode = curfewAddress.postcode!!
       existingAddress.lastUpdatedTimestamp = LocalDateTime.now()
-      hdcCurfewAddressRepository.saveAndFlush(existingAddress)
     }
     log.info("HDC curfew address refreshed for licenceId={}", licence.id)
   }

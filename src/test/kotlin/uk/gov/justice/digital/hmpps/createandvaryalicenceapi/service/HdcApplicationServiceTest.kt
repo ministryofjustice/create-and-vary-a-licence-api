@@ -44,15 +44,14 @@ class HdcApplicationServiceTest {
       assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
       assertThat(firstValue.isPostponed).isFalse()
     }
-    argumentCaptor<HdcCurfewAddress>().apply {
-      verify(hdcCurfewAddressRepository).saveAndFlush(capture())
-      assertThat(firstValue.licence).isSameAs(licence)
-      assertThat(firstValue.accommodationType).isEqualTo(RESIDENTIAL)
-      assertThat(firstValue.firstLine).isEqualTo(address.addressLine1)
-      assertThat(firstValue.townOrCity).isEqualTo(address.townOrCity)
-      assertThat(firstValue.postcode).isEqualTo(address.postcode)
-      assertThat(firstValue.source).isEqualTo(HDC_CREATION)
-    }
+    val curfewAddress = licence.curfewAddress!!
+    assertThat(curfewAddress.licence).isSameAs(licence)
+    assertThat(curfewAddress.accommodationType).isEqualTo(RESIDENTIAL)
+    assertThat(curfewAddress.firstLine).isEqualTo(address.addressLine1)
+    assertThat(curfewAddress.townOrCity).isEqualTo(address.townOrCity)
+    assertThat(curfewAddress.postcode).isEqualTo(address.postcode)
+    assertThat(curfewAddress.source).isEqualTo(HDC_CREATION)
+    verifyNoInteractions(hdcCurfewAddressRepository)
   }
 
   @Test
@@ -128,7 +127,7 @@ class HdcApplicationServiceTest {
     assertThat(existingAddress.source).isEqualTo(MANUAL)
     assertThat(existingAddress.reference).isEqualTo("existing-reference")
     assertThat(existingAddress.lastUpdatedTimestamp).isAfter(LocalDateTime.MIN)
-    verify(hdcCurfewAddressRepository).saveAndFlush(existingAddress)
+    verifyNoInteractions(hdcCurfewAddressRepository)
   }
 
   @Test
@@ -144,7 +143,7 @@ class HdcApplicationServiceTest {
     assertThat(licence.curfewAddress).isNotNull
     assertThat(licence.curfewAddress!!.source).isEqualTo(HDC_CREATION)
     assertThat(licence.curfewAddress!!.firstLine).isEqualTo("123 Test Street")
-    verify(hdcCurfewAddressRepository).saveAndFlush(licence.curfewAddress!!)
+    verifyNoInteractions(hdcCurfewAddressRepository)
   }
 
   @Test
