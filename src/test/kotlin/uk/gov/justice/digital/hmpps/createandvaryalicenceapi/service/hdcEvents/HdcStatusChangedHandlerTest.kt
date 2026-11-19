@@ -103,10 +103,10 @@ class HdcStatusChangedHandlerTest {
   }
 
   @Test
-  fun `handleRiskChecksSubmitted processes event without changing the licence`() {
+  fun `handleRiskChecksSubmitted refreshes the HDC curfew address`() {
     handler.handleRiskChecksSubmitted(eventJson)
 
-    verifyNoInteractions(hdcLifecycleService)
+    verify(hdcLifecycleService).refreshHdcCurfewAddresses("A1234BC")
   }
 
   @Test

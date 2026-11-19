@@ -237,6 +237,17 @@ class HdcLifecycleService(
     log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
   }
 
+  @Transactional
+  fun refreshHdcCurfewAddresses(nomsNumber: String) {
+    val licences = hdcLicenceRepository.findInFlightHdcLicences(nomsNumber)
+    if (licences.isEmpty()) {
+      log.warn("HDC risk checks submitted: no eligible licence found for nomsNumber={}", nomsNumber)
+      return
+    }
+
+    licences.forEach(hdcApplicationService::refreshCurfewAddress)
+  }
+
   internal fun revertLicenceToInProgress(licence: HdcLicenceEntity) {
     if (licence.statusCode != IN_PROGRESS) {
       val previousStatus = licence.statusCode

@@ -98,9 +98,9 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
     assertNoSideEffects()
   }
 
-  @Sql("classpath:test_data/seed-hdc-licence-id-1.sql")
+  @Sql("classpath:test_data/seed-hdc-licence-id-1-with-curfew-address.sql")
   @Test
-  fun `Duplicate RISK_CHECKS_SUBMITTED has no persisted side effects`() {
+  fun `Duplicate RISK_CHECKS_SUBMITTED creates only one HDC curfew address`() {
     // Given
     val event = createHdcStatusChangedEvent(bookingId = 54321L, nomsNumber = "A1234AA")
 
@@ -108,7 +108,10 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
     sendEventTwice(event, HdcCvlEventType.RISK_CHECKS_SUBMITTED)
 
     // Then
-    assertNoSideEffects()
+    assertThat(testRepository.findAllLicence()).hasSize(1)
+    val curfewAddress = testRepository.findAllHdcCurfewAddresses().single()
+    assertThat(curfewAddress.firstLine).isEqualTo("123 Test Street")
+    assertThat(curfewAddress.source.name).isEqualTo("HDC_CREATION")
   }
 
   private fun sendEventTwice(event: HdcStatusChangedEvent, eventType: HdcCvlEventType) {

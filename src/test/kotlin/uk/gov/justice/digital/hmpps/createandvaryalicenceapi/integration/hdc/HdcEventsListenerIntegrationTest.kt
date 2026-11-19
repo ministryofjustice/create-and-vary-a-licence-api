@@ -91,6 +91,39 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     verifyNoInteractions(eventsPublisher)
   }
 
+  @Sql("classpath:test_data/seed-hdc-approved-and-submitted-licences.sql")
+  @Test
+  fun `An HDC risk checks submitted event refreshes the curfew address and proposed accommodation type`() {
+    val event = createHdcStatusChangedEvent(
+      bookingId = 12345L,
+      nomsNumber = "A1234AA",
+    )
+    val eventJson = mapper.writeValueAsString(event)
+    hdcApiMockServer.stubGetHdcLicenceData(bookingId = 12345L)
+
+    sendMessage(eventJson, HdcCvlEventType.RISK_CHECKS_SUBMITTED.name)
+
+    assertSqsProcessed()
+    verify(hdcStatusChangedHandler).handleRiskChecksSubmitted(eventJson)
+    assertThat(testRepository.findAllLicence()).hasSize(2)
+    assertThat(testRepository.findAllHdcApplications())
+      .hasSize(2)
+      .allSatisfy {
+        assertThat(it.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+      }
+      .allSatisfy { assertThat(it.isPostponed).isFalse() }
+
+    assertThat(testRepository.findAllHdcCurfewAddresses())
+      .hasSize(2)
+      .allSatisfy {
+        assertThat(it.firstLine).isEqualTo("123 Test Street")
+        assertThat(it.townOrCity).isEqualTo("Test Area")
+        assertThat(it.postcode).isEqualTo("AB1 2CD")
+        assertThat(it.source.name).isEqualTo("HDC_CREATION")
+      }
+    verifyNoInteractions(eventsPublisher)
+  }
+
   @SqlGroup(
     Sql("classpath:test_data/seed-licence-id-1.sql"),
     Sql("classpath:test_data/seed-hdc-conversion-details.sql"),

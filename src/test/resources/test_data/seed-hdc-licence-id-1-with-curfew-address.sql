@@ -75,6 +75,6 @@ INSERT INTO hdc_curfew_address (id,licence_id, reference, first_line, second_lin
 			 'Testville',
 			 'Testshire',
 			 'TE5 7AA',
-			 'MANUAL',
+			 'HDC_CREATION',
              'RESIDENTIAL'
 		 );
