@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.RemandDeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
@@ -25,9 +26,11 @@ class ReleaseDateService(
   private val clock: Clock,
   private val workingDaysService: WorkingDaysService,
   private val iS91DeterminationService: IS91DeterminationService,
+  private val remandDeterminationService: RemandDeterminationService,
   @param:Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @param:Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
   @param:Value("\${timeserved.max.days.crd.before.today:28}") private val maxNumberOfDaysBeforeTodayForCrdTimeserved: Long = 28,
+  @param:Value("\${feature.toggle.remand.enabled}") private val remandEnabled: Boolean = false,
 ) {
   fun isInHardStopPeriod(
     licenceStartDate: LocalDate?,
@@ -107,10 +110,17 @@ class ReleaseDateService(
     nomisIdsToKinds: Map<String, EligibleKind?>,
   ): Map<String, LocalDate?> {
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
+    val crdPrisoners = prisoners.filter { nomisIdsToKinds[it.prisonerNumber] == CRD }
+    val remandBookingIds = if (remandEnabled) remandDeterminationService.getRemandBookingIds(crdPrisoners) else emptyList()
+
     return prisoners.associate {
       it.prisonerNumber to when (nomisIdsToKinds[it.prisonerNumber]) {
         FIXED_TERM, STANDARD -> calculatePrrdLicenceStartDate(it)
-        CRD -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
+        CRD -> calculateCrdLicenceStartDate(
+          nomisRecord = it,
+          isIs91Case = iS91BookingIds.contains(it.bookingId?.toLong()),
+          isRemandCase = remandBookingIds.contains(it.bookingId?.toLong()),
+        )
         HDC -> it.homeDetentionCurfewActualDate ?: it.homeDetentionCurfewEligibilityDate
         else -> null
       }
@@ -137,9 +147,11 @@ class ReleaseDateService(
   private fun calculateCrdLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     isIs91Case: Boolean,
+    isRemandCase: Boolean,
   ): LocalDate? = if (
     ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
-    isIs91Case
+    isIs91Case ||
+    isRemandCase
   ) {
     nomisRecord.determineAltLicenceStartDate()
   } else {

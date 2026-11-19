@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -190,6 +191,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -228,6 +230,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -271,6 +274,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     val result = webTestClient.post()
       .uri("/licence/probation/nomisid/A1234AA")
@@ -306,6 +310,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     val result = webTestClient.post()
       .uri("/licence/probation/nomisid/A1234AA")
@@ -403,6 +408,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDate = LocalDate.now().plusDays(10))
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -444,6 +450,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(conditionalReleaseDate = LocalDate.now().plusDays(10))
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -487,6 +494,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
@@ -528,6 +536,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
@@ -572,6 +581,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
@@ -631,6 +641,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds(prisonId = "MDI")
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(0)
     assertThat(testRepository.getStandardConditionCount()).isEqualTo(0)
@@ -692,6 +703,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(1)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -740,6 +752,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     assertThat(testRepository.countLicence()).isEqualTo(1)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -846,6 +859,9 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val deliusMockServer = DeliusMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
