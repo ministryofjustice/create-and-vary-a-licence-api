@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.LastMinuteHandoverCaseResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -264,6 +265,7 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     deliusMockServer.stubGetStaffDetailsByUsername()
     deliusMockServer.stubGetManagers(managers)
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
   }
 
   fun createCommunityManager(id: Long, nomisId: String): CommunityManager = CommunityManager(
@@ -352,5 +354,8 @@ class LastMinuteHandoverCasesIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }

@@ -70,14 +70,11 @@ confirmed release date can't always be trusted as the true release date:
   yet sentenced** (based on their legal status), or
 - They're identified as an **IS91 or extradition case** (broadly: people held for
   immigration/deportation reasons, or awaiting extradition), based on separate
-  information held about their case.
-
-  > **A note on remand cases**: although the calculation below already accounts for
-  > remand cases, CVL does not currently support remand cases end-to-end elsewhere in
-  > the system (for example, people on remand don't typically have a conditional release
-  > date yet, since their sentence hasn't been determined) — so in practice this part of
-  > the calculation is the beginnings of future support, rather than something currently
-  > relied on.
+  information held about their case, or
+- They're identified as a **remand case**, based on separate information held about
+  their case. Remand cases are only checked for people on a standard release licence,
+  and only if remand support has been switched on via a setting (it is off by default).
+  If it is switched off, remand cases are not identified this way.
 
 For these people, the calculation is slightly different:
 

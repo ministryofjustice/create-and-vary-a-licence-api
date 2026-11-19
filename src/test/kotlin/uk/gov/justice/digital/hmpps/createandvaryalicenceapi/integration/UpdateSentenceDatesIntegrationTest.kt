@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PotentialHardstopCaseStatus.PENDING
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
@@ -509,10 +510,14 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun startMocks() {
     prisonApiMockServer.stubGetSentenceAndRecallTypes(123456)
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
   }
 
   private companion object {
     @RegisterExtension
     val prisonApiMockServer = PrisonApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }

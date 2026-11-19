@@ -28,7 +28,6 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DPR_MANAGE_USERS_HOST: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
     HDC_CREATION_ENABLED: true
-    HMPPS_REMAND_API_ENABLED: false
     HMPPS_REMANDANDSENTENCING_API_URL: "https://remand-and-sentencing-api-dev.hmpps.service.justice.gov.uk"
 
     # Event listeners

@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerWithCvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -56,6 +57,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     fun `not present`() {
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
       prisonApiMockServer.stubGetCourtOutcomes()
+      remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
       webTestClient.get()
         .uri(GET_PRISONER)
@@ -72,6 +74,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         sentenceStartDate = LocalDate.now().plusDays(1),
       )
       prisonApiMockServer.stubGetCourtOutcomes()
+      remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
       hdcApiMockServer.stubGetHdcStatuses(
         listOf(
           CurrentPrisonerHdcStatus(123, HdcStatus.APPROVED),
@@ -108,6 +111,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         sentenceStartDate = LocalDate.now().plusDays(1),
       )
       prisonApiMockServer.stubGetCourtOutcomes()
+      remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
       deliusMockServer.stubGetOffenderManagerWithNomsId()
 
       webTestClient.get()
@@ -180,5 +184,8 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }

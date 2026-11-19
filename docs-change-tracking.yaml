@@ -28,7 +28,7 @@ entries:
     doc: docs/licence-start-date.md
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/dates/ReleaseDateService.kt
-    hash: 955836ed81104e71120036b5c4cf9ceb
+    hash: 26a33347f4ffe3ecda91aa598e68e667
 
   - id: update-sentence-date-service
     description: "How CVL reacts when a person's sentence/release dates change: date recalculation, materiality, COM notifications, and hard stop safeguards"
@@ -43,5 +43,5 @@ entries:
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/resource/privateApi/jobs
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/jobs
-    hash: 21257852d9456b77e97adc121f25202c
+    hash: ca0e6db13dee423d1d489b5f87da056b
 
