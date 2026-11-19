@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.data.domain.Sort
@@ -11,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ComSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurrentPrisonerHdcStatus
@@ -22,6 +24,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
 
 class ComIntegrationTest : IntegrationTestBase() {
+  @BeforeEach
+  fun stubClients() {
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
+  }
+
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
@@ -781,6 +788,9 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",

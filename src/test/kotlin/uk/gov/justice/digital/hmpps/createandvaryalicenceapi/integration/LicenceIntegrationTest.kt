@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.extensions.RemandAndSentencingApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateVariationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.EditLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -308,6 +309,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = webTestClient.put()
@@ -341,6 +343,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = webTestClient.put()
@@ -369,6 +372,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = webTestClient.put()
@@ -421,6 +425,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
     prisonApiMockServer.stubGetCourtOutcomes()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = webTestClient.put()
@@ -723,6 +728,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = postRequest(uri, roles)
@@ -742,6 +748,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonerSearchApiMockServer.stubSearchPrisonersByBookingIds()
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123)
     prisonApiMockServer.stubGetCourtOutcomes()
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = postRequest(uri, roles)
@@ -763,6 +770,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetHdcLatest(bookingId = 123, approvalStatus = "APPROVED")
     prisonApiMockServer.stubGetCourtOutcomes()
     hdcApiMockServer.stubGetHdcLicenceData(12345L)
+    remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
 
     // When
     val result = postRequest(uri, roles)
@@ -1371,5 +1379,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     @RegisterExtension
     val hdcApiMockServer = HdcApiMockServer()
+
+    @RegisterExtension
+    val remandAndSentencingApiMockServer = RemandAndSentencingApiMockServer()
   }
 }
