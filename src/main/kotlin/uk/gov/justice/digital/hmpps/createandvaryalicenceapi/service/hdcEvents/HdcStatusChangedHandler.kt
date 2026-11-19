@@ -65,6 +65,7 @@ class HdcStatusChangedHandler(
 
   fun handleRiskChecksSubmitted(message: String) {
     val event = parseEvent(message)
+    hdcLifecycleService.refreshHdcCurfewAddresses(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.RISK_CHECKS_SUBMITTED, event)
   }
 }

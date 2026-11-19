@@ -429,6 +429,18 @@ class HdcLifecycleServiceTest {
     verify(auditService).recordAuditEventHdcLicencePostponementChange(hdcLicence, false)
   }
 
+  @Test
+  fun `refreshes the HDC curfew address for every in-flight licence`() {
+    val firstLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", bookingId = 123L)
+    val secondLicence = createHdcLicence(id = 2).copy(nomsId = "A1234BC", bookingId = 456L, statusCode = SUBMITTED)
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(firstLicence, secondLicence))
+
+    service.refreshHdcCurfewAddresses("A1234BC")
+
+    verify(hdcApplicationService).refreshCurfewAddress(firstLicence)
+    verify(hdcApplicationService).refreshCurfewAddress(secondLicence)
+  }
+
   @Nested
   inner class TransitionHdcLicenceToInProgress {
 

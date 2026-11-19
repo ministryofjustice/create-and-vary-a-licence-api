@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -51,6 +52,44 @@ class HdcApplicationService(
   fun populateApplicationOnEdit(licence: HdcLicence) {
     val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
     saveApplication(licence, hdcLicenceData.proposeAddressType)
+  }
+
+  fun refreshCurfewAddress(licence: HdcLicence) {
+    val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
+    licence.application?.let { application ->
+      application.proposedAccommodationType = hdcLicenceData.proposeAddressType
+      application.dateLastUpdated = LocalDateTime.now()
+    }
+
+    val curfewAddress = hdcLicenceData.curfewAddress ?: run {
+      log.info("No HDC curfew address to refresh for licenceId={}", licence.id)
+      return
+    }
+
+    val existingAddress = licence.curfewAddress
+    if (existingAddress == null) {
+      val newAddress = HdcCurfewAddress(
+        licence = licence,
+        accommodationType = curfewAddress.curfewAddressType.cvlAccommodationType,
+        firstLine = curfewAddress.addressLine1!!,
+        secondLine = curfewAddress.addressLine2,
+        townOrCity = curfewAddress.townOrCity!!,
+        postcode = curfewAddress.postcode!!,
+        source = AddressSource.HDC_CREATION,
+        reference = UUID.randomUUID().toString(),
+      )
+      licence.curfewAddress = newAddress
+      hdcCurfewAddressRepository.saveAndFlush(newAddress)
+    } else {
+      existingAddress.accommodationType = curfewAddress.curfewAddressType.cvlAccommodationType
+      existingAddress.firstLine = curfewAddress.addressLine1!!
+      existingAddress.secondLine = curfewAddress.addressLine2
+      existingAddress.townOrCity = curfewAddress.townOrCity!!
+      existingAddress.postcode = curfewAddress.postcode!!
+      existingAddress.lastUpdatedTimestamp = LocalDateTime.now()
+      hdcCurfewAddressRepository.saveAndFlush(existingAddress)
+    }
+    log.info("HDC curfew address refreshed for licenceId={}", licence.id)
   }
 
   private fun saveApplication(licence: HdcLicence, proposedAccommodationType: AccommodationType?) {
