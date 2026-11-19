@@ -2,9 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
@@ -13,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType.RESIDENTIAL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -23,10 +20,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse
 import java.time.LocalDateTime
 
 class HdcApplicationServiceTest {
-  private val hdcApplicationRepository = mock<HdcApplicationRepository>()
   private val hdcCurfewAddressRepository = mock<HdcCurfewAddressRepository>()
   private val hdcApiClient = mock<HdcApiClient>()
-  private val service = HdcApplicationService(hdcApplicationRepository, hdcCurfewAddressRepository, hdcApiClient)
+  private val service = HdcApplicationService(hdcApiClient)
 
   @Test
   fun `populateOnCreation stores proposed type and curfew address`() {
@@ -38,12 +34,10 @@ class HdcApplicationServiceTest {
 
     service.populateOnCreation(licence)
 
-    argumentCaptor<HdcApplication>().apply {
-      verify(hdcApplicationRepository).saveAndFlush(capture())
-      assertThat(firstValue.licence).isSameAs(licence)
-      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
-      assertThat(firstValue.isPostponed).isFalse()
-    }
+    assertThat(licence.application).isNotNull
+    assertThat(licence.application!!.licence).isSameAs(licence)
+    assertThat(licence.application!!.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    assertThat(licence.application!!.isPostponed).isFalse()
     val curfewAddress = licence.curfewAddress!!
     assertThat(curfewAddress.licence).isSameAs(licence)
     assertThat(curfewAddress.accommodationType).isEqualTo(RESIDENTIAL)
@@ -63,12 +57,10 @@ class HdcApplicationServiceTest {
 
     service.populateOnCreation(licence)
 
-    argumentCaptor<HdcApplication>().apply {
-      verify(hdcApplicationRepository).saveAndFlush(capture())
-      assertThat(firstValue.licence).isSameAs(licence)
-      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
-      assertThat(firstValue.isPostponed).isFalse()
-    }
+    assertThat(licence.application).isNotNull
+    assertThat(licence.application!!.licence).isSameAs(licence)
+    assertThat(licence.application!!.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
+    assertThat(licence.application!!.isPostponed).isFalse()
     verifyNoInteractions(hdcCurfewAddressRepository)
   }
 
@@ -82,12 +74,10 @@ class HdcApplicationServiceTest {
 
     service.populateApplicationOnEdit(licence)
 
-    argumentCaptor<HdcApplication>().apply {
-      verify(hdcApplicationRepository).saveAndFlush(capture())
-      assertThat(firstValue.licence).isSameAs(licence)
-      assertThat(firstValue.isPostponed).isFalse()
-      assertThat(firstValue.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
-    }
+    assertThat(licence.application).isNotNull
+    assertThat(licence.application!!.licence).isSameAs(licence)
+    assertThat(licence.application!!.isPostponed).isFalse()
+    assertThat(licence.application!!.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
     verifyNoInteractions(hdcCurfewAddressRepository)
   }
 

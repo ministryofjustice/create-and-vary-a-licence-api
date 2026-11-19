@@ -181,7 +181,7 @@ class HdcLicence(
   HdcCase,
   AlwaysHasCom {
 
-  @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY)
+  @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   var application: HdcApplication? = null
 
   fun copy(

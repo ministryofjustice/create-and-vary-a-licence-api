@@ -6,18 +6,13 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplication
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcApplicationRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
 class HdcApplicationService(
-  private val hdcApplicationRepository: HdcApplicationRepository,
-  private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
   private val hdcApiClient: HdcApiClient,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -28,7 +23,11 @@ class HdcApplicationService(
     val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
     val curfewAddress = hdcLicenceData.curfewAddress
 
-    saveApplication(licence, hdcLicenceData.proposeAddressType)
+    licence.application = HdcApplication(
+      licence = licence,
+      isPostponed = false,
+      proposedAccommodationType = hdcLicenceData.proposeAddressType,
+    )
 
     if (curfewAddress != null) {
       val curfewAddressEntity = HdcCurfewAddress(
@@ -53,7 +52,11 @@ class HdcApplicationService(
 
   fun populateApplicationOnEdit(licence: HdcLicence) {
     val hdcLicenceData = hdcApiClient.getByBookingId(licence.bookingId!!)
-    saveApplication(licence, hdcLicenceData.proposeAddressType)
+    licence.application = HdcApplication(
+      licence = licence,
+      isPostponed = false,
+      proposedAccommodationType = hdcLicenceData.proposeAddressType,
+    )
   }
 
   @Transactional
@@ -91,15 +94,5 @@ class HdcApplicationService(
       existingAddress.lastUpdatedTimestamp = LocalDateTime.now()
     }
     log.info("HDC curfew address refreshed for licenceId={}", licence.id)
-  }
-
-  private fun saveApplication(licence: HdcLicence, proposedAccommodationType: AccommodationType?) {
-    hdcApplicationRepository.saveAndFlush(
-      HdcApplication(
-        licence = licence,
-        isPostponed = false,
-        proposedAccommodationType = proposedAccommodationType,
-      ),
-    )
   }
 }
