@@ -8,6 +8,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.migration.MigrationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcStatusService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 
@@ -22,6 +23,7 @@ class ComponentDependencyCycleTest {
 
     assertThat(components).contains(
       HdcLifecycleService::class.java,
+      HdcStatusService::class.java,
       LicenceService::class.java,
       LicenceCreationService::class.java,
       MigrationService::class.java,

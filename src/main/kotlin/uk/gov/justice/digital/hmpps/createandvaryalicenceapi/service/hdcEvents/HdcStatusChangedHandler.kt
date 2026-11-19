@@ -4,11 +4,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcStatusService
 
 @Service
 class HdcStatusChangedHandler(
   private val mapper: ObjectMapper,
   private val hdcLifecycleService: HdcLifecycleService,
+  private val hdcStatusService: HdcStatusService,
 ) {
 
   private val log = LoggerFactory.getLogger(HdcStatusChangedHandler::class.java)
@@ -30,31 +32,31 @@ class HdcStatusChangedHandler(
 
   fun handleOptOut(message: String) {
     val event = parseEvent(message)
-    hdcLifecycleService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.OPT_OUT)
+    hdcStatusService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.OPT_OUT)
     logEventProcessed(HdcCvlEventType.OPT_OUT, event)
   }
 
   fun handleRefuse(message: String) {
     val event = parseEvent(message)
-    hdcLifecycleService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.REFUSE)
+    hdcStatusService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.REFUSE)
     logEventProcessed(HdcCvlEventType.REFUSE, event)
   }
 
   fun handlePostpone(message: String) {
     val event = parseEvent(message)
-    hdcLifecycleService.postponeLicence(event.nomsNumber)
+    hdcStatusService.postponeLicence(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.POSTPONE, event)
   }
 
   fun handleResume(message: String) {
     val event = parseEvent(message)
-    hdcLifecycleService.resumeHdcPostponement(event.nomsNumber)
+    hdcStatusService.resumeHdcPostponement(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.RESUME, event)
   }
 
   fun handleOptIn(message: String) {
     val event = parseEvent(message)
-    hdcLifecycleService.convertToHdcLicence(event.nomsNumber)
+    hdcStatusService.convertToHdcLicence(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.OPT_IN, event)
   }
 

@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcStatusService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
@@ -46,7 +46,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
   lateinit var hdcStatusChangedHandler: HdcStatusChangedHandler
 
   @Autowired
-  lateinit var hdcLifecycleService: HdcLifecycleService
+  lateinit var hdcStatusService: HdcStatusService
 
   @Test
   fun `An HDC opt out event is processed`() {
@@ -255,7 +255,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     hdcApiMockServer.stubGetHdcLicenceDataNotFound(123L)
 
     assertThrows<EntityNotFoundException> {
-      hdcLifecycleService.convertToHdcLicence("A1234AA")
+      hdcStatusService.convertToHdcLicence("A1234AA")
     }
 
     val licences = testRepository.findAllLicence()
