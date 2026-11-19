@@ -43,5 +43,5 @@ entries:
     sources:
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/resource/privateApi/jobs
       - src/main/kotlin/uk/gov/justice/digital/hmpps/createandvaryalicenceapi/service/jobs
-    hash: 21257852d9456b77e97adc121f25202c
+    hash: 7a9958b597e5027a295668f877c82582
 
