@@ -22,6 +22,7 @@ data class ComCreateCaseloadLicenceDto(
   val licenceCreationType: LicenceCreationType?,
   val isRestricted: Boolean,
   val isHdcPostponed: Boolean,
+  val noHdcCurfewAddress: Boolean?,
 ) {
 
   companion object {
@@ -40,6 +41,7 @@ data class ComCreateCaseloadLicenceDto(
       licenceCreationType = null,
       isRestricted = true,
       isHdcPostponed = isHdcPostponed,
+      noHdcCurfewAddress = if (kind.isHdc()) false else null,
     )
   }
 }

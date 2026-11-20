@@ -77,7 +77,15 @@ interface LicenceCaseRepository : JpaRepository<Licence, Long> {
           l.typeCode,
           l.reviewDate,
           COALESCE(hp.isPostponed, false) AS isPostponed,
-          l.crn
+          l.crn,
+          CASE
+            WHEN l.kind IN ('HDC', 'HDC_VARIATION')
+              AND hp.proposedAccommodationType IN (RESIDENTIAL, CAS_1_APPROVED_PREMISES)
+              AND NOT EXISTS (SELECT 1 FROM HdcCurfewAddress address WHERE address.licence = l)
+            THEN true
+            WHEN l.kind IN ('HDC', 'HDC_VARIATION') THEN false
+            ELSE null
+          END
         FROM Licence l
             LEFT JOIN l.responsibleCom com
             LEFT JOIN l.updatedBy updatedBy

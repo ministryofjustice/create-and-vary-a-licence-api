@@ -156,11 +156,13 @@ values ((select max(id) from licence), 'notBreakLaw', 2, 'Do not break the law',
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES ((select max(id) from licence), true, 'Submitted Programme');
 
-insert into hdc_application (licence_id, is_postponed)
+insert into hdc_application (licence_id, is_postponed, proposed_accommodation_type)
 values (
     (select id from licence where kind = 'HDC' and status_code = 'APPROVED' and crn = 'X12348' and noms_id = 'AB1234E'),
-    true
+    true,
+    'RESIDENTIAL'
 ), (
     (select id from licence where kind = 'HDC' and status_code = 'SUBMITTED' and crn = 'X12348' and noms_id = 'AB1234E'),
-    true
+    true,
+    'RESIDENTIAL'
 );
