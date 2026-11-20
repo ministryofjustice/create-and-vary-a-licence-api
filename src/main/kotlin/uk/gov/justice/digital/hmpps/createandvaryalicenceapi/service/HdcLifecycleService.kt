@@ -7,8 +7,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplicati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -16,6 +18,7 @@ import java.util.UUID
 class HdcLifecycleService(
   private val hdcLicenceRepository: HdcLicenceRepository,
   private val hdcApiClient: HdcApiClient,
+  private val auditService: AuditService,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -71,6 +74,35 @@ class HdcLifecycleService(
     }
 
     licences.forEach(::refreshCurfewAddress)
+  }
+
+  @Transactional
+  fun withdrawHdcCurfewAddresses(nomsNumber: String) {
+    val licences = hdcLicenceRepository.findInFlightHdcLicences(nomsNumber)
+    if (licences.isEmpty()) {
+      log.warn("HDC address withdrawn: no eligible licence found for nomsNumber={}", nomsNumber)
+      return
+    }
+
+    licences.forEach { licence ->
+      val application = requireNotNull(licence.application) {
+        "HDC application not found for licence ${licence.id}"
+      }
+      if (licence.curfewAddress != null || application.proposedAccommodationType != null) {
+        licence.curfewAddress = null
+        application.proposedAccommodationType = null
+        application.dateLastUpdated = LocalDateTime.now()
+        auditService.recordAuditEvent(
+          AuditEvent(
+            licenceId = licence.id,
+            summary = "HDC curfew address withdrawn",
+            detail = "HDC curfew address and proposed accommodation type cleared following ADDRESS_WITHDRAWN event",
+            eventType = SYSTEM_EVENT,
+          ),
+        )
+        log.info("HDC curfew address withdrawn for licenceId={}", licence.id)
+      }
+    }
   }
 
   @Transactional

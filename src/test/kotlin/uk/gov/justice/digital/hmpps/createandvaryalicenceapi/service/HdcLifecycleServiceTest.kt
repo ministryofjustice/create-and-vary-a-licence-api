@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -19,13 +21,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.reponse.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.LocalDateTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence as HdcLicenceEntity
 
 class HdcLifecycleServiceTest {
   private val hdcLicenceRepository = mock<HdcLicenceRepository>()
   private val hdcApiClient = mock<HdcApiClient>()
-  private val service = HdcLifecycleService(hdcLicenceRepository, hdcApiClient)
+  private val auditService = mock<AuditService>()
+  private val service = HdcLifecycleService(hdcLicenceRepository, hdcApiClient, auditService)
 
   @Test
   fun `populateOnCreation stores proposed type and curfew address`() {
@@ -175,6 +180,41 @@ class HdcLifecycleServiceTest {
   }
 
   @Test
+  fun `withdraws curfew addresses and proposed accommodation type for every in-flight licence`() {
+    val firstLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
+    val secondLicence = createHdcLicence(id = 2).copy(nomsId = "A1234BC", statusCode = SUBMITTED)
+    val firstApplication = HdcApplication(firstLicence, isPostponed = true, AccommodationType.RESIDENTIAL)
+    val secondApplication = HdcApplication(secondLicence, isPostponed = false, AccommodationType.CAS_2)
+    firstLicence.application = firstApplication
+    secondLicence.application = secondApplication
+    firstLicence.curfewAddress = createCurfewAddress(firstLicence)
+    secondLicence.curfewAddress = createCurfewAddress(secondLicence)
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(firstLicence, secondLicence))
+
+    service.withdrawHdcCurfewAddresses("A1234BC")
+
+    assertThat(firstLicence.curfewAddress).isNull()
+    assertThat(secondLicence.curfewAddress).isNull()
+    assertThat(firstApplication.proposedAccommodationType).isNull()
+    assertThat(secondApplication.proposedAccommodationType).isNull()
+    assertThat(firstApplication.isPostponed).isTrue()
+    assertThat(secondApplication.isPostponed).isFalse()
+    assertThat(firstApplication.dateLastUpdated).isNotNull()
+    assertThat(secondApplication.dateLastUpdated).isNotNull()
+    verify(auditService, times(2)).recordAuditEvent(any())
+  }
+
+  @Test
+  fun `withdrawal fails when an in-flight licence has no HDC application`() {
+    val licence = createHdcLicence(id = 123L).copy(nomsId = "A1234BC")
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(licence))
+
+    assertThatThrownBy { service.withdrawHdcCurfewAddresses("A1234BC") }
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("HDC application not found for licence 123")
+  }
+
+  @Test
   fun `refreshCurfewAddress leaves the existing address when HDC has no address`() {
     val licence = createHdcLicence()
     val application = HdcApplication(licence, true, null)
@@ -201,4 +241,13 @@ class HdcLifecycleServiceTest {
     assertThat(application.isPostponed).isTrue()
     assertThat(existingAddress.firstLine).isEqualTo("Existing Street")
   }
+
+  private fun createCurfewAddress(licence: HdcLicenceEntity) = HdcCurfewAddress(
+    licence = licence,
+    reference = "ref-${licence.id}",
+    firstLine = "Test Street",
+    townOrCity = "Test Town",
+    postcode = "TE1 1ST",
+    source = HDC_CREATION,
+  )
 }
