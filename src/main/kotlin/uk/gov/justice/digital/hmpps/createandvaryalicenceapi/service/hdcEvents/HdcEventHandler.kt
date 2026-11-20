@@ -3,17 +3,17 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcEventService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcStatusService
 
 @Service
-class HdcStatusChangedHandler(
+class HdcEventHandler(
   private val mapper: ObjectMapper,
   private val hdcLifecycleService: HdcLifecycleService,
-  private val hdcStatusService: HdcStatusService,
+  private val hdcEventService: HdcEventService,
 ) {
 
-  private val log = LoggerFactory.getLogger(HdcStatusChangedHandler::class.java)
+  private val log = LoggerFactory.getLogger(HdcEventHandler::class.java)
 
   private fun parseEvent(message: String) = mapper.readValue(message, HdcStatusChangedEvent::class.java)
 
@@ -32,31 +32,31 @@ class HdcStatusChangedHandler(
 
   fun handleOptOut(message: String) {
     val event = parseEvent(message)
-    hdcStatusService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.OPT_OUT)
+    hdcEventService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.OPT_OUT)
     logEventProcessed(HdcCvlEventType.OPT_OUT, event)
   }
 
   fun handleRefuse(message: String) {
     val event = parseEvent(message)
-    hdcStatusService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.REFUSE)
+    hdcEventService.convertToCrdLicence(event.nomsNumber, HdcCvlEventType.REFUSE)
     logEventProcessed(HdcCvlEventType.REFUSE, event)
   }
 
   fun handlePostpone(message: String) {
     val event = parseEvent(message)
-    hdcStatusService.postponeLicence(event.nomsNumber)
+    hdcEventService.postponeLicence(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.POSTPONE, event)
   }
 
   fun handleResume(message: String) {
     val event = parseEvent(message)
-    hdcStatusService.resumeHdcPostponement(event.nomsNumber)
+    hdcEventService.resumeHdcPostponement(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.RESUME, event)
   }
 
   fun handleOptIn(message: String) {
     val event = parseEvent(message)
-    hdcStatusService.convertToHdcLicence(event.nomsNumber)
+    hdcEventService.convertToHdcLicence(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.OPT_IN, event)
   }
 

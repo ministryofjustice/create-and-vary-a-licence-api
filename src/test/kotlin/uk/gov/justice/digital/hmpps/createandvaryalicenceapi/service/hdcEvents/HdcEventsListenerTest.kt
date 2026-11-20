@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 
 class HdcEventsListenerTest {
   private val mapper = spy(ObjectMapper())
-  private val handler = mock<HdcStatusChangedHandler>()
+  private val handler = mock<HdcEventHandler>()
   private val listener = HdcEventsListener(handler, mapper)
 
   @Test
