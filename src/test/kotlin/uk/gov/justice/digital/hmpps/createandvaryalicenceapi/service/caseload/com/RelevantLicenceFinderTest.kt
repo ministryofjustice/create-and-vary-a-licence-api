@@ -136,5 +136,6 @@ class RelevantLicenceFinderTest {
     releaseDateLabel = null,
     isRestricted = false,
     isHdcPostponed = false,
+    noHdcCurfewAddress = false,
   )
 }

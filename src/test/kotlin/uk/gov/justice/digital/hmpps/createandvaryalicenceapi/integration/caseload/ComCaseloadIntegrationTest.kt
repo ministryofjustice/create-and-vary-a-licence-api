@@ -157,6 +157,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       }
       assertThat(caseload)
         .allMatch { !it.isReplacementForOptedOutLicence }
+      assertThat(caseload.filterNot { it.kind.isHdc() }).allMatch { it.noHdcCurfewAddress == null }
     }
 
     @Test
@@ -209,25 +210,78 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     @Sql("classpath:test_data/seed-hdc-postponed-licence-for-com-caseload.sql")
-    fun `Successfully retrieve a caseload with an HDC licence marked as postponed`() {
+    fun `Return true when residential accommodation has no curfew address`() {
+      testHdcCurfewAddressFlag(true)
+    }
+
+    @Test
+    @Sql(
+      scripts = [
+        "classpath:test_data/seed-hdc-postponed-licence-for-com-caseload.sql",
+        "classpath:test_data/set-hdc-caseload-accommodation-cas-1.sql",
+      ],
+    )
+    fun `Return true when CAS 1 accommodation has no curfew address`() {
+      testHdcCurfewAddressFlag(true)
+    }
+
+    @Test
+    @Sql(
+      scripts = [
+        "classpath:test_data/seed-hdc-postponed-licence-for-com-caseload.sql",
+        "classpath:test_data/set-hdc-caseload-accommodation-cas-2.sql",
+      ],
+    )
+    fun `Return false when accommodation is CAS 2`() {
+      testHdcCurfewAddressFlag(false)
+    }
+
+    @Test
+    @Sql(
+      scripts = [
+        "classpath:test_data/seed-hdc-postponed-licence-for-com-caseload.sql",
+        "classpath:test_data/set-hdc-caseload-residential-address.sql",
+      ],
+    )
+    fun `Return false when residential accommodation has a curfew address`() {
+      testHdcCurfewAddressFlag(false)
+    }
+
+    @Test
+    @Sql(
+      scripts = [
+        "classpath:test_data/seed-hdc-postponed-licence-for-com-caseload.sql",
+        "classpath:test_data/clear-hdc-caseload-accommodation-type.sql",
+      ],
+    )
+    fun `Return false when accommodation type is missing`() {
+      testHdcCurfewAddressFlag(false)
+    }
+
+    private fun testHdcCurfewAddressFlag(expectedFlag: Boolean) {
+      // Given
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
       val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
       stubSearchPrisonersByNomisId(releaseDate, sled, tused)
       stubCommonDependencies()
 
-      val caseload = webTestClient.get()
+      // When
+      val result = webTestClient.get()
         .uri(GET_STAFF_CREATE_CASELOAD)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
         .exchange()
-        .expectStatus().isEqualTo(OK.value())
+
+      val caseload = result.expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
 
+      // Then
       val hdcCase = caseload.single { it.prisonerNumber == "AB1234E" }
       assertThat(hdcCase.licenceId).isEqualTo(2L)
       assertThat(hdcCase.isHdcPostponed).isTrue()
+      assertThat(hdcCase.noHdcCurfewAddress).isEqualTo(expectedFlag)
     }
 
     @Test
