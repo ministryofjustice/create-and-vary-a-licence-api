@@ -198,6 +198,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         null,
       )
       assertThat(caseload.single { it.licenceId == 1L }.isReplacementForOptedOutLicence).isFalse()
+      assertThat(caseload.single { it.licenceId == 1L }.noHdcCurfewAddress).isNull()
       with(caseload.last()) {
         assertThat(name).isEqualTo("Access restricted on NDelius")
         assertThat(crnNumber).isEqualTo("X12352")
