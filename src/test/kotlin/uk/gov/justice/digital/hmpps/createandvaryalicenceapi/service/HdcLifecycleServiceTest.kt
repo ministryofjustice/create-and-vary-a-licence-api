@@ -3,9 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -201,7 +199,8 @@ class HdcLifecycleServiceTest {
     assertThat(secondApplication.isPostponed).isFalse()
     assertThat(firstApplication.dateLastUpdated).isNotNull()
     assertThat(secondApplication.dateLastUpdated).isNotNull()
-    verify(auditService, times(2)).recordAuditEvent(any())
+    verify(auditService).recordAuditEventHdcCurfewAddressWithdrawn(firstLicence.id)
+    verify(auditService).recordAuditEventHdcCurfewAddressWithdrawn(secondLicence.id)
   }
 
   @Test

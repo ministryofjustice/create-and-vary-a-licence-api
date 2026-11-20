@@ -7,10 +7,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcApplicati
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.HdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -92,14 +90,7 @@ class HdcLifecycleService(
         licence.curfewAddress = null
         application.proposedAccommodationType = null
         application.dateLastUpdated = LocalDateTime.now()
-        auditService.recordAuditEvent(
-          AuditEvent(
-            licenceId = licence.id,
-            summary = "HDC curfew address withdrawn",
-            detail = "HDC curfew address and proposed accommodation type cleared following ADDRESS_WITHDRAWN event",
-            eventType = SYSTEM_EVENT,
-          ),
-        )
+        auditService.recordAuditEventHdcCurfewAddressWithdrawn(licence.id)
         log.info("HDC curfew address withdrawn for licenceId={}", licence.id)
       }
     }
