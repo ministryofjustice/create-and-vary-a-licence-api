@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.CURFEW_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14A
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14B
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE_14E
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EVENT_EXCLUSION_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
@@ -83,7 +84,10 @@ fun ModelLicence.transformToPublicLicence(): Licence = Licence(
 private fun AdditionalCondition.toPublicAdditionalCondition(): PublicAdditionalCondition = when (code) {
   CURFEW_COND_CODE -> transformCurfewCondition(this)
   ELECTRONIC_TAG_COND_CODE_14A -> transformElectronicMonitoringWithRestrictions(this)
-  ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E -> transformElectronicMonitoring(this)
+  ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14D, ELECTRONIC_TAG_COND_CODE_14E -> transformElectronicMonitoring(
+    this,
+  )
+
   EVENT_EXCLUSION_COND_CODE, EXCLUSION_ZONE_COND_CODE, MULTIPLE_UPLOAD_COND_CODE -> transformImageUploadCondition(this)
   else -> transformGenericAdditionalCondition(this)
 }
@@ -155,7 +159,7 @@ private fun transformGenericAdditionalCondition(model: AdditionalCondition) = Ge
 )
 
 private fun electronicMonitoringEndDate(model: AdditionalCondition): LocalDate? = when (model.code) {
-  ELECTRONIC_TAG_COND_CODE_14A, ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14E ->
+  ELECTRONIC_TAG_COND_CODE_14A, ELECTRONIC_TAG_COND_CODE_14B, ELECTRONIC_TAG_COND_CODE_14D, ELECTRONIC_TAG_COND_CODE_14E ->
     model.data
       .find { it.field == "endDate" }
       ?.value
