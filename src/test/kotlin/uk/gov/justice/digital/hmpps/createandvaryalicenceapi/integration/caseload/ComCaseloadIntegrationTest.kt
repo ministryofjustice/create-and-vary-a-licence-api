@@ -258,6 +258,31 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       testHdcCurfewAddressFlag(false)
     }
 
+    @Test
+    @Sql("classpath:test_data/seed-hdc-postponed-licence-for-com-caseload.sql")
+    fun `Successfully retrieve a caseload with an HDC licence marked as postponed`() {
+      // Given
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      val sled = LocalDate.now().plusDays(11).format(DateTimeFormatter.ISO_DATE)
+      val tused = LocalDate.now().plusYears(1).format(DateTimeFormatter.ISO_DATE)
+      stubSearchPrisonersByNomisId(releaseDate, sled, tused)
+      stubCommonDependencies()
+
+      // When
+      val result = webTestClient.get()
+        .uri(GET_STAFF_CREATE_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      val caseload = result.expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<ComCreateCase>>())
+        .returnResult().responseBody
+
+      assertThat(caseload.single { it.prisonerNumber == "AB1234E" }.isHdcPostponed).isTrue()
+    }
+
     private fun testHdcCurfewAddressFlag(expectedFlag: Boolean) {
       // Given
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
@@ -272,15 +297,14 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
         .exchange()
 
+      // Then
       val caseload = result.expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCreateCase>>())
         .returnResult().responseBody
 
-      // Then
       val hdcCase = caseload.single { it.prisonerNumber == "AB1234E" }
       assertThat(hdcCase.licenceId).isEqualTo(2L)
-      assertThat(hdcCase.isHdcPostponed).isTrue()
       assertThat(hdcCase.noHdcCurfewAddress).isEqualTo(expectedFlag)
     }
 
