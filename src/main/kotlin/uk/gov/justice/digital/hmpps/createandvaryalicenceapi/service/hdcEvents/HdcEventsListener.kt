@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 @ConditionalOnProperty(name = ["hdc.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service
 class HdcEventsListener(
-  private val hdcStatusChangedHandler: HdcStatusChangedHandler,
+  private val hdcEventHandler: HdcEventHandler,
   private val mapper: ObjectMapper,
 ) {
   private val log = LoggerFactory.getLogger(HdcEventsListener::class.java)
@@ -37,13 +37,13 @@ class HdcEventsListener(
       eventType = getHdcEventType(message)
       log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
       when (eventType) {
-        OPT_OUT -> hdcStatusChangedHandler.handleOptOut(rawMessage)
-        REFUSE -> hdcStatusChangedHandler.handleRefuse(rawMessage)
-        POSTPONE -> hdcStatusChangedHandler.handlePostpone(rawMessage)
-        RESUME -> hdcStatusChangedHandler.handleResume(rawMessage)
-        OPT_IN -> hdcStatusChangedHandler.handleOptIn(rawMessage)
-        ADDRESS_WITHDRAWN -> hdcStatusChangedHandler.handleAddressWithdrawn(rawMessage)
-        RISK_CHECKS_SUBMITTED -> hdcStatusChangedHandler.handleRiskChecksSubmitted(rawMessage)
+        OPT_OUT -> hdcEventHandler.handleOptOut(rawMessage)
+        REFUSE -> hdcEventHandler.handleRefuse(rawMessage)
+        POSTPONE -> hdcEventHandler.handlePostpone(rawMessage)
+        RESUME -> hdcEventHandler.handleResume(rawMessage)
+        OPT_IN -> hdcEventHandler.handleOptIn(rawMessage)
+        ADDRESS_WITHDRAWN -> hdcEventHandler.handleAddressWithdrawn(rawMessage)
+        RISK_CHECKS_SUBMITTED -> hdcEventHandler.handleRiskChecksSubmitted(rawMessage)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)

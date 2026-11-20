@@ -134,7 +134,7 @@ class LicenceServiceTest {
   private val licenceConditionService = mock<LicenceConditionService>()
   private val licenceLinkingService = mock<LicenceLinkingService>()
   private val hdcService = mock<HdcService>()
-  private val hdcApplicationService = mock<HdcApplicationService>()
+  private val hdcLifecycleService = mock<HdcLifecycleService>()
 
   private val service =
     LicenceService(
@@ -158,7 +158,7 @@ class LicenceServiceTest {
       licenceConditionService,
       licenceLinkingService,
       hdcService,
-      hdcApplicationService,
+      hdcLifecycleService,
     )
 
   @BeforeEach
@@ -185,6 +185,7 @@ class LicenceServiceTest {
       prisonerSearchApiClient,
       uploadFileConditionsService,
       licenceLinkingService,
+      hdcLifecycleService,
     )
   }
 
@@ -2174,6 +2175,7 @@ class LicenceServiceTest {
     service.editLicence(1L)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(hdcLifecycleService, never()).populateApplicationOnEdit(any())
     with(licenceCaptor.value as CrdLicence) {
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -3529,7 +3531,7 @@ class LicenceServiceTest {
           licenceConditionService,
           licenceLinkingService,
           hdcService,
-          hdcApplicationService,
+          hdcLifecycleService,
         )
       val submittedLicence =
         createHardStopLicence().copy(id = 2L, statusCode = SUBMITTED)
@@ -4078,8 +4080,8 @@ class LicenceServiceTest {
       service.editLicence(1L)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(hdcLifecycleService).populateApplicationOnEdit(licenceCaptor.value as HdcLicence)
       with(licenceCaptor.value as HdcLicence) {
-        verify(hdcApplicationService).populateApplicationOnEdit(this)
         assertThat(version).isEqualTo("2.1")
         assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
         assertThat(versionOfId).isEqualTo(1)
@@ -4170,6 +4172,24 @@ class LicenceServiceTest {
       assertThat(newLicenceVersion.licenceId).isEqualTo(inProgressLicenceVersion.id)
 
       verify(licenceRepository, never()).save(any())
+      verify(hdcLifecycleService, never()).populateApplicationOnEdit(any())
+    }
+
+    @Test
+    fun `editing an approved HDC licence with a submitted version returns it without populating the application`() {
+      val approvedLicence = anHdcLicenceEntity.copy(statusCode = APPROVED)
+      val submittedLicence = approvedLicence.copy(id = 9032, statusCode = SUBMITTED, versionOfId = approvedLicence.id)
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(approvedLicence))
+      whenever(
+        licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+          listOf(approvedLicence.id),
+          listOf(IN_PROGRESS, SUBMITTED),
+        ),
+      ).thenReturn(listOf(submittedLicence))
+
+      assertThat(service.editLicence(1L).licenceId).isEqualTo(submittedLicence.id)
+      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(hdcLifecycleService, never()).populateApplicationOnEdit(any())
     }
   }
 

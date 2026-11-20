@@ -101,7 +101,7 @@ class LicenceService(
   private val licenceConditionService: LicenceConditionService,
   private val licenceLinkingService: LicenceLinkingService,
   private val hdcService: HdcService,
-  private val hdcApplicationService: HdcApplicationService,
+  private val hdcLifecycleService: HdcLifecycleService,
 ) {
 
   @Transactional(readOnly = true)
@@ -681,7 +681,7 @@ class LicenceService(
 
     val licenceCopy = populateCopy(licence, copyToEdit)
     if (licenceCopy is HdcLicence) {
-      hdcApplicationService.populateApplicationOnEdit(licenceCopy)
+      hdcLifecycleService.populateApplicationOnEdit(licenceCopy)
     }
     createLicenceEventForCopy(licence, licenceCopy, creator)
     createAuditEventForCopy(licence, licenceCopy, creator)
