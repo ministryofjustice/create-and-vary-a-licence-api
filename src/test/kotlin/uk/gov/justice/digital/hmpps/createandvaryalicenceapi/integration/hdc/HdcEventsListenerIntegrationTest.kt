@@ -25,11 +25,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcEventService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedHandler
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_REFUSED
@@ -43,10 +43,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
   @MockitoSpyBean
-  lateinit var hdcStatusChangedHandler: HdcStatusChangedHandler
+  lateinit var hdcEventHandler: HdcEventHandler
 
   @Autowired
-  lateinit var hdcLifecycleService: HdcLifecycleService
+  lateinit var hdcEventService: HdcEventService
 
   @Test
   fun `An HDC opt out event is processed`() {
@@ -64,7 +64,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
     // Then
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handleOptOut(eventJson)
+    verify(hdcEventHandler).handleOptOut(eventJson)
     assertThat(testRepository.findAllAuditEvents()).isEmpty()
     verifyNoInteractions(eventsPublisher)
   }
@@ -86,7 +86,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
     // Then
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler, times(0)).handleOptOut(eventJson)
+    verify(hdcEventHandler, times(0)).handleOptOut(eventJson)
     assertThat(testRepository.findAllAuditEvents()).isEmpty()
     verifyNoInteractions(eventsPublisher)
   }
@@ -104,7 +104,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     sendMessage(eventJson, HdcCvlEventType.RISK_CHECKS_SUBMITTED.name)
 
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handleRiskChecksSubmitted(eventJson)
+    verify(hdcEventHandler).handleRiskChecksSubmitted(eventJson)
     assertThat(testRepository.findAllLicence()).hasSize(2)
     assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
@@ -145,7 +145,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     val eventJson = sendConversionEvent(event, HdcCvlEventType.OPT_IN)
 
     // Then
-    verify(hdcStatusChangedHandler).handleOptIn(eventJson)
+    verify(hdcEventHandler).handleOptIn(eventJson)
     val licences = testRepository.findAllLicence()
     assertThat(licences).hasSize(2)
 
@@ -255,7 +255,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     hdcApiMockServer.stubGetHdcLicenceDataNotFound(123L)
 
     assertThrows<EntityNotFoundException> {
-      hdcLifecycleService.convertToHdcLicence("A1234AA")
+      hdcEventService.convertToHdcLicence("A1234AA")
     }
 
     val licences = testRepository.findAllLicence()
@@ -439,7 +439,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
 
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+    verify(hdcEventHandler).handlePostpone(eventJson)
 
     assertThat(testRepository.findLicence(2L).statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(testRepository.findLicence(1L).statusCode).isEqualTo(LicenceStatus.INACTIVE)
@@ -464,7 +464,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
 
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+    verify(hdcEventHandler).handlePostpone(eventJson)
 
     val updatedSubmittedLicence = testRepository.findLicence(2L)
     assertThat(updatedSubmittedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -494,7 +494,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
 
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+    verify(hdcEventHandler).handlePostpone(eventJson)
 
     val updatedApprovedLicence = testRepository.findLicence(1L)
     assertThat(updatedApprovedLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -525,7 +525,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
     // Then
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+    verify(hdcEventHandler).handlePostpone(eventJson)
 
     val licences = testRepository.findAllLicence()
     assertThat(licences).hasSize(2)
@@ -584,7 +584,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     sendMessage(eventJson, HdcCvlEventType.POSTPONE.toString())
 
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handlePostpone(eventJson)
+    verify(hdcEventHandler).handlePostpone(eventJson)
 
     val inactivatedApprovedLicence = testRepository.findLicence(1L)
     assertThat(inactivatedApprovedLicence.statusCode).isEqualTo(LicenceStatus.INACTIVE)
@@ -620,7 +620,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     sendMessage(postponeEventJson, HdcCvlEventType.POSTPONE.toString())
 
     assertSqsProcessed()
-    verify(hdcStatusChangedHandler).handlePostpone(postponeEventJson)
+    verify(hdcEventHandler).handlePostpone(postponeEventJson)
     verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
 
     assertThat(testRepository.findAllHdcApplications())
@@ -636,7 +636,7 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     sendMessage(resumeEventJson, HdcCvlEventType.RESUME.toString())
 
     assertSqsProcessed(timesProcessed = 2)
-    verify(hdcStatusChangedHandler).handleResume(resumeEventJson)
+    verify(hdcEventHandler).handleResume(resumeEventJson)
 
     assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
