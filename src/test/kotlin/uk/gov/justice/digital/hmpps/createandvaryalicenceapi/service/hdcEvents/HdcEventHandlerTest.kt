@@ -99,10 +99,11 @@ class HdcEventHandlerTest {
   }
 
   @Test
-  fun `handleAddressWithdrawn processes event without changing the licence`() {
+  fun `handleAddressWithdrawn removes HDC curfew addresses`() {
     handler.handleAddressWithdrawn(eventJson)
 
-    verifyNoInteractions(hdcLifecycleService, hdcEventService)
+    verify(hdcLifecycleService).withdrawHdcCurfewAddresses("A1234BC")
+    verifyNoInteractions(hdcEventService)
   }
 
   @Test

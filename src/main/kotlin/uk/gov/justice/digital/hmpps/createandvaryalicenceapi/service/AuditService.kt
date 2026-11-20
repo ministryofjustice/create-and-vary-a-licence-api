@@ -279,6 +279,17 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
+  fun recordAuditEventHdcCurfewAddressWithdrawn(licenceId: Long) {
+    recordAuditEvent(
+      ModelAuditEvent(
+        licenceId = licenceId,
+        summary = "HDC curfew address withdrawn",
+        detail = "HDC curfew address and proposed accommodation type cleared following ADDRESS_WITHDRAWN event",
+        eventType = AuditEventType.SYSTEM_EVENT,
+      ),
+    )
+  }
+
   fun recordAuditEventUpdateHdcWeeklyCurfewTimes(
     licence: Licence,
     previousWeeklyCurfewTimes: List<CurfewTimes>,
