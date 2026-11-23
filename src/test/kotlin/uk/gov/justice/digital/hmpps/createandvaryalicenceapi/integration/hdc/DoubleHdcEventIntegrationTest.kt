@@ -6,8 +6,12 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 
 class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
 
@@ -85,17 +89,42 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
     verifyNoInteractions(eventsPublisher)
   }
 
-  @Sql("classpath:test_data/seed-hdc-licence-id-1.sql")
+  @Sql(
+    "classpath:test_data/seed-hdc-approved-and-submitted-licences.sql",
+    "classpath:test_data/seed-hdc-address-withdrawal.sql",
+  )
   @Test
-  fun `Duplicate ADDRESS_WITHDRAWN has no persisted side effects`() {
+  fun `Duplicate ADDRESS_WITHDRAWN clears addresses and proposed types only once`() {
     // Given
-    val event = createHdcStatusChangedEvent(bookingId = 54321L, nomsNumber = "A1234AA")
+    val event = createHdcStatusChangedEvent(bookingId = 12345L, nomsNumber = "A1234AA")
+    val licencesBefore = testRepository.findAllLicence()
+    assertThat(licencesBefore).hasSize(2).allMatch { it is HdcLicence }
+    assertThat(licencesBefore.map { it.statusCode }).containsExactlyInAnyOrder(APPROVED, SUBMITTED)
+    assertThat(testRepository.findAllHdcApplications())
+      .hasSize(2)
+      .allSatisfy { assertThat(it.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL) }
+    assertThat(testRepository.findAllHdcCurfewAddresses()).hasSize(2)
 
     // When
     sendEventTwice(event, HdcCvlEventType.ADDRESS_WITHDRAWN)
 
     // Then
-    assertNoSideEffects()
+    val licencesAfter = testRepository.findAllLicence()
+    assertThat(licencesAfter).hasSize(2).allMatch { it is HdcLicence }
+    assertThat(licencesAfter.map { it.statusCode }).containsExactlyInAnyOrder(APPROVED, SUBMITTED)
+    assertThat(testRepository.findAllHdcApplications())
+      .hasSize(2)
+      .allSatisfy { assertThat(it.proposedAccommodationType).isNull() }
+    assertThat(testRepository.findAllHdcCurfewAddresses()).isEmpty()
+    val auditEvents = testRepository.findAllAuditEvents()
+    assertThat(auditEvents).hasSize(2)
+      .allSatisfy {
+        assertThat(it.summary).isEqualTo("HDC curfew address withdrawn")
+        assertThat(it.detail).isEqualTo(
+          "HDC curfew address and proposed accommodation type cleared following ADDRESS_WITHDRAWN event",
+        )
+      }
+    verifyNoInteractions(eventsPublisher)
   }
 
   @Sql("classpath:test_data/seed-hdc-licence-id-1-with-curfew-address.sql")
