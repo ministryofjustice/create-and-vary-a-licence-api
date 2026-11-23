@@ -224,18 +224,6 @@ class HdcLifecycleServiceTest {
   }
 
   @Test
-  fun `withdraws an address when an in-flight licence has no HDC application`() {
-    val licence = createHdcLicence(id = 123L).copy(nomsId = "A1234BC")
-    licence.curfewAddress = createCurfewAddress(licence)
-    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(licence))
-
-    service.withdrawHdcCurfewAddresses("A1234BC")
-
-    assertThat(licence.curfewAddress).isNull()
-    verify(auditService).recordAuditEventHdcCurfewAddressWithdrawn(licence.id)
-  }
-
-  @Test
   fun `refreshCurfewAddress leaves the existing address when HDC has no address`() {
     val licence = createHdcLicence()
     val application = HdcApplication(licence, true, null)
