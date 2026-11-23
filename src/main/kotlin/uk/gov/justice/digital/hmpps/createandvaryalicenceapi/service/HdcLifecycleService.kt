@@ -16,6 +16,7 @@ import java.util.UUID
 class HdcLifecycleService(
   private val hdcLicenceRepository: HdcLicenceRepository,
   private val hdcApiClient: HdcApiClient,
+  private val auditService: AuditService,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -71,6 +72,28 @@ class HdcLifecycleService(
     }
 
     licences.forEach(::refreshCurfewAddress)
+  }
+
+  @Transactional
+  fun withdrawHdcCurfewAddresses(nomsNumber: String) {
+    val licences = hdcLicenceRepository.findInFlightHdcLicences(nomsNumber)
+    if (licences.isEmpty()) {
+      log.warn("HDC address withdrawn: no eligible licence found for nomsNumber={}", nomsNumber)
+      return
+    }
+
+    licences.forEach { licence ->
+      val application = requireNotNull(licence.application) {
+        "HDC application not found for licence ${licence.id}"
+      }
+      if (licence.curfewAddress != null || application.proposedAccommodationType != null) {
+        licence.curfewAddress = null
+        application.proposedAccommodationType = null
+        application.dateLastUpdated = LocalDateTime.now()
+        auditService.recordAuditEventHdcCurfewAddressWithdrawn(licence.id)
+        log.info("HDC curfew address withdrawn for licenceId={}", licence.id)
+      }
+    }
   }
 
   @Transactional
