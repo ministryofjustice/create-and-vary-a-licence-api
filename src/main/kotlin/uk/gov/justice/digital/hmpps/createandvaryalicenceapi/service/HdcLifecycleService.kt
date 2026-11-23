@@ -83,13 +83,8 @@ class HdcLifecycleService(
     }
 
     licences.forEach { licence ->
-      val application = requireNotNull(licence.application) {
-        "HDC application not found for licence ${licence.id}"
-      }
-      if (licence.curfewAddress != null || application.proposedAccommodationType != null) {
+      if (licence.curfewAddress != null) {
         licence.curfewAddress = null
-        application.proposedAccommodationType = null
-        application.dateLastUpdated = LocalDateTime.now()
         auditService.recordAuditEventHdcCurfewAddressWithdrawn(licence.id)
         log.info("HDC curfew address withdrawn for licenceId={}", licence.id)
       }

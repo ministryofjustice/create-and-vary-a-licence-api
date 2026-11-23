@@ -178,11 +178,14 @@ class HdcLifecycleServiceTest {
   }
 
   @Test
-  fun `withdraws curfew addresses and proposed accommodation type for every in-flight licence`() {
+  fun `withdraws curfew addresses while preserving applications for every in-flight licence`() {
     val firstLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
     val secondLicence = createHdcLicence(id = 2).copy(nomsId = "A1234BC", statusCode = SUBMITTED)
     val firstApplication = HdcApplication(firstLicence, isPostponed = true, AccommodationType.RESIDENTIAL)
     val secondApplication = HdcApplication(secondLicence, isPostponed = false, AccommodationType.CAS_2)
+    val lastUpdated = LocalDateTime.of(2024, 1, 1, 12, 0)
+    firstApplication.dateLastUpdated = lastUpdated
+    secondApplication.dateLastUpdated = lastUpdated
     firstLicence.application = firstApplication
     secondLicence.application = secondApplication
     firstLicence.curfewAddress = createCurfewAddress(firstLicence)
@@ -193,24 +196,43 @@ class HdcLifecycleServiceTest {
 
     assertThat(firstLicence.curfewAddress).isNull()
     assertThat(secondLicence.curfewAddress).isNull()
-    assertThat(firstApplication.proposedAccommodationType).isNull()
-    assertThat(secondApplication.proposedAccommodationType).isNull()
+    assertThat(firstApplication.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    assertThat(secondApplication.proposedAccommodationType).isEqualTo(AccommodationType.CAS_2)
     assertThat(firstApplication.isPostponed).isTrue()
     assertThat(secondApplication.isPostponed).isFalse()
-    assertThat(firstApplication.dateLastUpdated).isNotNull()
-    assertThat(secondApplication.dateLastUpdated).isNotNull()
+    assertThat(firstApplication.dateLastUpdated).isEqualTo(lastUpdated)
+    assertThat(secondApplication.dateLastUpdated).isEqualTo(lastUpdated)
     verify(auditService).recordAuditEventHdcCurfewAddressWithdrawn(firstLicence.id)
     verify(auditService).recordAuditEventHdcCurfewAddressWithdrawn(secondLicence.id)
   }
 
   @Test
-  fun `withdrawal fails when an in-flight licence has no HDC application`() {
+  fun `withdrawal without an address leaves the application unchanged and does not audit`() {
     val licence = createHdcLicence(id = 123L).copy(nomsId = "A1234BC")
+    val application = HdcApplication(licence, false, AccommodationType.RESIDENTIAL)
+    val lastUpdated = LocalDateTime.of(2024, 1, 1, 12, 0)
+    application.dateLastUpdated = lastUpdated
+    licence.application = application
+    licence.curfewAddress = null
     whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(licence))
 
-    assertThatThrownBy { service.withdrawHdcCurfewAddresses("A1234BC") }
-      .isInstanceOf(IllegalArgumentException::class.java)
-      .hasMessage("HDC application not found for licence 123")
+    service.withdrawHdcCurfewAddresses("A1234BC")
+
+    assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
+    assertThat(application.dateLastUpdated).isEqualTo(lastUpdated)
+    verifyNoInteractions(auditService)
+  }
+
+  @Test
+  fun `withdraws an address when an in-flight licence has no HDC application`() {
+    val licence = createHdcLicence(id = 123L).copy(nomsId = "A1234BC")
+    licence.curfewAddress = createCurfewAddress(licence)
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(licence))
+
+    service.withdrawHdcCurfewAddresses("A1234BC")
+
+    assertThat(licence.curfewAddress).isNull()
+    verify(auditService).recordAuditEventHdcCurfewAddressWithdrawn(licence.id)
   }
 
   @Test

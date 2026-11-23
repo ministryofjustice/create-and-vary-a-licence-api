@@ -284,7 +284,7 @@ class AuditService(
       ModelAuditEvent(
         licenceId = licenceId,
         summary = "HDC curfew address withdrawn",
-        detail = "HDC curfew address and proposed accommodation type cleared following ADDRESS_WITHDRAWN event",
+        detail = "HDC curfew address cleared following ADDRESS_WITHDRAWN event",
         eventType = AuditEventType.SYSTEM_EVENT,
       ),
     )
