@@ -1,13 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.docs
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
+import tools.jackson.dataformat.yaml.YAMLMapper
+import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 import java.io.File
 import java.security.MessageDigest
 
@@ -97,7 +96,7 @@ class DocsChangeTrackingTest {
       .withFailMessage("Could not find $REGISTRY_FILE at repo root: ${registryFile.path}")
       .exists()
 
-    val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
+    val mapper = YAMLMapper.builder().addModule(kotlinModule()).build()
     return mapper.readValue(registryFile)
   }
 
