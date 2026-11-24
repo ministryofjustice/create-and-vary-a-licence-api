@@ -674,10 +674,14 @@ fun toHdc(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
   isHdcMigration = isHdcMigration,
   isPostponed = licence.application?.isPostponed ?: false,
-  addressWithdrawn = licence.curfewAddress == null &&
-    licence.application?.proposedAccommodationType in
-    setOf(AccommodationType.RESIDENTIAL, AccommodationType.CAS_1_APPROVED_PREMISES),
+  addressWithdrawn = isHdcAddressWithdrawn(licence),
 )
+
+private fun isHdcAddressWithdrawn(licence: HdcLicence): Boolean = licence.curfewAddress == null &&
+  when (licence.application?.proposedAccommodationType) {
+    AccommodationType.RESIDENTIAL, AccommodationType.CAS_1_APPROVED_PREMISES -> true
+    AccommodationType.CAS_2, null -> false
+  }
 
 fun toHdcVariation(
   licence: HdcVariationLicence,
