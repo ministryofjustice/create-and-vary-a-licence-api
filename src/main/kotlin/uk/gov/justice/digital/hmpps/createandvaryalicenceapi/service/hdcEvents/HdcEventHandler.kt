@@ -62,7 +62,7 @@ class HdcEventHandler(
 
   fun handleAddressWithdrawn(message: String) {
     val event = parseEvent(message)
-    hdcLifecycleService.withdrawHdcCurfewAddresses(event.nomsNumber)
+    hdcEventService.withdrawAddress(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.ADDRESS_WITHDRAWN, event)
   }
 

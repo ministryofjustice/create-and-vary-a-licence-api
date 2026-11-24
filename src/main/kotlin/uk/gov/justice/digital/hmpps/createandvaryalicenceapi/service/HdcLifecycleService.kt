@@ -75,13 +75,7 @@ class HdcLifecycleService(
   }
 
   @Transactional
-  fun withdrawHdcCurfewAddresses(nomsNumber: String) {
-    val licences = hdcLicenceRepository.findInFlightHdcLicences(nomsNumber)
-    if (licences.isEmpty()) {
-      log.warn("HDC address withdrawn: no eligible licence found for nomsNumber={}", nomsNumber)
-      return
-    }
-
+  fun withdrawHdcCurfewAddresses(licences: List<HdcLicence>) {
     licences.forEach { licence ->
       if (licence.curfewAddress != null) {
         licence.curfewAddress = null
