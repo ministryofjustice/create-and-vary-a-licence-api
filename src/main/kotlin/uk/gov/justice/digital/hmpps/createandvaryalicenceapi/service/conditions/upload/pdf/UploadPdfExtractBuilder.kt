@@ -20,6 +20,13 @@ class UploadPdfExtractBuilder(private var pdfDoc: PDDocument) {
   }
 
   private fun description(): String = runCatching {
+    val info = pdfDoc.documentInformation
+
+    if (info.metadataKeys.contains("Description")) {
+      log.info("Extracting description from PDF metadata")
+      return info.getCustomMetadataValue("Description")
+    }
+
     with(BodyTextStripper()) {
       sortByPosition = true
       startPage = 2
