@@ -46,6 +46,7 @@ jobs:
     with:
       gradle-command: 'BUILD_NUMBER=${{ needs.app_version.outputs.version}} ./gradlew assemble check'
       upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
+      test-report-continue-on-error: true
       java-version: "25"
     needs:
       - app_version
@@ -58,6 +59,7 @@ jobs:
       localstack-tag: 'community-archive'
       postgres-tag: "17.11"
       upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
+      test-report-continue-on-error: true
       postgres-db: create-and-vary-a-licence-db
       postgres-username: cvl
       postgres-password: cvl
