@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import org.apache.pdfbox.Loader
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -15,24 +14,10 @@ class UploadPdfExtractBuilderTest {
     "old/portrait",
     "old/landscape",
     "new/landscape",
-    "new/portrait-single-paragraph",
+    "new/portrait",
+    "new/embedded-description",
   )
   fun `extracts only the description`(fileName: String) {
-    val bytes =
-      ClassPathResource("pdfs/$fileName.pdf").inputStream.readAllBytes()
-    Loader.loadPDF(bytes).use {
-      val extract = UploadPdfExtractBuilder(it).build()
-      assertThat(extract.description.normalise()).isEqualTo(EXPECTED_DESCRIPTION)
-    }
-  }
-
-  // This is an example of a malformed PDF where we can't extract the data from
-  @Disabled
-  @ParameterizedTest
-  @CsvSource(
-    "new/portrait-multi-paragraph",
-  )
-  fun `extracts only the description from multiparagraph`(fileName: String) {
     val bytes =
       ClassPathResource("pdfs/$fileName.pdf").inputStream.readAllBytes()
     Loader.loadPDF(bytes).use {
