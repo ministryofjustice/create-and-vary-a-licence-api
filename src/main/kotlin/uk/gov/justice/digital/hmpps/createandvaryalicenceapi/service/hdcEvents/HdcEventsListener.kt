@@ -13,6 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.RESUME
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.RISK_CHECKS_SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.ELIGIBLE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.INELIGIBLE
 
 @ConditionalOnProperty(name = ["hdc.event.listener.enabled"], havingValue = "true", matchIfMissing = true)
 @Service
@@ -44,6 +46,8 @@ class HdcEventsListener(
         OPT_IN -> hdcEventHandler.handleOptIn(rawMessage)
         ADDRESS_WITHDRAWN -> hdcEventHandler.handleAddressWithdrawn(rawMessage)
         RISK_CHECKS_SUBMITTED -> hdcEventHandler.handleRiskChecksSubmitted(rawMessage)
+        ELIGIBLE -> hdcEventHandler.handleEligible(rawMessage)
+        INELIGIBLE -> hdcEventHandler.handleIneligible(rawMessage)
       }
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
       log.error("Failed to parse HDC message - likely format mismatch. Raw message: {}", rawMessage, e)
