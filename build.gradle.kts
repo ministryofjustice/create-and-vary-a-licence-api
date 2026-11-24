@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("dev.detekt") version "2.0.0-alpha.6"
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.15"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.1.2"
   kotlin("plugin.spring") version "2.4.21"
   kotlin("plugin.jpa") version "2.4.21"
 }
@@ -25,7 +25,7 @@ dependencies {
   }
 
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.1.0")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.6.0")
 
   implementation("io.netty:netty-codec-http")
   implementation("io.netty:netty-handler")
@@ -52,18 +52,18 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.14")
+  runtimeOnly("org.postgresql:postgresql:42.7.15")
   implementation("com.google.code.gson:gson:2.15.0")
   implementation("io.arrow-kt:arrow-core:2.3.0.1")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.1")
 
   // Digital prison reporting
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:18.6.2")
 
   // To help override SAR
-  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-lib:2.8.7")
   implementation("org.jsoup:jsoup:1.24.1")
 
   // New in Spring Boot 4: Dedicated starter for HTTP clients
@@ -80,7 +80,7 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-api:0.13.0")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.13.0")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.13.0")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:6.4.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:6.4.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
