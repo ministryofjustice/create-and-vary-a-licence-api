@@ -71,6 +71,8 @@ data class ComCreateCase(
 
   @field:Schema(description = "Whether this HDC licence is currently postponed.", example = "true")
   val isHdcPostponed: Boolean,
+  @field:Schema(description = "Whether the HDC licence has no curfew address and its proposed accommodation is residential or CAS 1 approved premises.", example = "true", nullable = true)
+  val noHdcCurfewAddress: Boolean?,
 
   @field:Schema(description = "Is this licence a replacement for an opted out licence?", example = "true")
   val isReplacementForOptedOutLicence: Boolean,

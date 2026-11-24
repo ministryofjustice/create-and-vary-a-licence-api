@@ -176,6 +176,7 @@ class ComCreateCaseloadService(
     releaseDateLabel = releaseDateLabelFactory.fromLicenceCase(case),
     isReviewNeeded = case.isReviewNeeded(),
     isHdcPostponed = case.isHdcPostponed,
+    noHdcCurfewAddress = case.noHdcCurfewAddress,
     // populated by findRelevantLicencePerCase
     licenceCreationType = null,
     isRestricted = false,
@@ -223,6 +224,7 @@ class ComCreateCaseloadService(
       licenceCreationType = null,
       isRestricted = isRestricted,
       isHdcPostponed = false,
+      noHdcCurfewAddress = if (kind.isHdc()) false else null,
     )
     return findRelevantLicencePerCase(listOf(caseLoadSummary))
   }
@@ -258,6 +260,7 @@ class ComCreateCaseloadService(
           isRestricted = isRestricted,
           hdcStatus = it.cvlRecord.hdcStatus,
           isHdcPostponed = isHdcPostponed,
+          noHdcCurfewAddress = noHdcCurfewAddress,
           isReplacementForOptedOutLicence = replacementTypes?.contains(CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE) == true,
           isReplacementForRefusedLicence = replacementTypes?.contains(CRD_REPLACEMENT_FOR_REFUSED_LICENCE) == true,
         )

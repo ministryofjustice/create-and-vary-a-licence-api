@@ -45,7 +45,6 @@
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallCase: Boolean</ID>
     <ID>ReturnCount:EligibilityService.kt:EligibilityService$private fun isRecallEligibleIfOnAnExtendedDeterminateSentence: Boolean</ID>
-    <ID>ReturnCount:HdcLifecycleService.kt:HdcLifecycleService$@Transactional fun postponeLicence</ID>
     <ID>ReturnCount:LicenceCreationService.kt:LicenceCreationService$fun getOrCreateCom: CommunityOffenderManager?</ID>
     <ID>ReturnCount:LsdRecalculationService.kt:LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate: Long</ID>
     <ID>ReturnCount:NotifyService.kt:NotifyService$private fun sendEmail: Boolean</ID>
@@ -62,8 +61,8 @@
     <ID>TooManyFunctions:ControllerAdvice.kt:ControllerAdvice</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt:DeliusApiClient</ID>
     <ID>TooManyFunctions:EligibilityService.kt:EligibilityService</ID>
-    <ID>TooManyFunctions:HdcLifecycleService.kt:HdcLifecycleService</ID>
     <ID>TooManyFunctions:HdcService.kt:HdcService</ID>
+    <ID>TooManyFunctions:HdcEventService.kt:HdcEventService</ID>
     <ID>TooManyFunctions:JPASpecificationDSL.kt:uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
     <ID>TooManyFunctions:Licence.kt:Licence : AbstractIdEntitySentenceDateHolder</ID>
     <ID>TooManyFunctions:LicenceConditionService.kt:LicenceConditionService</ID>

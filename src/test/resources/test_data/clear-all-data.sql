@@ -6,6 +6,7 @@ TRUNCATE TABLE
     additional_condition,
     bespoke_condition,
     hdc_curfew_address,
+    hdc_application,
     curfew_times,
     hdc_weekly_curfew_times,
     hdc_first_night_curfew_times,

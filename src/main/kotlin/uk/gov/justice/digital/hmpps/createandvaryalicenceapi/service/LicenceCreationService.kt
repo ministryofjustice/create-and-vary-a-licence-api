@@ -53,7 +53,7 @@ class LicenceCreationService(
   private val telemetryService: TelemetryService,
   private val timeServedExternalRecordService: TimeServedExternalRecordService,
   private val caseService: CaseService,
-  private val hdcApplicationService: HdcApplicationService,
+  private val hdcLifecycleService: HdcLifecycleService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -148,7 +148,7 @@ class LicenceCreationService(
     recordLicenceCreation(createdBy, createdLicence, nomisRecord)
 
     if (createdLicence is HdcLicenceEntity) {
-      hdcApplicationService.populateOnCreation(createdLicence)
+      hdcLifecycleService.populateOnCreation(createdLicence)
     }
 
     return CreateLicenceResponse(createdLicence.id)

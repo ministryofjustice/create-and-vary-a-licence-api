@@ -291,6 +291,24 @@ class AuditServiceTest {
   }
 
   @Test
+  fun `records a system event when an HDC curfew address is withdrawn`() {
+    val licenceId = 123L
+    service.recordAuditEventHdcCurfewAddressWithdrawn(licenceId)
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    verify(auditEventRepository).save(auditCaptor.capture())
+
+    val captured = auditCaptor.value
+    assertThat(captured.licenceId).isEqualTo(licenceId)
+    assertThat(captured.eventType).isEqualTo(AuditEventType.SYSTEM_EVENT)
+    assertThat(captured.username).isEqualTo("SYSTEM")
+    assertThat(captured.fullName).isEqualTo("SYSTEM")
+    assertThat(captured.summary).isEqualTo("HDC curfew address withdrawn")
+    assertThat(captured.detail)
+      .isEqualTo("HDC curfew address cleared following ADDRESS_WITHDRAWN event")
+  }
+
+  @Test
   fun `records an event when hdc licence postponement state is set`() {
     service.recordAuditEventHdcLicencePostponementChange(aHdcLicenceEntity, true)
 
