@@ -123,6 +123,25 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence.isPostponed).isTrue()
   }
 
+  @Test
+  @SqlGroup(
+    Sql(
+      "classpath:test_data/seed-hdc-licence-id-1.sql",
+      "classpath:test_data/seed-hdc-postponement-for-licence-id-1.sql",
+    ),
+    Sql(statements = ["UPDATE hdc_application SET proposed_accommodation_type = 'RESIDENTIAL' WHERE licence_id = 1"]),
+  )
+  fun `Get an HDC licence by ID includes address withdrawn when a residential address is missing`() {
+    webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = cvlRoles()))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.addressWithdrawn").isEqualTo(true)
+  }
+
   @ParameterizedTest(name = "Get a licence using {0}")
   @MethodSource("cvlRoles")
   @Sql("classpath:test_data/seed-licence-id-1.sql")

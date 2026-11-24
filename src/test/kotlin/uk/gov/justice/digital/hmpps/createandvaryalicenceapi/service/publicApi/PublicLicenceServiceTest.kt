@@ -522,6 +522,7 @@ class PublicLicenceServiceTest {
 
     val modelHdcLicence = ModelHdcLicence(
       id = 12345,
+      addressWithdrawn = false,
       typeCode = LicenceType.AP,
       version = "2.1",
       statusCode = LicenceStatus.IN_PROGRESS,
