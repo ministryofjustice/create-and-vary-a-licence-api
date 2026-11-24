@@ -305,7 +305,7 @@ class AuditServiceTest {
     assertThat(captured.fullName).isEqualTo("SYSTEM")
     assertThat(captured.summary).isEqualTo("HDC curfew address withdrawn")
     assertThat(captured.detail)
-      .isEqualTo("HDC curfew address and proposed accommodation type cleared following ADDRESS_WITHDRAWN event")
+      .isEqualTo("HDC curfew address cleared following ADDRESS_WITHDRAWN event")
   }
 
   @Test

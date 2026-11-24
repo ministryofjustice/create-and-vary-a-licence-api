@@ -94,7 +94,7 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
     "classpath:test_data/seed-hdc-address-withdrawal.sql",
   )
   @Test
-  fun `Duplicate ADDRESS_WITHDRAWN clears addresses and proposed types only once`() {
+  fun `Duplicate ADDRESS_WITHDRAWN clears addresses only once and preserves proposed types`() {
     // Given
     val event = createHdcStatusChangedEvent(bookingId = 12345L, nomsNumber = "A1234AA")
     val licencesBefore = testRepository.findAllLicence()
@@ -114,14 +114,14 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
     assertThat(licencesAfter.map { it.statusCode }).containsExactlyInAnyOrder(APPROVED, SUBMITTED)
     assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
-      .allSatisfy { assertThat(it.proposedAccommodationType).isNull() }
+      .allSatisfy { assertThat(it.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL) }
     assertThat(testRepository.findAllHdcCurfewAddresses()).isEmpty()
     val auditEvents = testRepository.findAllAuditEvents()
     assertThat(auditEvents).hasSize(2)
       .allSatisfy {
         assertThat(it.summary).isEqualTo("HDC curfew address withdrawn")
         assertThat(it.detail).isEqualTo(
-          "HDC curfew address and proposed accommodation type cleared following ADDRESS_WITHDRAWN event",
+          "HDC curfew address cleared following ADDRESS_WITHDRAWN event",
         )
       }
     verifyNoInteractions(eventsPublisher)
