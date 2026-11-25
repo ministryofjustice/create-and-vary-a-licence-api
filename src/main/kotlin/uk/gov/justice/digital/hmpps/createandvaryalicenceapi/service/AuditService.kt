@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EligibleKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
@@ -348,7 +349,7 @@ class AuditService(
 
   fun recordAuditEventHdcLicencePostponed(
     licence: HdcLicence,
-    previousStatus: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus,
+    previousStatus: LicenceStatus,
   ) {
     val auditEvent = ModelAuditEvent(
       licenceId = licence.id,
@@ -361,7 +362,7 @@ class AuditService(
 
   fun recordAuditEventHdcLicenceAddressWithdrawn(
     licence: HdcLicence,
-    previousStatus: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus,
+    previousStatus: LicenceStatus,
   ) {
     recordAuditEvent(
       ModelAuditEvent(

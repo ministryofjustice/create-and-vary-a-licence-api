@@ -14,6 +14,11 @@ interface LicenceReplacementLink {
 @Repository
 interface LicenceLinkRepository : JpaRepository<LicenceLink, Long> {
 
+  fun findByToLicenceIdAndLinkType(
+    toLicenceId: Long,
+    linkType: LicenceLinkType,
+  ): LicenceLink?
+
   @Query("SELECT DISTINCT l.linkType FROM LicenceLink l WHERE l.toLicenceId = :licenceId")
   fun findLinkTypesByToLicenceId(licenceId: Long): Set<LicenceLinkType>
 

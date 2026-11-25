@@ -39,6 +39,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.SUPERSEDED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.DayOfWeek
+import java.time.LocalTime
 
 class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
@@ -47,6 +49,36 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
 
   @Autowired
   lateinit var hdcEventService: HdcEventService
+
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-hdc-conversion-history.sql",
+  )
+  @Test
+  fun `An HDC opt in event restores linked curfew times`() {
+    // Given
+    val event = createHdcStatusChangedEvent(bookingId = 123L, nomsNumber = "A1234AA")
+
+    // When
+    sendConversionEvent(event, HdcCvlEventType.OPT_IN)
+
+    // Then
+    val newLicenceId = testRepository.findAllLicence()
+      .single { it.kind == LicenceKind.HDC && it.statusCode == LicenceStatus.IN_PROGRESS }.id
+
+    val weeklyTimes = testRepository.findWeeklyCurfewTimes(newLicenceId)
+    assertThat(weeklyTimes).extracting("curfewTimesSequence", "fromDay", "fromTime", "untilDay", "untilTime")
+      .containsExactly(
+        tuple(1, DayOfWeek.MONDAY, LocalTime.of(19, 0), DayOfWeek.TUESDAY, LocalTime.of(7, 0)),
+        tuple(2, DayOfWeek.TUESDAY, LocalTime.of(20, 0), DayOfWeek.WEDNESDAY, LocalTime.of(8, 0)),
+      )
+    assertThat(weeklyTimes.map { it.id }).doesNotContain(1L, 2L)
+
+    val firstNightTimes = testRepository.findFirstNightCurfewTimes(newLicenceId)!!
+    assertThat(firstNightTimes.fromTime).isEqualTo(LocalTime.of(21, 0))
+    assertThat(firstNightTimes.untilTime).isEqualTo(LocalTime.of(6, 0))
+    assertThat(firstNightTimes.id).isNotEqualTo(3L)
+  }
 
   @Test
   fun `An HDC opt out event is processed`() {
@@ -163,6 +195,8 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
     assertThat(hdcLicence.homeDetentionCurfewActualDate).isNull()
     assertThat(hdcLicence.homeDetentionCurfewEndDate).isNull()
     assertThat(hdcLicence.probationContact).isNull()
+    assertThat(testRepository.findWeeklyCurfewTimes(hdcLicence.id)).isEmpty()
+    assertThat(testRepository.findFirstNightCurfewTimes(hdcLicence.id)).isNull()
     assertThat(hdcLicence.additionalConditions).hasSize(1)
     assertThat(hdcLicence.additionalConditions.single().expandedConditionText)
       .isEqualTo("Not to enter exclusion zone Town centre")

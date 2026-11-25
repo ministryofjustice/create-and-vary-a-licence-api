@@ -1,17 +1,22 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.ADDRESS_WITHDRAWN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.POSTPONE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
@@ -150,11 +155,25 @@ class HdcEventService(
     inactivateConversionLicence(OPT_IN, licencesByStatus)
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsNumber)).firstOrNull()
     val hdcCopy = hdcLicenceFactory.createFromCrd(licenceToConvert, prisoner, IN_PROGRESS)
+    addLastHdcLicenceDetails(licenceToConvert, hdcCopy)
     val newLicence = licenceService.populateCopy(original = licenceToConvert, copy = hdcCopy) as HdcLicence
     addConversionAudits(licenceToConvert, newLicence, OPT_IN)
     addLicenceConversionEvents(licenceToConvert, newLicence, OPT_IN)
     addLicenceLinking(OPT_IN, licenceToConvert, newLicence)
+
     hdcLifecycleService.populateOnCreation(newLicence)
+  }
+
+  private fun addLastHdcLicenceDetails(
+    licenceToConvert: CrdLicence,
+    newLicence: HdcLicence,
+  ) {
+    linkingService.getPreviousHdcLicenceId(licenceToConvert.id)?.let { licenceId ->
+      hdcLicenceRepository.findByIdOrNull(licenceId)
+    }?.let {
+      newLicence.weeklyCurfewTimes = CurfewTimesMapper.copyList(it.weeklyCurfewTimes)
+      newLicence.firstNightCurfewTimes = CurfewTimesMapper.copy(it.firstNightCurfewTimes)
+    }
   }
 
   @Transactional
@@ -170,7 +189,7 @@ class HdcEventService(
     val editableLicence = licencesByStatus[SUBMITTED] ?: licencesByStatus[IN_PROGRESS]
     approvedLicence?.let { approved ->
       if (editableLicence == null) {
-        revertLicenceToInProgress(approved)
+        revertLicenceToInProgress(approved, POSTPONE)
       } else {
         licenceService.inactivateLicences(
           listOf(approved),
@@ -179,7 +198,7 @@ class HdcEventService(
         )
       }
     }
-    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let(::revertLicenceToInProgress)
+    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let { revertLicenceToInProgress(it, POSTPONE) }
   }
 
   @Transactional
@@ -207,7 +226,7 @@ class HdcEventService(
     val editableLicence = licencesByStatus[SUBMITTED] ?: licencesByStatus[IN_PROGRESS]
     approvedLicence?.let { approved ->
       if (editableLicence == null) {
-        revertLicenceToInProgress(approved, addressWithdrawn = true)
+        revertLicenceToInProgress(approved, ADDRESS_WITHDRAWN)
       } else {
         licenceService.inactivateLicences(
           listOf(approved),
@@ -216,10 +235,16 @@ class HdcEventService(
         )
       }
     }
-    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let { revertLicenceToInProgress(it, addressWithdrawn = true) }
+    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let { revertLicenceToInProgress(it, ADDRESS_WITHDRAWN) }
   }
 
-  internal fun revertLicenceToInProgress(licence: HdcLicence, addressWithdrawn: Boolean = false) {
+  internal fun revertLicenceToInProgress(licence: HdcLicence, eventType: HdcCvlEventType) {
+    val recordAuditEvent = when (eventType) {
+      ADDRESS_WITHDRAWN -> auditService::recordAuditEventHdcLicenceAddressWithdrawn
+      POSTPONE -> auditService::recordAuditEventHdcLicencePostponed
+      else -> throw IllegalArgumentException("Unknown HDC revert event type $eventType")
+    }
+
     if (licence.statusCode == IN_PROGRESS) return
     val previousStatus = licence.statusCode
     licence.statusCode = IN_PROGRESS
@@ -227,10 +252,7 @@ class HdcEventService(
     licence.approvedByName = null
     licence.approvedDate = null
     licence.supersededDate = null
-    if (addressWithdrawn) {
-      auditService.recordAuditEventHdcLicenceAddressWithdrawn(licence, previousStatus)
-    } else {
-      auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
-    }
+
+    recordAuditEvent(licence, previousStatus)
   }
 }
