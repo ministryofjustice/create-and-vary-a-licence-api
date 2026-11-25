@@ -375,7 +375,7 @@ data class HdcLicence(
   val hdcRiskChecksComplete: Boolean = false,
 
   @field:Schema(
-    description = "Whether the curfew address is missing for a residential or approved premises HDC application",
+    description = "Whether the curfew address is withdrawn while an in-progress HDC application still needs address checks",
     example = "false",
   )
   val addressWithdrawn: Boolean,
