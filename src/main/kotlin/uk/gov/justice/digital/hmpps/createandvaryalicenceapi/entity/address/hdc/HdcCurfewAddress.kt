@@ -73,5 +73,6 @@ class HdcCurfewAddress(
     licence = licence,
     accommodationType = accommodationType,
     postReleaseResidentialChecksCompleted = postReleaseResidentialChecksCompleted,
+    postReleaseResidentialChecksNotCompletedReason = postReleaseResidentialChecksNotCompletedReason,
   )
 }

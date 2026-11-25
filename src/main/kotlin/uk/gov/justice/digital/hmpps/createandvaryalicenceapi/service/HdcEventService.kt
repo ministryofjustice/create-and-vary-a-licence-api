@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
@@ -14,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.H
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.POSTPONE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.CurfewTimesMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.CRD_CREATED_WHEN_HDC_OPT_IN
@@ -152,11 +155,25 @@ class HdcEventService(
     inactivateConversionLicence(OPT_IN, licencesByStatus)
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsNumber)).firstOrNull()
     val hdcCopy = hdcLicenceFactory.createFromCrd(licenceToConvert, prisoner, IN_PROGRESS)
+    addLastHdcLicenceDetails(licenceToConvert, hdcCopy)
     val newLicence = licenceService.populateCopy(original = licenceToConvert, copy = hdcCopy) as HdcLicence
     addConversionAudits(licenceToConvert, newLicence, OPT_IN)
     addLicenceConversionEvents(licenceToConvert, newLicence, OPT_IN)
     addLicenceLinking(OPT_IN, licenceToConvert, newLicence)
+
     hdcLifecycleService.populateOnCreation(newLicence)
+  }
+
+  private fun addLastHdcLicenceDetails(
+    licenceToConvert: CrdLicence,
+    newLicence: HdcLicence,
+  ) {
+    linkingService.getPreviousHdcLicenceId(licenceToConvert.id)?.let { licenceId ->
+      hdcLicenceRepository.findByIdOrNull(licenceId)
+    }?.let {
+      newLicence.weeklyCurfewTimes = CurfewTimesMapper.copyList(it.weeklyCurfewTimes)
+      newLicence.firstNightCurfewTimes = CurfewTimesMapper.copy(it.firstNightCurfewTimes)
+    }
   }
 
   @Transactional
