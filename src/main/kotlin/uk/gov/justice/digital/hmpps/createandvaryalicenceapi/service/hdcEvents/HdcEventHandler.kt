@@ -71,4 +71,14 @@ class HdcEventHandler(
     hdcLifecycleService.refreshHdcCurfewAddresses(event.nomsNumber)
     logEventProcessed(HdcCvlEventType.RISK_CHECKS_SUBMITTED, event)
   }
+
+  fun handleEligible(message: String) {
+    val event = parseEvent(message)
+    logEventProcessed(HdcCvlEventType.ELIGIBLE, event)
+  }
+
+  fun handleIneligible(message: String) {
+    val event = parseEvent(message)
+    logEventProcessed(HdcCvlEventType.INELIGIBLE, event)
+  }
 }
