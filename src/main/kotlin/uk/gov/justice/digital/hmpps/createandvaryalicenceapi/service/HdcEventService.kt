@@ -9,8 +9,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.ADDRESS_WITHDRAWN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_IN
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.OPT_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.POSTPONE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType.REFUSE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
@@ -170,7 +172,7 @@ class HdcEventService(
     val editableLicence = licencesByStatus[SUBMITTED] ?: licencesByStatus[IN_PROGRESS]
     approvedLicence?.let { approved ->
       if (editableLicence == null) {
-        revertLicenceToInProgress(approved)
+        revertLicenceToInProgress(approved, POSTPONE)
       } else {
         licenceService.inactivateLicences(
           listOf(approved),
@@ -179,7 +181,7 @@ class HdcEventService(
         )
       }
     }
-    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let(::revertLicenceToInProgress)
+    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let { revertLicenceToInProgress(it, POSTPONE) }
   }
 
   @Transactional
@@ -207,7 +209,7 @@ class HdcEventService(
     val editableLicence = licencesByStatus[SUBMITTED] ?: licencesByStatus[IN_PROGRESS]
     approvedLicence?.let { approved ->
       if (editableLicence == null) {
-        revertLicenceToInProgress(approved, addressWithdrawn = true)
+        revertLicenceToInProgress(approved, ADDRESS_WITHDRAWN)
       } else {
         licenceService.inactivateLicences(
           listOf(approved),
@@ -216,10 +218,16 @@ class HdcEventService(
         )
       }
     }
-    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let { revertLicenceToInProgress(it, addressWithdrawn = true) }
+    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let { revertLicenceToInProgress(it, ADDRESS_WITHDRAWN) }
   }
 
-  internal fun revertLicenceToInProgress(licence: HdcLicence, addressWithdrawn: Boolean = false) {
+  internal fun revertLicenceToInProgress(licence: HdcLicence, eventType: HdcCvlEventType) {
+    val recordAuditEvent = when (eventType) {
+      ADDRESS_WITHDRAWN -> auditService::recordAuditEventHdcLicenceAddressWithdrawn
+      POSTPONE -> auditService::recordAuditEventHdcLicencePostponed
+      else -> throw IllegalArgumentException("Unknown HDC revert event type $eventType")
+    }
+
     if (licence.statusCode == IN_PROGRESS) return
     val previousStatus = licence.statusCode
     licence.statusCode = IN_PROGRESS
@@ -227,10 +235,7 @@ class HdcEventService(
     licence.approvedByName = null
     licence.approvedDate = null
     licence.supersededDate = null
-    if (addressWithdrawn) {
-      auditService.recordAuditEventHdcLicenceAddressWithdrawn(licence, previousStatus)
-    } else {
-      auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
-    }
+
+    recordAuditEvent(licence, previousStatus)
   }
 }

@@ -603,7 +603,7 @@ class HdcEventServiceTest {
   @Nested
   inner class RevertLicenceToInProgress {
     @Test
-    fun `reverts a SUBMITTED licence to IN_PROGRESS and clears approval details`() {
+    fun `reverts a SUBMITTED licence to IN_PROGRESS and clears approval details when postponement event is triggered`() {
       // Given
       val hdcLicence = createHdcLicence(id = 1L)
       hdcLicence.statusCode = SUBMITTED
@@ -613,7 +613,7 @@ class HdcEventServiceTest {
       hdcLicence.supersededDate = LocalDateTime.of(2024, 1, 11, 9, 0)
 
       // When
-      service.revertLicenceToInProgress(hdcLicence)
+      service.revertLicenceToInProgress(hdcLicence, HdcCvlEventType.POSTPONE)
 
       // Then
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
@@ -622,6 +622,28 @@ class HdcEventServiceTest {
       assertThat(hdcLicence.approvedDate).isNull()
       assertThat(hdcLicence.supersededDate).isNull()
       verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
+    }
+
+    @Test
+    fun `reverts a SUBMITTED licence to IN_PROGRESS and clears approval details when address withdrawn event is triggered`() {
+      // Given
+      val hdcLicence = createHdcLicence(id = 1L)
+      hdcLicence.statusCode = SUBMITTED
+      hdcLicence.approvedByUsername = "approver"
+      hdcLicence.approvedByName = "Approver Name"
+      hdcLicence.approvedDate = LocalDateTime.of(2024, 1, 10, 9, 0)
+      hdcLicence.supersededDate = LocalDateTime.of(2024, 1, 11, 9, 0)
+
+      // When
+      service.revertLicenceToInProgress(hdcLicence, HdcCvlEventType.ADDRESS_WITHDRAWN)
+
+      // Then
+      assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
+      assertThat(hdcLicence.approvedByUsername).isNull()
+      assertThat(hdcLicence.approvedByName).isNull()
+      assertThat(hdcLicence.approvedDate).isNull()
+      assertThat(hdcLicence.supersededDate).isNull()
+      verify(auditService).recordAuditEventHdcLicenceAddressWithdrawn(hdcLicence, SUBMITTED)
     }
 
     @Test
@@ -637,7 +659,7 @@ class HdcEventServiceTest {
       hdcLicence.supersededDate = supersededDate
 
       // When
-      service.revertLicenceToInProgress(hdcLicence)
+      service.revertLicenceToInProgress(hdcLicence, HdcCvlEventType.POSTPONE)
 
       // Then
       assertThat(hdcLicence.statusCode).isEqualTo(IN_PROGRESS)
