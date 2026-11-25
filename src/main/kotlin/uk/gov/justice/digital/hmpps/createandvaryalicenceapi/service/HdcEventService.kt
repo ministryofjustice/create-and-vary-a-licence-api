@@ -194,7 +194,32 @@ class HdcEventService(
     log.info("HDC resume: cleared postponement state for nomsNumber={}", nomsNumber)
   }
 
-  internal fun revertLicenceToInProgress(licence: HdcLicence) {
+  @Transactional
+  fun withdrawAddress(nomsNumber: String) {
+    val licencesByStatus = getHdcLicencesByStatus(nomsNumber)
+    if (licencesByStatus.isEmpty()) {
+      log.warn("HDC address withdrawn: no eligible licence found for nomsNumber={}", nomsNumber)
+      return
+    }
+
+    hdcLifecycleService.withdrawHdcCurfewAddresses(licencesByStatus.values.toList())
+    val approvedLicence = licencesByStatus[APPROVED]
+    val editableLicence = licencesByStatus[SUBMITTED] ?: licencesByStatus[IN_PROGRESS]
+    approvedLicence?.let { approved ->
+      if (editableLicence == null) {
+        revertLicenceToInProgress(approved, addressWithdrawn = true)
+      } else {
+        licenceService.inactivateLicences(
+          listOf(approved),
+          reason = "HDC address withdrawn",
+          deactivateInProgressVersions = false,
+        )
+      }
+    }
+    editableLicence?.takeIf { it.statusCode == SUBMITTED }?.let { revertLicenceToInProgress(it, addressWithdrawn = true) }
+  }
+
+  internal fun revertLicenceToInProgress(licence: HdcLicence, addressWithdrawn: Boolean = false) {
     if (licence.statusCode == IN_PROGRESS) return
     val previousStatus = licence.statusCode
     licence.statusCode = IN_PROGRESS
@@ -202,6 +227,10 @@ class HdcEventService(
     licence.approvedByName = null
     licence.approvedDate = null
     licence.supersededDate = null
-    auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
+    if (addressWithdrawn) {
+      auditService.recordAuditEventHdcLicenceAddressWithdrawn(licence, previousStatus)
+    } else {
+      auditService.recordAuditEventHdcLicencePostponed(licence, previousStatus)
+    }
   }
 }

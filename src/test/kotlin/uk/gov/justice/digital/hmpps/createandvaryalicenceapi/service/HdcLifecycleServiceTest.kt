@@ -190,9 +190,8 @@ class HdcLifecycleServiceTest {
     secondLicence.application = secondApplication
     firstLicence.curfewAddress = createCurfewAddress(firstLicence)
     secondLicence.curfewAddress = createCurfewAddress(secondLicence)
-    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(firstLicence, secondLicence))
 
-    service.withdrawHdcCurfewAddresses("A1234BC")
+    service.withdrawHdcCurfewAddresses(listOf(firstLicence, secondLicence))
 
     assertThat(firstLicence.curfewAddress).isNull()
     assertThat(secondLicence.curfewAddress).isNull()
@@ -214,9 +213,7 @@ class HdcLifecycleServiceTest {
     application.dateLastUpdated = lastUpdated
     licence.application = application
     licence.curfewAddress = null
-    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(licence))
-
-    service.withdrawHdcCurfewAddresses("A1234BC")
+    service.withdrawHdcCurfewAddresses(listOf(licence))
 
     assertThat(application.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL)
     assertThat(application.dateLastUpdated).isEqualTo(lastUpdated)

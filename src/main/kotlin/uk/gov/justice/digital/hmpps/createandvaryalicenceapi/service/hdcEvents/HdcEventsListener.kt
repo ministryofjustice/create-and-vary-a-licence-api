@@ -39,11 +39,11 @@ class HdcEventsListener(
       eventType = getHdcEventType(message)
       log.debug("Successfully parsed HDC event | eventType={} | licenceId={}", eventType, event.licenceId)
       when (eventType) {
+        OPT_IN -> hdcEventHandler.handleOptIn(rawMessage)
         OPT_OUT -> hdcEventHandler.handleOptOut(rawMessage)
-        REFUSE -> hdcEventHandler.handleRefuse(rawMessage)
         POSTPONE -> hdcEventHandler.handlePostpone(rawMessage)
         RESUME -> hdcEventHandler.handleResume(rawMessage)
-        OPT_IN -> hdcEventHandler.handleOptIn(rawMessage)
+        REFUSE -> hdcEventHandler.handleRefuse(rawMessage)
         ADDRESS_WITHDRAWN -> hdcEventHandler.handleAddressWithdrawn(rawMessage)
         RISK_CHECKS_SUBMITTED -> hdcEventHandler.handleRiskChecksSubmitted(rawMessage)
         ELIGIBLE -> hdcEventHandler.handleEligible(rawMessage)

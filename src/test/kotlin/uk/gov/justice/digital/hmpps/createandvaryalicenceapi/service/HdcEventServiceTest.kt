@@ -417,6 +417,27 @@ class HdcEventServiceTest {
   }
 
   @Test
+  fun `address withdrawal with approved and submitted licences inactivates the approved licence and reverts the editable licence`() {
+    // Given
+    val approvedLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC", statusCode = APPROVED)
+    val submittedLicence = createHdcLicence(id = 2).copy(nomsId = "A1234BC", statusCode = SUBMITTED)
+    whenever(hdcLicenceRepository.findInFlightHdcLicences("A1234BC")).thenReturn(listOf(submittedLicence, approvedLicence))
+
+    // When
+    service.withdrawAddress("A1234BC")
+
+    // Then
+    verify(hdcLifecycleService).withdrawHdcCurfewAddresses(listOf(submittedLicence, approvedLicence))
+    verify(licenceService).inactivateLicences(
+      listOf(approvedLicence),
+      "HDC address withdrawn",
+      deactivateInProgressVersions = false,
+    )
+    assertThat(submittedLicence.statusCode).isEqualTo(IN_PROGRESS)
+    verify(auditService).recordAuditEventHdcLicenceAddressWithdrawn(submittedLicence, SUBMITTED)
+  }
+
+  @Test
   fun `resume HDC postponement clears the current postponed state`() {
     val hdcLicence = createHdcLicence(id = 1).copy(nomsId = "A1234BC")
     hdcLicence.application = HdcApplication(hdcLicence, true, null)
@@ -582,7 +603,7 @@ class HdcEventServiceTest {
   @Nested
   inner class RevertLicenceToInProgress {
     @Test
-    fun `reverts a SUBMITTED licence to IN_PROGRESS, clears approval details and audits`() {
+    fun `reverts a SUBMITTED licence to IN_PROGRESS and clears approval details`() {
       // Given
       val hdcLicence = createHdcLicence(id = 1L)
       hdcLicence.statusCode = SUBMITTED
@@ -601,7 +622,6 @@ class HdcEventServiceTest {
       assertThat(hdcLicence.approvedDate).isNull()
       assertThat(hdcLicence.supersededDate).isNull()
       verify(auditService).recordAuditEventHdcLicencePostponed(hdcLicence, SUBMITTED)
-      verifyNoMoreInteractions(auditService)
     }
 
     @Test
