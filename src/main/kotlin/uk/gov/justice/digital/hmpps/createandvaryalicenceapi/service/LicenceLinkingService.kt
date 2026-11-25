@@ -46,6 +46,12 @@ class LicenceLinkingService(
 
   fun getLinkTypesToLicence(licenceId: Long): Set<LicenceLinkType> = licenceLinkRepository.findLinkTypesByToLicenceId(licenceId)
 
+  fun getPreviousHdcLicenceId(crdLicenceId: Long): Long? = licenceLinkRepository
+    .findByToLicenceIdAndLinkType(
+      crdLicenceId,
+      HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE,
+    )?.fromLicenceId
+
   private fun hasLinkTo(
     toLicenceId: Long,
     linkType: LicenceLinkType,

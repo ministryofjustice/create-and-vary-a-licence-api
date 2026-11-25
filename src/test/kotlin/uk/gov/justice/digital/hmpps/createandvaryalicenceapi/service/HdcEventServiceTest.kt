@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.LocalDateTime
+import java.util.Optional
 
 class HdcEventServiceTest {
 
@@ -89,6 +90,7 @@ class HdcEventServiceTest {
       licenceLinkingService,
       hdcLifecycleService,
     )
+    whenever(licenceLinkingService.getPreviousHdcLicenceId(any())).thenReturn(null)
   }
 
   @ParameterizedTest
@@ -266,6 +268,7 @@ class HdcEventServiceTest {
       eventDescription = "This HDC licence was converted from CRD licence on OPT_IN",
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(crdLicence.id, populatedHdc.id)
+    verify(licenceLinkingService).getPreviousHdcLicenceId(crdLicence.id)
     verify(hdcLifecycleService).populateOnCreation(populatedHdc)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService, hdcLifecycleService)
   }
@@ -311,6 +314,7 @@ class HdcEventServiceTest {
       eventDescription = "This HDC licence was converted from CRD licence on OPT_IN",
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(edit.id, populatedHdc.id)
+    verify(licenceLinkingService).getPreviousHdcLicenceId(edit.id)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
@@ -342,6 +346,28 @@ class HdcEventServiceTest {
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(listOf("A1234AA"))
     verify(hdcLicenceFactory).createFromCrd(crdLicence, null, IN_PROGRESS)
     verify(licenceService).populateCopy(crdLicence, hdcToPopulate)
+  }
+
+  @Test
+  fun `convertToHdcLicence continues when the linked HDC licence cannot be found`() {
+    // Given
+    val crdLicence = createCrdLicence().copy(id = 1, nomsId = "A1234AA")
+    val hdcCopy = createHdcLicence(id = 3)
+    whenever(licenceRepository.findInFlightCrdLicences("A1234AA")).thenReturn(listOf(crdLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
+    whenever(hdcLicenceFactory.createFromCrd(crdLicence, null, IN_PROGRESS)).thenReturn(hdcCopy)
+    whenever(licenceService.populateCopy(crdLicence, hdcCopy)).thenReturn(hdcCopy)
+    whenever(licenceLinkingService.getPreviousHdcLicenceId(crdLicence.id)).thenReturn(2L)
+    whenever(hdcLicenceRepository.findById(2L)).thenReturn(Optional.empty())
+
+    // When
+    service.convertToHdcLicence("A1234AA")
+
+    // Then
+    verify(hdcLicenceRepository).findById(2L)
+    verify(licenceService).populateCopy(crdLicence, hdcCopy)
+    verify(hdcLifecycleService).populateOnCreation(hdcCopy)
+    verify(licenceLinkingService).setHdcReplacementForOptedInLicence(crdLicence.id, hdcCopy.id)
   }
 
   @Test
