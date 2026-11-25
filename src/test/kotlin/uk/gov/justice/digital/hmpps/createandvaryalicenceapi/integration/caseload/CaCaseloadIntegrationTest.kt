@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 
 private const val GET_PROBATION_CASELOAD = "/caseload/case-admin/probation-view"
+private const val GET_PRISON_CASELOAD = "/caseload/case-admin/prison-view"
 private const val SEARCH_PRISONERS_CA_CASELOAD = "/caseload/case-admin/case-search"
 private val caCaseloadSearch = CaCaseloadSearch(prisonCodes = setOf("BAI"), searchString = null)
 
@@ -45,6 +46,99 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun stubClients() {
     remandAndSentencingApiMockServer.stubRemandStatuses(emptySet())
+  }
+
+  @Test
+  @Sql(scripts = ["classpath:test_data/seed-ca-caseload-licences.sql", "classpath:test_data/seed-ca-hdc-caseload.sql"])
+  fun `flag is set when residential accommodation has no curfew address`() {
+    testHdcCurfewAddressFlag(expected = true)
+  }
+
+  @Test
+  @Sql(
+    scripts = [
+      "classpath:test_data/seed-ca-caseload-licences.sql",
+      "classpath:test_data/seed-ca-hdc-caseload.sql",
+      "classpath:test_data/set-hdc-caseload-accommodation-cas-1.sql",
+    ],
+  )
+  fun `flag is set when CAS 1 accommodation has no curfew address`() {
+    testHdcCurfewAddressFlag(expected = true)
+  }
+
+  @Test
+  @Sql(
+    scripts = [
+      "classpath:test_data/seed-ca-caseload-licences.sql",
+      "classpath:test_data/seed-ca-hdc-caseload.sql",
+      "classpath:test_data/set-hdc-caseload-accommodation-cas-2.sql",
+    ],
+  )
+  fun `flag is cleared for CAS 2 accommodation`() {
+    testHdcCurfewAddressFlag(expected = false)
+  }
+
+  @Test
+  @Sql(
+    scripts = [
+      "classpath:test_data/seed-ca-caseload-licences.sql",
+      "classpath:test_data/seed-ca-hdc-caseload.sql",
+      "classpath:test_data/clear-hdc-caseload-accommodation-type.sql",
+    ],
+  )
+  fun `flag is cleared when accommodation type is missing`() {
+    testHdcCurfewAddressFlag(expected = false)
+  }
+
+  @Test
+  @Sql(
+    scripts = [
+      "classpath:test_data/seed-ca-caseload-licences.sql",
+      "classpath:test_data/seed-ca-hdc-caseload.sql",
+      "classpath:test_data/set-hdc-caseload-residential-address.sql",
+    ],
+  )
+  fun `flag is cleared when residential accommodation has a curfew address`() {
+    testHdcCurfewAddressFlag(expected = false)
+  }
+
+  private fun testHdcCurfewAddressFlag(expected: Boolean) {
+    // Given
+    prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    deliusMockServer.stubGetStaffDetailsByUsername()
+    deliusMockServer.stubGetManagersWithoutUserDetails()
+
+    // When
+    val prisonResult = webTestClient.post()
+      .uri(GET_PRISON_CASELOAD)
+      .bodyValue(caCaseloadSearch)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    val probationResult = webTestClient.post()
+      .uri(GET_PROBATION_CASELOAD)
+      .bodyValue(caCaseloadSearch)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    val prisonCases = prisonResult
+      .expectStatus().isOk
+      .expectBody(typeReference<List<CaCase>>())
+      .returnResult().responseBody!!
+
+    assertThat(prisonCases.single { it.licenceId == 3L }.noHdcCurfewAddress).isEqualTo(expected)
+    assertThat(prisonCases.single { it.licenceId == 1L }.noHdcCurfewAddress).isNull()
+
+    val probationCases = probationResult
+      .expectStatus().isOk
+      .expectBody(typeReference<List<CaCase>>())
+      .returnResult().responseBody!!
+
+    assertThat(probationCases.single { it.licenceId == 6L }.noHdcCurfewAddress).isEqualTo(expected)
+    assertThat(probationCases.single { it.licenceId == 5L }.noHdcCurfewAddress).isNull()
   }
 
   @Nested

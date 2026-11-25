@@ -25,6 +25,7 @@ fun createLicenceCase(
   comUsername: String? = "com-user",
   homeDetentionCurfewActualDate: LocalDate? = null,
   isHdcPostponed: Boolean = false,
+  noHdcCurfewAddress: Boolean? = null,
 ) = LicenceCaCase(
   kind = kind,
   licenceId = licenceId,
@@ -45,4 +46,5 @@ fun createLicenceCase(
   comUsername = comUsername,
   homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
   isPostponed = isHdcPostponed,
+  noHdcCurfewAddress = noHdcCurfewAddress,
 )

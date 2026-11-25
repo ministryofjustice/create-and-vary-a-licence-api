@@ -156,6 +156,7 @@ class CaCaseloadPrisonViewIntegrationTest : IntegrationTestBase() {
     assertThat(caseload).hasSize(3)
     with(caseload[0]) {
       assertThat(prisonerNumber).isEqualTo(test1.prisonerNumber)
+      assertThat(noHdcCurfewAddress).isNull()
       assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
       assertThat(tabType).isEqualTo(CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS)
       assertThat(isInHardStopPeriod).isTrue()

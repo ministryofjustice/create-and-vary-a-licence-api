@@ -63,6 +63,7 @@ class CaProbationCaseloadService(
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
         isHdcPostponed = false,
+        noHdcCurfewAddress = licence.noHdcCurfewAddress,
       )
     }
   }
