@@ -677,10 +677,9 @@ fun toHdc(
   addressWithdrawn = isHdcAddressWithdrawn(licence, hdcRiskChecksComplete),
 )
 
-private fun isHdcAddressWithdrawn(licence: HdcLicence, hdcRiskChecksComplete: Boolean): Boolean =
-  licence.statusCode == LicenceStatus.IN_PROGRESS &&
-    !hdcRiskChecksComplete &&
-    licence.curfewAddress == null &&
+private fun isHdcAddressWithdrawn(licence: HdcLicence, hdcRiskChecksComplete: Boolean): Boolean = licence.statusCode == LicenceStatus.IN_PROGRESS &&
+  !hdcRiskChecksComplete &&
+  licence.curfewAddress == null &&
   when (licence.application?.proposedAccommodationType) {
     AccommodationType.RESIDENTIAL, AccommodationType.CAS_1_APPROVED_PREMISES -> true
     AccommodationType.CAS_2, null -> false

@@ -129,19 +129,19 @@ class ToModelTransformersTest {
       for (hasAddress in listOf(false, true)) {
         for (checksComplete in listOf(false, true)) {
           val licence = TestData.createHdcLicence().apply {
-          application = HdcApplication(this, false, type)
-          curfewAddress = if (hasAddress) {
-            HdcCurfewAddress(
-              licence = this,
-              reference = "ref",
-              firstLine = "Test Street",
-              townOrCity = "Test Town",
-              postcode = "TE1 1ST",
-              source = AddressSource.HDC_CREATION,
-            )
-          } else {
-            null
-          }
+            application = HdcApplication(this, false, type)
+            curfewAddress = if (hasAddress) {
+              HdcCurfewAddress(
+                licence = this,
+                reference = "ref",
+                firstLine = "Test Street",
+                townOrCity = "Test Town",
+                postcode = "TE1 1ST",
+                source = AddressSource.HDC_CREATION,
+              )
+            } else {
+              null
+            }
           }
           val result = toHdc(
             licence = licence,
