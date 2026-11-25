@@ -116,6 +116,7 @@ class NotStartedCaseloadService(
         hasNomisLicence = timeServedExternalRecord != null,
         lastWorkedOnBy = timeServedExternalRecord?.lastWorkedOnBy,
         isHdcPostponed = false,
+        noHdcCurfewAddress = null,
       )
     }
   }

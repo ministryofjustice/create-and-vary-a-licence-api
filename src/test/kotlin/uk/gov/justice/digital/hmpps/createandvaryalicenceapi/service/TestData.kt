@@ -801,6 +801,7 @@ object TestData {
     tabType = CaViewCasesTab.FUTURE_RELEASES,
     probationPractitioner = ProbationPractitioner(allocated = true),
     isHdcPostponed = false,
+    noHdcCurfewAddress = null,
   )
 
   fun approvalCase() = ApprovalCase(

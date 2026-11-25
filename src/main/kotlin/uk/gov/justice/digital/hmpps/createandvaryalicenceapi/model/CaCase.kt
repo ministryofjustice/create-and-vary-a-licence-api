@@ -69,5 +69,5 @@ data class CaCase(
   val hasNomisLicence: Boolean = false,
 
   @field:Schema(description = "Whether the HDC licence has no curfew address and its proposed accommodation is residential or CAS 1 approved premises.", example = "true", nullable = true)
-  val noHdcCurfewAddress: Boolean? = null,
+  val noHdcCurfewAddress: Boolean?,
 )
