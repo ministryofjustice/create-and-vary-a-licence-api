@@ -70,7 +70,7 @@ run-skip-docker: export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice
 # Feature toggles
 run-skip-docker: export HDC_ENABLED=true
 run-skip-docker: export USE_CURRENT_HDC_STATUS=false
-run-skip-docker: export REMAND_ENABLED=true
+run-skip-docker: export REMAND_ENABLED=false
 
 run-skip-docker:
 	@echo "Starting the API locally"
