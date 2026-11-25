@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcEventService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcLifecycleService
@@ -102,8 +101,7 @@ class HdcEventHandlerTest {
   fun `handleAddressWithdrawn removes HDC curfew addresses`() {
     handler.handleAddressWithdrawn(eventJson)
 
-    verify(hdcLifecycleService).withdrawHdcCurfewAddresses("A1234BC")
-    verifyNoInteractions(hdcEventService)
+    verify(hdcEventService).withdrawAddress("A1234BC")
   }
 
   @Test

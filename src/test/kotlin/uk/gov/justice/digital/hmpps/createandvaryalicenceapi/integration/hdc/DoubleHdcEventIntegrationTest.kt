@@ -11,6 +11,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcStatusChangedEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 
 class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
@@ -92,6 +94,7 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-hdc-approved-and-submitted-licences.sql",
     "classpath:test_data/seed-hdc-address-withdrawal.sql",
+    "classpath:test_data/seed-hdc-withdrawal-edit.sql",
   )
   @Test
   fun `Duplicate ADDRESS_WITHDRAWN clears addresses only once and preserves proposed types`() {
@@ -111,20 +114,19 @@ class DoubleHdcEventIntegrationTest : HdcEventsIntegrationTestBase() {
     // Then
     val licencesAfter = testRepository.findAllLicence()
     assertThat(licencesAfter).hasSize(2).allMatch { it is HdcLicence }
-    assertThat(licencesAfter.map { it.statusCode }).containsExactlyInAnyOrder(APPROVED, SUBMITTED)
+    assertThat(licencesAfter.map { it.statusCode }).containsExactlyInAnyOrder(INACTIVE, IN_PROGRESS)
     assertThat(testRepository.findAllHdcApplications())
       .hasSize(2)
       .allSatisfy { assertThat(it.proposedAccommodationType).isEqualTo(AccommodationType.RESIDENTIAL) }
     assertThat(testRepository.findAllHdcCurfewAddresses()).isEmpty()
     val auditEvents = testRepository.findAllAuditEvents()
-    assertThat(auditEvents).hasSize(2)
+    assertThat(auditEvents).filteredOn { it.summary == "HDC curfew address withdrawn" }.hasSize(2)
       .allSatisfy {
         assertThat(it.summary).isEqualTo("HDC curfew address withdrawn")
         assertThat(it.detail).isEqualTo(
           "HDC curfew address cleared following ADDRESS_WITHDRAWN event",
         )
       }
-    verifyNoInteractions(eventsPublisher)
   }
 
   @Sql("classpath:test_data/seed-hdc-licence-id-1-with-curfew-address.sql")

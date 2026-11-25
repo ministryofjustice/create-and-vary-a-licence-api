@@ -359,6 +359,20 @@ class AuditService(
     auditEventRepository.save(transform(auditEvent))
   }
 
+  fun recordAuditEventHdcLicenceAddressWithdrawn(
+    licence: HdcLicence,
+    previousStatus: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus,
+  ) {
+    recordAuditEvent(
+      ModelAuditEvent(
+        licenceId = licence.id,
+        summary = "HDC address withdrawn - licence moved to IN_PROGRESS",
+        detail = "HDC address withdrawn. Licence status changed from ${previousStatus.name} to IN_PROGRESS",
+        eventType = AuditEventType.SYSTEM_EVENT,
+      ),
+    )
+  }
+
   fun recordAuditEventUpdateHdcConditionalReleaseDate(
     licence: Licence,
     previousConditionalReleaseDate: LocalDate?,
