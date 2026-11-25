@@ -41,7 +41,7 @@ generic-service:
     HMPPS_SQS_USE_WEB_TOKEN: true
     HDC_ENABLED: true
     HDC_CREATION_ENABLED: false
-    REMAND_ENABLED: true
+    REMAND_ENABLED: false
 
     # Event listeners
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: true
