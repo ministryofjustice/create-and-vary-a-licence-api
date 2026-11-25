@@ -24,4 +24,5 @@ data class LicenceCaCase(
   val prisonCode: String?,
   val prisonDescription: String?,
   val isPostponed: Boolean,
+  val noHdcCurfewAddress: Boolean?,
 ) : LicenceCase

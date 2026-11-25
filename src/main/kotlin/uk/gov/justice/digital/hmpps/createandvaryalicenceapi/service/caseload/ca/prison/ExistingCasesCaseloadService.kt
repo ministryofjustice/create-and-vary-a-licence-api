@@ -87,6 +87,7 @@ class ExistingCasesCaseloadService(
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
         isHdcPostponed = licence.isPostponed,
+        noHdcCurfewAddress = licence.noHdcCurfewAddress,
       )
     }.filterNotNull()
   }
