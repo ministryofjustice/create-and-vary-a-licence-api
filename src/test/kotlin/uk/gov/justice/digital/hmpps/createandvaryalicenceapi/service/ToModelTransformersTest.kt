@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
 
@@ -122,42 +123,48 @@ class ToModelTransformersTest {
   }
 
   @Test
-  fun `toHdc determines address withdrawn from address and proposed accommodation type`() {
+  fun `toHdc sets address withdrawn only while address checks are needed`() {
     val types = AccommodationType.entries.toList() + null
     for (type in types) {
       for (hasAddress in listOf(false, true)) {
-        val licence = TestData.createHdcLicence().apply {
-          application = HdcApplication(this, false, type)
-          curfewAddress = if (hasAddress) {
-            HdcCurfewAddress(
-              licence = this,
-              reference = "ref",
-              firstLine = "Test Street",
-              townOrCity = "Test Town",
-              postcode = "TE1 1ST",
-              source = AddressSource.HDC_CREATION,
-            )
-          } else {
-            null
+        for (checksComplete in listOf(false, true)) {
+          val licence = TestData.createHdcLicence().apply {
+            application = HdcApplication(this, false, type)
+            curfewAddress = if (hasAddress) {
+              HdcCurfewAddress(
+                licence = this,
+                reference = "ref",
+                firstLine = "Test Street",
+                townOrCity = "Test Town",
+                postcode = "TE1 1ST",
+                source = AddressSource.HDC_CREATION,
+              )
+            } else {
+              null
+            }
           }
-        }
-        val result = toHdc(
-          licence = licence,
-          earliestReleaseDate = null,
-          isEligibleForEarlyRelease = false,
-          hardStopDate = null,
-          hardStopWarningDate = null,
-          isInHardStopPeriod = false,
-          isDueToBeReleasedInTheNextTwoWorkingDays = false,
-          conditionPolicyData = emptyMap(),
-          isHdcMigration = false,
-          isReplacementForOptedInLicence = false,
-          hdcRiskChecksComplete = false,
-        )
+          val result = toHdc(
+            licence = licence,
+            earliestReleaseDate = null,
+            isEligibleForEarlyRelease = false,
+            hardStopDate = null,
+            hardStopWarningDate = null,
+            isInHardStopPeriod = false,
+            isDueToBeReleasedInTheNextTwoWorkingDays = false,
+            conditionPolicyData = emptyMap(),
+            isHdcMigration = false,
+            isReplacementForOptedInLicence = false,
+            hdcRiskChecksComplete = checksComplete,
+          )
 
-        assertThat(result.addressWithdrawn)
-          .describedAs("type=%s, hasAddress=%s", type, hasAddress)
-          .isEqualTo(!hasAddress && (type == AccommodationType.RESIDENTIAL || type == AccommodationType.CAS_1_APPROVED_PREMISES))
+          assertThat(result.addressWithdrawn)
+            .describedAs("type=%s, hasAddress=%s, checksComplete=%s", type, hasAddress, checksComplete)
+            .isEqualTo(
+              !checksComplete &&
+                !hasAddress &&
+                (type == AccommodationType.RESIDENTIAL || type == AccommodationType.CAS_1_APPROVED_PREMISES),
+            )
+        }
       }
     }
 
@@ -179,6 +186,26 @@ class ToModelTransformersTest {
       hdcRiskChecksComplete = false,
     )
     assertThat(result.addressWithdrawn).isFalse()
+
+    val submittedLicence = TestData.createHdcLicence().apply {
+      statusCode = LicenceStatus.SUBMITTED
+      application = HdcApplication(this, false, AccommodationType.RESIDENTIAL)
+      curfewAddress = null
+    }
+    val submittedResult = toHdc(
+      licence = submittedLicence,
+      earliestReleaseDate = null,
+      isEligibleForEarlyRelease = false,
+      hardStopDate = null,
+      hardStopWarningDate = null,
+      isInHardStopPeriod = false,
+      isDueToBeReleasedInTheNextTwoWorkingDays = false,
+      conditionPolicyData = emptyMap(),
+      isHdcMigration = false,
+      isReplacementForOptedInLicence = false,
+      hdcRiskChecksComplete = false,
+    )
+    assertThat(submittedResult.addressWithdrawn).isFalse()
   }
 
   @Test
