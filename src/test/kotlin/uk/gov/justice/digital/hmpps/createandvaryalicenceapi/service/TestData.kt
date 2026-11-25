@@ -1105,6 +1105,7 @@ object TestData {
 
   fun aModelHdcLicence() = ModelHdcLicence(
     id = 1,
+    addressWithdrawn = false,
     typeCode = AP,
     version = "1.1",
     statusCode = LicenceStatus.ACTIVE,

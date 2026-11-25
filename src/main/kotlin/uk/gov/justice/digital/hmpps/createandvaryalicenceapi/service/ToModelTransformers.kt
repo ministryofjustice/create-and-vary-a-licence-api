@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.timeserved.TimeServedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -673,7 +674,14 @@ fun toHdc(
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
   isHdcMigration = isHdcMigration,
   isPostponed = licence.application?.isPostponed ?: false,
+  addressWithdrawn = isHdcAddressWithdrawn(licence),
 )
+
+private fun isHdcAddressWithdrawn(licence: HdcLicence): Boolean = licence.curfewAddress == null &&
+  when (licence.application?.proposedAccommodationType) {
+    AccommodationType.RESIDENTIAL, AccommodationType.CAS_1_APPROVED_PREMISES -> true
+    AccommodationType.CAS_2, null -> false
+  }
 
 fun toHdcVariation(
   licence: HdcVariationLicence,

@@ -373,6 +373,12 @@ data class HdcLicence(
 
   @field:Schema(description = "Have the risk checks been completed for this HDC licence?", example = "false")
   val hdcRiskChecksComplete: Boolean = false,
+
+  @field:Schema(
+    description = "Whether the curfew address is missing for a residential or approved premises HDC application",
+    example = "false",
+  )
+  val addressWithdrawn: Boolean,
 ) : Licence,
   SupportsElectronicMonitoring,
   ModelHdcCase
