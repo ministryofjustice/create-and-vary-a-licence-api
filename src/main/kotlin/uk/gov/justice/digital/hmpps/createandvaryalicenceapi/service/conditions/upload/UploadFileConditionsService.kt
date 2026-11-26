@@ -5,6 +5,7 @@ import jakarta.validation.ValidationException
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.io.RandomAccessReadBuffer
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -30,6 +31,7 @@ class UploadFileConditionsService(
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadRepository: AdditionalConditionUploadRepository,
   private val documentService: DocumentService,
+  @param:Value("\${feature.toggle.v2ImageCropping.enabled}") private val v2ImageCroppingEnabled: Boolean = false,
 ) {
 
   init {
@@ -80,7 +82,7 @@ class UploadFileConditionsService(
 
   fun fromMultipartFile(file: MultipartFile): UploadPdfExtract = runCatching {
     Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
-      UploadPdfExtractBuilder(pdfDoc).build()
+      UploadPdfExtractBuilder(pdfDoc, v2ImageCroppingEnabled).build()
     }
   }.getOrElse { throw ValidationException(it) }
 

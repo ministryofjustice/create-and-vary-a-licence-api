@@ -136,6 +136,8 @@ feature:
       enabled: true
     remand:
       enabled: true
+    v2ImageCropping:
+      enabled: false
 os:
   places:
     api:

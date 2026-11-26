@@ -1,11 +1,15 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf
 
 import org.apache.pdfbox.Loader
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.PDPage
+import org.apache.pdfbox.rendering.PDFRenderer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.core.io.ClassPathResource
+import javax.imageio.ImageIO
 
 class UploadPdfExtractBuilderTest {
 
@@ -21,7 +25,7 @@ class UploadPdfExtractBuilderTest {
     val bytes =
       ClassPathResource("pdfs/$fileName.pdf").inputStream.readAllBytes()
     Loader.loadPDF(bytes).use {
-      val extract = UploadPdfExtractBuilder(it).build()
+      val extract = UploadPdfExtractBuilder(it, v2ImageCroppingEnabled = false).build()
       assertThat(extract.description.normalise()).isEqualTo(EXPECTED_DESCRIPTION)
     }
   }
@@ -30,7 +34,38 @@ class UploadPdfExtractBuilderTest {
   fun `extracts description from the original pdf format`() {
     val bytes = ClassPathResource("Test_map_2021-12-06_112550.pdf").inputStream.readAllBytes()
     Loader.loadPDF(bytes).use {
-      assertThat(UploadPdfExtractBuilder(it).build().description).contains("Description")
+      assertThat(UploadPdfExtractBuilder(it, v2ImageCroppingEnabled = false).build().description).contains("Description")
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    "old/portrait,460,707",
+    "old/landscape,707,460",
+    "new/landscape,706,377",
+    "new/portrait,459,624",
+  )
+  fun `trims white border from the extracted image`(fileName: String, expectedWidth: Int, expectedHeight: Int) {
+    val bytes = ClassPathResource("pdfs/$fileName.pdf").inputStream.readAllBytes()
+    Loader.loadPDF(bytes).use { pdf ->
+      val extractedImage = ImageIO.read(UploadPdfExtractBuilder(pdf, v2ImageCroppingEnabled = true).build().fullSizeImage.inputStream())
+
+      assertThat(extractedImage.width).isEqualTo(expectedWidth)
+      assertThat(extractedImage.height).isEqualTo(expectedHeight)
+    }
+  }
+
+  @Test
+  fun `leaves a blank image unchanged when trimming`() {
+    PDDocument().use { pdf ->
+      pdf.addPage(PDPage())
+
+      val renderedPage = PDFRenderer(pdf).renderImage(0)
+      val extract = UploadPdfExtractBuilder(pdf, v2ImageCroppingEnabled = true).build()
+      val image = ImageIO.read(extract.fullSizeImage.inputStream())
+
+      assertThat(image.width).isEqualTo(renderedPage.width - UploadPdfExtractBuilder.IMAGE_PADDING)
+      assertThat(image.height).isEqualTo(renderedPage.height - UploadPdfExtractBuilder.IMAGE_PADDING)
     }
   }
 

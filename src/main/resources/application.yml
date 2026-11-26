@@ -184,6 +184,8 @@ feature:
       enabled: ${HDC_CREATION_ENABLED:#{false}}
     remand:
       enabled: ${REMAND_ENABLED}
+    v2ImageCropping:
+      enabled: ${V2_IMAGE_CROPPING_ENABLED:#{false}}
 
 hmpps:
   cases:
