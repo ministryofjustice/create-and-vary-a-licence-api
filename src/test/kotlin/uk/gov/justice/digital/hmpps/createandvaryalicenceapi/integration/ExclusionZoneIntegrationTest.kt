@@ -238,7 +238,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   fun fromMultipartFile(file: MultipartFile): UploadPdfExtract {
     Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
-      return UploadPdfExtractBuilder(pdfDoc).build()
+      return UploadPdfExtractBuilder(pdfDoc, v2ImageCroppingEnabled = false).build()
     }
   }
 }
