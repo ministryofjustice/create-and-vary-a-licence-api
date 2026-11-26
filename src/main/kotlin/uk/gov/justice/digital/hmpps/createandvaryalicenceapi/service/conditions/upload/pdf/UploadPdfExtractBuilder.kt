@@ -86,6 +86,8 @@ class UploadPdfExtractBuilder(private var pdfDoc: PDDocument, private val v2Imag
       }
     }
 
+    if (right < 0 || bottom < 0) return image
+
     val cropLeft = (left - IMAGE_TRIM_PADDING).coerceAtLeast(0)
     val cropTop = (top - IMAGE_TRIM_PADDING).coerceAtLeast(0)
     val cropRight = (right + IMAGE_TRIM_PADDING).coerceAtMost(image.width - 1)

@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.upload.pdf
 
 import org.apache.pdfbox.Loader
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.PDPage
+import org.apache.pdfbox.rendering.PDFRenderer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -49,6 +52,20 @@ class UploadPdfExtractBuilderTest {
 
       assertThat(extractedImage.width).isEqualTo(expectedWidth)
       assertThat(extractedImage.height).isEqualTo(expectedHeight)
+    }
+  }
+
+  @Test
+  fun `leaves a blank image unchanged when trimming`() {
+    PDDocument().use { pdf ->
+      pdf.addPage(PDPage())
+
+      val renderedPage = PDFRenderer(pdf).renderImage(0)
+      val extract = UploadPdfExtractBuilder(pdf, v2ImageCroppingEnabled = true).build()
+      val image = ImageIO.read(extract.fullSizeImage.inputStream())
+
+      assertThat(image.width).isEqualTo(renderedPage.width - UploadPdfExtractBuilder.IMAGE_PADDING)
+      assertThat(image.height).isEqualTo(renderedPage.height - UploadPdfExtractBuilder.IMAGE_PADDING)
     }
   }
 
