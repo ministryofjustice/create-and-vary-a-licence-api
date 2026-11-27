@@ -52,6 +52,12 @@ class LicenceLinkingService(
       HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE,
     )?.fromLicenceId
 
+  fun getHdcLicenceIdForCrdReplacement(crdLicenceId: Long): Long? {
+    val linkTypes = listOf(CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE, CRD_REPLACEMENT_FOR_REFUSED_LICENCE)
+    val links = licenceLinkRepository.findByToLicenceIdAndLinkTypeIn(crdLicenceId, linkTypes)
+    return linkTypes.firstNotNullOfOrNull { type -> links.firstOrNull { it.linkType == type } }?.fromLicenceId
+  }
+
   private fun hasLinkTo(
     toLicenceId: Long,
     linkType: LicenceLinkType,

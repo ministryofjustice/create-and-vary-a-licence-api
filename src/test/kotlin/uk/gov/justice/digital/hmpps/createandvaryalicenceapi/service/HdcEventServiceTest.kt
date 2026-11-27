@@ -26,8 +26,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSetOfweeklyCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.firstNightCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -269,6 +271,7 @@ class HdcEventServiceTest {
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(crdLicence.id, populatedHdc.id)
     verify(licenceLinkingService).getPreviousHdcLicenceId(crdLicence.id)
+    verify(licenceLinkingService).getHdcLicenceIdForCrdReplacement(crdLicence.id)
     verify(hdcLifecycleService).populateOnCreation(populatedHdc)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService, hdcLifecycleService)
   }
@@ -315,6 +318,7 @@ class HdcEventServiceTest {
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(edit.id, populatedHdc.id)
     verify(licenceLinkingService).getPreviousHdcLicenceId(edit.id)
+    verify(licenceLinkingService).getHdcLicenceIdForCrdReplacement(edit.id)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
 
@@ -368,6 +372,64 @@ class HdcEventServiceTest {
     verify(licenceService).populateCopy(crdLicence, hdcCopy)
     verify(hdcLifecycleService).populateOnCreation(hdcCopy)
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(crdLicence.id, hdcCopy.id)
+  }
+
+  @Nested
+  inner class CurfewTimesRestoration {
+    private val crdLicence = createCrdLicence().copy(id = 1, nomsId = "A1234AA")
+    private val originalHdcLicence = createHdcLicence(id = 2).copy(
+      weeklyCurfewTimes = aSetOfweeklyCurfewTimes(),
+      firstNightCurfewTimes = firstNightCurfewTimes(),
+    )
+    private val hdcCopy = createHdcLicence(id = 3)
+
+    @BeforeEach
+    fun setupConversion() {
+      whenever(licenceRepository.findInFlightCrdLicences("A1234AA")).thenReturn(listOf(crdLicence))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
+      whenever(hdcLicenceFactory.createFromCrd(crdLicence, null, IN_PROGRESS)).thenReturn(hdcCopy)
+      whenever(licenceService.populateCopy(crdLicence, hdcCopy)).thenReturn(hdcCopy)
+      whenever(hdcLicenceRepository.findById(originalHdcLicence.id)).thenReturn(Optional.of(originalHdcLicence))
+    }
+
+    @Test
+    fun `convertToHdcLicence restores curfew times from the previous HDC licence without using the fallback`() {
+      // Given
+      whenever(licenceLinkingService.getPreviousHdcLicenceId(crdLicence.id)).thenReturn(originalHdcLicence.id)
+
+      // When
+      service.convertToHdcLicence("A1234AA")
+
+      // Then
+      assertCurfewTimesRestored()
+      verify(licenceLinkingService, never()).getHdcLicenceIdForCrdReplacement(any())
+    }
+
+    @Test
+    fun `convertToHdcLicence restores curfew times from the original HDC licence when there is no previous HDC licence`() {
+      // Given
+      whenever(licenceLinkingService.getHdcLicenceIdForCrdReplacement(crdLicence.id)).thenReturn(originalHdcLicence.id)
+
+      // When
+      service.convertToHdcLicence("A1234AA")
+
+      // Then
+      assertCurfewTimesRestored()
+      verify(licenceLinkingService).getPreviousHdcLicenceId(crdLicence.id)
+      verify(licenceLinkingService).getHdcLicenceIdForCrdReplacement(crdLicence.id)
+    }
+
+    private fun assertCurfewTimesRestored() {
+      assertThat(hdcCopy.weeklyCurfewTimes).usingRecursiveComparison().isEqualTo(originalHdcLicence.weeklyCurfewTimes)
+      hdcCopy.weeklyCurfewTimes.zip(originalHdcLicence.weeklyCurfewTimes).forEach { (copy, original) ->
+        assertThat(copy).isNotSameAs(original)
+        assertThat(copy.id).isNull()
+      }
+      assertThat(hdcCopy.firstNightCurfewTimes).usingRecursiveComparison().isEqualTo(originalHdcLicence.firstNightCurfewTimes)
+      assertThat(hdcCopy.firstNightCurfewTimes).isNotSameAs(originalHdcLicence.firstNightCurfewTimes)
+      assertThat(hdcCopy.firstNightCurfewTimes?.id).isNull()
+      verify(licenceService).populateCopy(crdLicence, hdcCopy)
+    }
   }
 
   @Test
