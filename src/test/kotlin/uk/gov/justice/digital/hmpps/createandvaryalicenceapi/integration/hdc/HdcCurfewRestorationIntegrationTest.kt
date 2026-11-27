@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.hdc
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.api.Test
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.CRD_REPLACEMENT_FOR_REFUSED_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
@@ -14,53 +14,51 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.DayOfWeek
 import java.time.LocalTime
 
-class HdcConversionRoundTripIntegrationTest : HdcEventsIntegrationTestBase() {
+class HdcCurfewRestorationIntegrationTest : HdcEventsIntegrationTestBase() {
+
+  @Sql("classpath:test_data/seed-opted-out-hdc-with-curfew-times.sql")
+  @Test
+  fun `opt in restores curfew times from opted out link when there is no previous opt in link`() {
+    testCurfewTimesRestored(CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE, originalLicenceId = 1L, crdLicenceId = 2L, expectedLicenceCount = 3)
+  }
 
   @Sql(
-    "classpath:test_data/seed-completed-hdc-licence-1.sql",
-    "classpath:test_data/seed-hdc-curfew-times-for-conversion.sql",
+    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-hdc-conversion-history.sql",
+    "classpath:test_data/seed-crd-refused-link-for-hdc-conversion.sql",
   )
-  @ParameterizedTest
-  @EnumSource(value = HdcCvlEventType::class, names = ["OPT_OUT", "REFUSE"])
-  fun `opt in restores curfew times after HDC was replaced by CRD`(eventType: HdcCvlEventType) {
+  @Test
+  fun `opt in restores curfew times from refused link when there is no previous opt in link`() {
+    testCurfewTimesRestored(CRD_REPLACEMENT_FOR_REFUSED_LICENCE, originalLicenceId = 2L, crdLicenceId = 1L, expectedLicenceCount = 8)
+  }
+
+  private fun testCurfewTimesRestored(
+    replacementType: LicenceLinkType,
+    originalLicenceId: Long,
+    crdLicenceId: Long,
+    expectedLicenceCount: Int,
+  ) {
     // Given
-    val originalLicenceId = 1L
-    val event = createHdcStatusChangedEvent()
+    val event = createHdcStatusChangedEvent(bookingId = 123L, nomsNumber = "A1234AA")
     val eventJson = mapper.writeValueAsString(event)
-
-    sendMessage(eventJson, eventType.name)
-    assertSqsProcessed()
-
-    val crdLicence = testRepository.findAllLicence().single { it.kind == LicenceKind.CRD }
-    val replacementType = if (eventType == HdcCvlEventType.OPT_OUT) {
-      CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE
-    } else {
-      CRD_REPLACEMENT_FOR_REFUSED_LICENCE
-    }
-    assertThat(crdLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(testRepository.findAllLicenceLinks())
-      .extracting("fromLicenceId", "toLicenceId", "linkType")
-      .containsExactly(tuple(originalLicenceId, crdLicence.id, replacementType))
-
-    hdcApiMockServer.stubGetHdcLicenceData(12347L)
 
     // When
     sendMessage(eventJson, HdcCvlEventType.OPT_IN.name)
 
     // Then
-    assertSqsProcessed(timesProcessed = 2)
+    assertSqsProcessed()
 
     val licences = testRepository.findAllLicence()
-    assertThat(licences).hasSize(3)
+    assertThat(licences).hasSize(expectedLicenceCount)
     assertThat(licences.single { it.id == originalLicenceId }.statusCode).isEqualTo(LicenceStatus.INACTIVE)
-    assertThat(licences.single { it.id == crdLicence.id }.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licences.single { it.id == crdLicenceId }.statusCode).isEqualTo(LicenceStatus.INACTIVE)
     val newHdc = licences.single { it.kind == LicenceKind.HDC && it.statusCode == LicenceStatus.IN_PROGRESS }
 
     assertThat(testRepository.findAllLicenceLinks())
       .extracting("fromLicenceId", "toLicenceId", "linkType")
       .containsExactlyInAnyOrder(
-        tuple(originalLicenceId, crdLicence.id, replacementType),
-        tuple(crdLicence.id, newHdc.id, HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE),
+        tuple(originalLicenceId, crdLicenceId, replacementType),
+        tuple(crdLicenceId, newHdc.id, HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE),
       )
 
     val weeklyTimes = testRepository.findWeeklyCurfewTimes(newHdc.id)
