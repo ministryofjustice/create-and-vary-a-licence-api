@@ -6,13 +6,15 @@ values
   ('HDC', 'HDC', 'AP', '1.0', 'INACTIVE', 'A1234AA', 123,
    'Person', 'One', current_date, 1, 1, '1.0'),
   ('HDC', 'HDC', 'AP', '1.0', 'INACTIVE', 'A1234AA', 123,
+   'Person', 'One', current_date, 1, 1, '1.0'),
+  ('CRD', 'CRD', 'AP', '1.0', 'INACTIVE', 'A1234AA', 123,
+   'Person', 'One', current_date, 1, 1, '1.0'),
+  ('CRD', 'CRD', 'AP', '1.0', 'INACTIVE', 'A1234AA', 123,
+   'Person', 'One', current_date, 1, 1, '1.0'),
+  ('HDC', 'HDC', 'AP', '1.0', 'INACTIVE', 'A1234AA', 123,
+   'Person', 'One', current_date, 1, 1, '1.0'),
+  ('HDC', 'HDC', 'AP', '1.0', 'INACTIVE', 'A1234AA', 123,
    'Person', 'One', current_date, 1, 1, '1.0');
-
-insert into licence_link (from_licence_id, to_licence_id, link_type, date_created)
-values
-  (3, 1, 'HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE', '2026-10-02 12:00:00'),
-  (2, 1, 'CRD_REPLACEMENT_FOR_OPTED_OUT_LICENCE', '2026-10-03 12:00:00'),
-  (2, 3, 'HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE', '2026-10-04 12:00:00');
 
 insert into curfew_times (curfew_times_sequence, from_day, from_time, until_day, until_time)
 values
@@ -21,10 +23,10 @@ values
   (null, null, '21:00:00', null, '06:00:00');
 
 insert into hdc_weekly_curfew_times (licence_id, curfew_time_id)
-values (3, 1), (3, 2);
+values (2, 1), (2, 2);
 
 insert into hdc_first_night_curfew_times (licence_id, curfew_time_id)
-values (3, 3);
+values (2, 3);
 
 insert into hdc_curfew_address (
   licence_id, reference, uprn, first_line, second_line, town_or_city, county, postcode,

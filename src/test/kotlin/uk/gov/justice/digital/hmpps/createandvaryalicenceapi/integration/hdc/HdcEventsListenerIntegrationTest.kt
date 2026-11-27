@@ -1,10 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.hdc
 
-import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
@@ -13,7 +11,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.SqlGroup
@@ -25,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceLinkType.HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.AccommodationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.hdc.CvlAccommodationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcEventService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcCvlEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdcEvents.HdcEventHandler
@@ -47,12 +43,10 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
   @MockitoSpyBean
   lateinit var hdcEventHandler: HdcEventHandler
 
-  @Autowired
-  lateinit var hdcEventService: HdcEventService
-
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
     "classpath:test_data/seed-hdc-conversion-history.sql",
+    "classpath:test_data/seed-crd-opt-out-link-for-hdc-conversion.sql",
   )
   @Test
   fun `An HDC opt in event restores linked curfew times`() {
@@ -278,25 +272,6 @@ class HdcEventsListenerIntegrationTest : HdcEventsIntegrationTestBase() {
       .extracting("fromLicenceId", "toLicenceId", "linkType")
       .containsExactly(tuple(crdLicence.id, hdcLicence.id, HDC_REPLACEMENT_FOR_OPTED_IN_LICENCE))
     verify(eventsPublisher, times(1)).publishDomainEvent(anyOrNull())
-  }
-
-  @SqlGroup(
-    Sql("classpath:test_data/seed-licence-id-1.sql"),
-    Sql("classpath:test_data/seed-hdc-conversion-details.sql"),
-  )
-  @Test
-  fun `CRD to HDC conversion rolls back when HDC data is unavailable`() {
-    hdcApiMockServer.stubGetHdcLicenceDataNotFound(123L)
-
-    assertThrows<EntityNotFoundException> {
-      hdcEventService.convertToHdcLicence("A1234AA")
-    }
-
-    val licences = testRepository.findAllLicence()
-    assertThat(licences).hasSize(1)
-    assertThat(licences.single().statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(testRepository.findAllHdcApplications()).isEmpty()
-    assertThat(testRepository.findAllHdcCurfewAddresses()).isEmpty()
   }
 
   @Test

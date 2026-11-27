@@ -92,7 +92,7 @@ class HdcEventServiceTest {
       licenceLinkingService,
       hdcLifecycleService,
     )
-    whenever(licenceLinkingService.getPreviousHdcLicenceId(any())).thenReturn(null)
+    whenever(licenceLinkingService.getHdcLicenceIdForHdcReplacement(any())).thenReturn(null)
   }
 
   @ParameterizedTest
@@ -270,7 +270,7 @@ class HdcEventServiceTest {
       eventDescription = "This HDC licence was converted from CRD licence on OPT_IN",
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(crdLicence.id, populatedHdc.id)
-    verify(licenceLinkingService).getPreviousHdcLicenceId(crdLicence.id)
+    verify(licenceLinkingService).getHdcLicenceIdForHdcReplacement(crdLicence.id)
     verify(licenceLinkingService).getHdcLicenceIdForCrdReplacement(crdLicence.id)
     verify(hdcLifecycleService).populateOnCreation(populatedHdc)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService, hdcLifecycleService)
@@ -317,7 +317,7 @@ class HdcEventServiceTest {
       eventDescription = "This HDC licence was converted from CRD licence on OPT_IN",
     )
     verify(licenceLinkingService).setHdcReplacementForOptedInLicence(edit.id, populatedHdc.id)
-    verify(licenceLinkingService).getPreviousHdcLicenceId(edit.id)
+    verify(licenceLinkingService).getHdcLicenceIdForHdcReplacement(edit.id)
     verify(licenceLinkingService).getHdcLicenceIdForCrdReplacement(edit.id)
     verifyNoMoreInteractions(hdcLicenceFactory, licenceService, auditService, licenceLinkingService)
   }
@@ -361,7 +361,7 @@ class HdcEventServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
     whenever(hdcLicenceFactory.createFromCrd(crdLicence, null, IN_PROGRESS)).thenReturn(hdcCopy)
     whenever(licenceService.populateCopy(crdLicence, hdcCopy)).thenReturn(hdcCopy)
-    whenever(licenceLinkingService.getPreviousHdcLicenceId(crdLicence.id)).thenReturn(2L)
+    whenever(licenceLinkingService.getHdcLicenceIdForHdcReplacement(crdLicence.id)).thenReturn(2L)
     whenever(hdcLicenceRepository.findById(2L)).thenReturn(Optional.empty())
 
     // When
@@ -395,7 +395,7 @@ class HdcEventServiceTest {
     @Test
     fun `convertToHdcLicence restores curfew times from the previous HDC licence without using the fallback`() {
       // Given
-      whenever(licenceLinkingService.getPreviousHdcLicenceId(crdLicence.id)).thenReturn(originalHdcLicence.id)
+      whenever(licenceLinkingService.getHdcLicenceIdForHdcReplacement(crdLicence.id)).thenReturn(originalHdcLicence.id)
 
       // When
       service.convertToHdcLicence("A1234AA")
@@ -415,7 +415,7 @@ class HdcEventServiceTest {
 
       // Then
       assertCurfewTimesRestored()
-      verify(licenceLinkingService).getPreviousHdcLicenceId(crdLicence.id)
+      verify(licenceLinkingService).getHdcLicenceIdForHdcReplacement(crdLicence.id)
       verify(licenceLinkingService).getHdcLicenceIdForCrdReplacement(crdLicence.id)
     }
 

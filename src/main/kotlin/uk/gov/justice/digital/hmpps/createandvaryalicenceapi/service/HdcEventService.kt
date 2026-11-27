@@ -168,7 +168,7 @@ class HdcEventService(
     licenceToConvert: CrdLicence,
     newLicence: HdcLicence,
   ) {
-    val previousHdcLicenceId = linkingService.getPreviousHdcLicenceId(licenceToConvert.id)
+    val previousHdcLicenceId = linkingService.getHdcLicenceIdForHdcReplacement(licenceToConvert.id)
       ?: linkingService.getHdcLicenceIdForCrdReplacement(licenceToConvert.id)
     previousHdcLicenceId?.let { licenceId ->
       hdcLicenceRepository.findByIdOrNull(licenceId)
