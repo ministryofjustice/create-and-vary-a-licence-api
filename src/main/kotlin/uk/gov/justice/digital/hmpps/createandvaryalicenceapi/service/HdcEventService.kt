@@ -168,7 +168,9 @@ class HdcEventService(
     licenceToConvert: CrdLicence,
     newLicence: HdcLicence,
   ) {
-    linkingService.getPreviousHdcLicenceId(licenceToConvert.id)?.let { licenceId ->
+    val previousHdcLicenceId = linkingService.getHdcLicenceIdForHdcReplacement(licenceToConvert.id)
+      ?: linkingService.getHdcLicenceIdForCrdReplacement(licenceToConvert.id)
+    previousHdcLicenceId?.let { licenceId ->
       hdcLicenceRepository.findByIdOrNull(licenceId)
     }?.let {
       newLicence.weeklyCurfewTimes = CurfewTimesMapper.copyList(it.weeklyCurfewTimes)
