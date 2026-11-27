@@ -27,7 +27,7 @@ import java.util.logging.Logger
 
 @RestController
 @Tag(name = Tags.LICENCES)
-@PreAuthorize("hasAnyRole('VIEW_LICENCES', 'CVL__LICENCES__RO')")
+@PreAuthorize("hasAnyRole('CVL__LICENCES__RO')")
 @RequestMapping("/public/v2", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicenceControllerV2(private val publicLicenceService: PublicLicenceServiceV2) {
 

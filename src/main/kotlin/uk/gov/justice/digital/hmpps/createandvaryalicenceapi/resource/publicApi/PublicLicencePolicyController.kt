@@ -24,7 +24,7 @@ import java.time.LocalDate
 
 @RestController
 @Tag(name = Tags.LICENCE_POLICY)
-@PreAuthorize("hasAnyRole('VIEW_LICENCES', 'CVL__LICENCES__RO')")
+@PreAuthorize("hasAnyRole('CVL__LICENCES__RO')")
 @RequestMapping("/public/policy", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicencePolicyController(private val publicLicencePolicyService: PublicLicencePolicyService) {
   @GetMapping(value = ["/{version}"])
