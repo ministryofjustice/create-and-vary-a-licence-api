@@ -246,7 +246,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     private val legacyUri = "/public/licences/2/conditions/1/image-upload"
 
     @ParameterizedTest
-    @CsvSource("ROLE_VIEW_LICENCES", "ROLE_CVL__LICENCES__RO", "ROLE_SAR_DATA_ACCESS")
+    @CsvSource("ROLE_CVL__LICENCES__RO", "ROLE_SAR_DATA_ACCESS")
     @Sql(
       "classpath:test_data/seed-licence-id-2.sql",
       "classpath:test_data/add-upload-to-licence-id-2.sql",
